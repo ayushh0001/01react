@@ -8,12 +8,12 @@ const credentialSchema = new mongoose.Schema({
       required:true,
       unique:true
     },
-  username: {
+  userName: {
     type:String,
     required:true,
     trim:true //trim remove white space from begining and the end of string
   },
-  yourname:{
+  name:{
     type:String,
     required:true,
     trim:true
@@ -26,7 +26,7 @@ const credentialSchema = new mongoose.Schema({
     type:String,
     // required:true
   },
-  role:{
+  userRole:{
     type:String,
     required:true
   },
@@ -41,11 +41,10 @@ const credentialSchema = new mongoose.Schema({
 
 
 // Hash password before saving
-credentialSchema.pre('save', async function (next) {
+credentialSchema.pre('save', async function () {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
-  next();
 });
 
 // Method to compare password during login

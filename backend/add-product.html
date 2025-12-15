@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+     <!-- //toastr js library frontend -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    />
+     <link rel="shortcut icon" href="Zpin-logo.jpg" type="image/x-icon">
+    <!-- //toastr js library frontend -->
+    <link rel="stylesheet" href="add-product.css">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+<!-- load jQuery -->
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- //toastr js frontend library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- //toastr js frontend library -->
+       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: "toast-top-center",
+      };
+    </script>
+</head>
+<body>
+     <div class="main">
+      <div class="nav">
+    <nav>
+         <h3 class="heading">ZIPIN Seller Hub</h3>
+        <p class="subheading">Manage your Business</p>
+
+        <ul id="myList">
+            <li><a href="dashboard.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="home">
+  <path d="M20,8h0L14,2.74a3,3,0,0,0-4,0L4,8a3,3,0,0,0-1,2.26V19a3,3,0,0,0,3,3H18a3,3,0,0,0,3-3V10.25A3,3,0,0,0,20,8ZM14,20H10V15a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1Zm5-1a1,1,0,0,1-1,1H16V15a3,3,0,0,0-3-3H11a3,3,0,0,0-3,3v5H6a1,1,0,0,1-1-1V10.25a1,1,0,0,1,.34-.75l6-5.25a1,1,0,0,1,1.32,0l6,5.25a1,1,0,0,1,.34.75Z"></path>
+</svg>Dashboard</a></li>
+            <li id="orders"><a href="order.html"><svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 1024 1024" viewBox="0 0 1024 1024" id="order">
+  <path d="M537.2,918.7c-14.1-7.4-28.2-14.9-42.3-22.3c-33.9-17.9-67.7-35.8-101.6-53.7
+				c-41.1-21.7-82.3-43.4-123.4-65.2c-35.4-18.7-70.9-37.4-106.3-56.1c-17.2-9.1-34.3-18.5-51.7-27.3c-0.2-0.1-0.5-0.3-0.7-0.4
+				c8.3,14.4,16.5,28.8,24.8,43.2c0-15,0-29.9,0-44.9c0-35.7,0-71.5,0-107.2c0-43.2,0-86.4,0-129.7c0-37.5,0-75,0-112.6
+				c0-18.2,0.3-36.4,0-54.6c0-0.2,0-0.5,0-0.7c-25.1,14.4-50.2,28.8-75.2,43.2c14.1,7.5,28.2,14.9,42.3,22.4
+				c33.9,17.9,67.7,35.8,101.6,53.7c41.1,21.7,82.3,43.5,123.4,65.2c35.4,18.7,70.9,37.5,106.3,56.2c17.2,9.1,34.3,18.5,51.7,27.3
+				c0.2,0.1,0.5,0.3,0.7,0.4c-8.3-14.4-16.5-28.8-24.8-43.2c0,14.9,0,29.9,0,44.8c0,35.7,0,71.4,0,107.1c0,43.2,0,86.4,0,129.6
+				c0,37.5,0,75,0,112.5c0,18.2-0.2,36.4,0,54.6c0,0.2,0,0.5,0,0.7c0,12.8,5.6,26.3,14.6,35.4c8.7,8.7,22.9,15.2,35.4,14.6
+				c12.9-0.6,26.3-4.8,35.4-14.6c9-9.8,14.6-21.8,14.6-35.4c0-14.9,0-29.9,0-44.8c0-35.7,0-71.4,0-107.1c0-43.2,0-86.4,0-129.6
+				c0-37.5,0-75,0-112.5c0-18.2,0.2-36.4,0-54.6c0-0.2,0-0.5,0-0.7c0-17-9.4-35-24.8-43.2c-14.1-7.5-28.2-14.9-42.3-22.4
+				c-33.9-17.9-67.7-35.8-101.6-53.7c-41.1-21.7-82.3-43.5-123.4-65.2c-35.4-18.7-70.9-37.5-106.3-56.2
+				c-17.2-9.1-34.4-18.4-51.7-27.3c-0.2-0.1-0.5-0.3-0.7-0.4c-16-8.5-34.5-9.3-50.5,0c-15.2,8.9-24.8,25.5-24.8,43.2
+				c0,15,0,29.9,0,44.9c0,35.7,0,71.5,0,107.2c0,43.2,0,86.4,0,129.7c0,37.5,0,75,0,112.6c0,18.2-0.2,36.4,0,54.6c0,0.2,0,0.5,0,0.7
+				c0,17,9.4,35.1,24.8,43.2c14.1,7.4,28.2,14.9,42.3,22.3c33.9,17.9,67.7,35.8,101.6,53.7c41.1,21.7,82.3,43.4,123.4,65.2
+				c35.4,18.7,70.9,37.4,106.3,56.1c17.2,9.1,34.4,18.4,51.7,27.3c0.2,0.1,0.5,0.3,0.7,0.4c11.8,6.2,25.5,8.6,38.5,5
+				c11.6-3.2,24.2-12.2,29.9-23c6.1-11.6,9.2-25.7,5-38.5C556.3,936.5,548.8,924.8,537.2,918.7z"></path>
+  <path d="M912.9,693.7c-14.1,7.4-28.2,14.9-42.3,22.3c-33.9,17.9-67.7,35.8-101.6,53.7
+				c-41.1,21.7-82.3,43.4-123.4,65.2c-35.4,18.7-70.9,37.4-106.3,56.1c-17.2,9.1-34.6,17.9-51.7,27.3c-0.2,0.1-0.5,0.3-0.7,0.4
+				c25.1,14.4,50.2,28.8,75.2,43.2c0-14.9,0-29.9,0-44.8c0-35.7,0-71.4,0-107.1c0-43.2,0-86.4,0-129.6c0-37.5,0-75,0-112.5
+				c0-18.2,0.3-36.4,0-54.6c0-0.2,0-0.5,0-0.7c-8.3,14.4-16.5,28.8-24.8,43.2c14.1-7.5,28.2-14.9,42.3-22.4
+				c33.9-17.9,67.7-35.8,101.6-53.7c41.1-21.7,82.3-43.5,123.4-65.2c35.4-18.7,70.9-37.5,106.3-56.2c17.2-9.1,34.6-18,51.7-27.3
+				c0.2-0.1,0.5-0.3,0.7-0.4c-25.1-14.4-50.2-28.8-75.2-43.2c0,15,0,29.9,0,44.9c0,35.7,0,71.5,0,107.2c0,43.2,0,86.4,0,129.7
+				c0,37.5,0,75,0,112.6c0,18.2-0.2,36.4,0,54.6c0,0.2,0,0.5,0,0.7c0,12.8,5.6,26.3,14.6,35.4c8.7,8.7,22.9,15.2,35.4,14.6
+				c12.9-0.6,26.3-4.8,35.4-14.6c9-9.8,14.6-21.8,14.6-35.4c0-15,0-29.9,0-44.9c0-35.7,0-71.5,0-107.2c0-43.2,0-86.4,0-129.7
+				c0-37.5,0-75,0-112.6c0-18.2,0.2-36.4,0-54.6c0-0.2,0-0.5,0-0.7c0-17.6-9.6-34.3-24.8-43.2c-15.9-9.3-34.5-8.5-50.5,0
+				c-14.1,7.5-28.2,14.9-42.3,22.4c-33.9,17.9-67.7,35.8-101.6,53.7c-41.1,21.7-82.3,43.5-123.4,65.2
+				c-35.4,18.7-70.9,37.5-106.3,56.2c-17.2,9.1-34.7,17.9-51.7,27.3c-0.2,0.1-0.5,0.3-0.7,0.4c-15.4,8.1-24.8,26.1-24.8,43.2
+				c0,14.9,0,29.9,0,44.8c0,35.7,0,71.4,0,107.1c0,43.2,0,86.4,0,129.6c0,37.5,0,75,0,112.5c0,18.2-0.2,36.4,0,54.6
+				c0,0.2,0,0.5,0,0.7c0,17.6,9.6,34.3,24.8,43.2c15.9,9.3,34.5,8.4,50.5,0c14.1-7.4,28.2-14.9,42.3-22.3
+				c33.9-17.9,67.7-35.8,101.6-53.7c41.1-21.7,82.3-43.4,123.4-65.2c35.4-18.7,70.9-37.4,106.3-56.1c17.2-9.1,34.7-17.9,51.7-27.3
+				c0.2-0.1,0.5-0.3,0.7-0.4c10.8-5.7,19.8-18.3,23-29.9c3.3-12,1.8-27.9-5-38.5C966.1,688.1,937.7,680.6,912.9,693.7z"></path>
+  <path d="M912.9,244.1c-14.1,7.5-28.2,14.9-42.3,22.4c-33.9,17.9-67.7,35.8-101.6,53.7
+				c-41.1,21.7-82.3,43.5-123.4,65.2c-35.4,18.7-70.9,37.5-106.3,56.2c-17.2,9.1-34.6,18-51.7,27.3c-0.2,0.1-0.5,0.3-0.7,0.4
+				c16.8,0,33.6,0,50.5,0c-14.1-7.5-28.2-14.9-42.3-22.4c-33.9-17.9-67.7-35.8-101.6-53.7c-41.1-21.7-82.3-43.5-123.4-65.2
+				c-35.4-18.7-70.9-37.5-106.3-56.2c-17.2-9.1-34.3-18.5-51.7-27.3c-0.2-0.1-0.5-0.3-0.7-0.4c0,28.8,0,57.6,0,86.3
+				c14.1-7.4,28.2-14.9,42.3-22.3c33.9-17.9,67.7-35.8,101.6-53.7c41.1-21.7,82.3-43.5,123.4-65.2c35.4-18.7,70.9-37.4,106.3-56.2
+				c17.2-9.1,34.6-18,51.7-27.3c0.2-0.1,0.5-0.3,0.7-0.4c-16.8,0-33.6,0-50.5,0c14.1,7.4,28.2,14.9,42.3,22.3
+				c33.9,17.9,67.7,35.8,101.6,53.7c41.1,21.7,82.3,43.5,123.4,65.2c35.4,18.7,70.9,37.4,106.3,56.2c17.2,9.1,34.4,18.4,51.7,27.3
+				c0.2,0.1,0.5,0.3,0.7,0.4c11.8,6.2,25.5,8.6,38.5,5c11.6-3.2,24.2-12.2,29.9-23c6.1-11.6,9.2-25.7,5-38.5
+				c-3.9-12.1-11.4-23.8-23-29.9c-14.3-7.5-28.6-15.1-42.9-22.6c-34-17.9-67.9-35.9-101.9-53.8c-41.3-21.8-82.6-43.6-123.9-65.4
+				c-35.3-18.7-70.6-37.3-105.9-56c-17-9-33.9-18.3-51-26.9c-10.4-5.3-20.7-7.8-32.4-6.2c-6.9,0.9-12.9,3-19.2,6.3
+				c-1.9,1-3.7,2-5.6,2.9c-8.8,4.6-17.6,9.3-26.4,13.9c-32.1,17-64.3,34-96.4,50.9c-40.9,21.6-81.9,43.3-122.8,64.9
+				c-37,19.5-73.9,39.1-110.9,58.6c-20.2,10.7-40.4,21.4-60.6,32c-0.9,0.5-1.9,1-2.8,1.5c-32.6,17.2-32.6,69.1,0,86.3
+				c14.3,7.6,28.6,15.1,42.9,22.7c34,18,67.9,35.9,101.9,53.9c41.3,21.8,82.6,43.7,123.9,65.5c35.3,18.7,70.6,37.3,105.9,56
+				c17,9,33.9,18.3,51,27c10.4,5.3,20.7,7.8,32.4,6.2c6.9-0.9,12.9-3,19.2-6.3c1.9-1,3.7-2,5.6-2.9c8.8-4.6,17.6-9.3,26.4-13.9
+				c32.1-17,64.3-34,96.4-51c40.9-21.6,81.9-43.3,122.8-64.9c37-19.5,73.9-39.1,110.9-58.6c20.2-10.7,40.4-21.4,60.6-32.1
+				c0.9-0.5,1.9-1,2.8-1.5c10.8-5.7,19.8-18.3,23-29.9c3.3-12,1.8-27.9-5-38.5C966.1,238.5,937.7,231,912.9,244.1z"></path>
+  <path d="M324.2,443.2c14.1-7.5,28.2-14.9,42.3-22.4c33.9-17.9,67.7-35.8,101.6-53.7
+				c41.1-21.7,82.3-43.5,123.4-65.2c35.4-18.7,70.9-37.5,106.3-56.2c17.2-9.1,34.7-17.9,51.7-27.3c0.2-0.1,0.5-0.3,0.7-0.4
+				c10.8-5.7,19.8-18.3,23-29.9c3.3-12,1.8-27.9-5-38.5c-15.2-23.6-43.6-31-68.4-17.9c-14.1,7.5-28.2,14.9-42.3,22.4
+				c-33.9,17.9-67.7,35.8-101.6,53.7c-41.1,21.7-82.3,43.5-123.4,65.2c-35.4,18.7-70.9,37.5-106.3,56.2
+				c-17.2,9.1-34.7,17.9-51.7,27.3c-0.2,0.1-0.5,0.3-0.7,0.4c-10.8,5.7-19.8,18.3-23,29.9c-3.3,12-1.8,27.9,5,38.5
+				C270.9,448.8,299.4,456.3,324.2,443.2L324.2,443.2z"></path>
+</svg>Orders</a></li>
+
+            <li id="products"><a href="products.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="list-format">
+  <path d="M3.71,16.29a1,1,0,0,0-.33-.21,1,1,0,0,0-.76,0,1,1,0,0,0-.33.21,1,1,0,0,0-.21.33,1,1,0,0,0,.21,1.09,1.15,1.15,0,0,0,.33.21.94.94,0,0,0,.76,0,1.15,1.15,0,0,0,.33-.21,1,1,0,0,0,.21-1.09A1,1,0,0,0,3.71,16.29ZM7,8H21a1,1,0,0,0,0-2H7A1,1,0,0,0,7,8ZM3.71,11.29a1,1,0,0,0-1.09-.21,1.15,1.15,0,0,0-.33.21,1,1,0,0,0-.21.33.94.94,0,0,0,0,.76,1.15,1.15,0,0,0,.21.33,1.15,1.15,0,0,0,.33.21.94.94,0,0,0,.76,0,1.15,1.15,0,0,0,.33-.21,1.15,1.15,0,0,0,.21-.33.94.94,0,0,0,0-.76A1,1,0,0,0,3.71,11.29ZM21,11H7a1,1,0,0,0,0,2H21a1,1,0,0,0,0-2ZM3.71,6.29a1,1,0,0,0-.33-.21,1,1,0,0,0-1.09.21,1.15,1.15,0,0,0-.21.33.94.94,0,0,0,0,.76,1.15,1.15,0,0,0,.21.33,1.15,1.15,0,0,0,.33.21,1,1,0,0,0,1.09-.21,1.15,1.15,0,0,0,.21-.33.94.94,0,0,0,0-.76A1.15,1.15,0,0,0,3.71,6.29ZM21,16H7a1,1,0,0,0,0,2H21a1,1,0,0,0,0-2Z"></path>
+</svg>Products</a></li>
+<li id="add"><a href="add-product.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="add-book">
+  <path d="M13,9H11V7A1,1,0,0,0,9,7V9H7a1,1,0,0,0,0,2H9v2a1,1,0,0,0,2,0V11h2a1,1,0,0,0,0-2Zm5,6V5a3,3,0,0,0-3-3H5A3,3,0,0,0,2,5V15a3,3,0,0,0,3,3H15A3,3,0,0,0,18,15ZM4,15V5A1,1,0,0,1,5,4H15a1,1,0,0,1,1,1V15a1,1,0,0,1-1,1H5A1,1,0,0,1,4,15ZM21,6a1,1,0,0,0-1,1V17a3,3,0,0,1-3,3H7a1,1,0,0,0,0,2H17a5,5,0,0,0,5-5V7A1,1,0,0,0,21,6Z"></path>
+</svg>Add Product</a></li>
+            <li><a href="customer.html"><svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 50 50" id="customers">
+  <path d="M9 49h32v-4h8V33c0-5.834-3.863-10.781-9.165-12.421C42.335 18.978 44 16.182 44 13c0-4.962-4.037-9-9-9-.855 0-1.703.128-2.531.373C30.636 2.31 27.971 1 25 1s-5.636 1.31-7.469 3.373A8.903 8.903 0 0 0 15 4c-4.963 0-9 4.038-9 9 0 3.182 1.665 5.978 4.165 7.579C4.863 22.219 1 27.166 1 33v12h8v4zm30-2H11V32c0-.334.021-.664.05-.991.01-.107.023-.213.035-.32.027-.226.062-.449.103-.67.021-.112.038-.225.062-.336.062-.287.135-.569.218-.848.042-.138.092-.272.139-.408a10.94 10.94 0 0 1 .358-.912c.064-.143.134-.283.204-.423.102-.204.21-.404.324-.601.1-.171.2-.342.308-.507.084-.128.174-.252.263-.377.094-.132.191-.262.291-.389.092-.117.184-.233.281-.346.126-.147.257-.289.39-.429a11.347 11.347 0 0 1 .866-.826c.11-.093.224-.182.338-.271.131-.102.263-.202.399-.298.126-.09.252-.179.383-.264.132-.086.268-.165.403-.245.255-.151.517-.292.786-.423.135-.066.268-.135.406-.196l.161-.072A10.948 10.948 0 0 1 22 21h6c1.499 0 2.928.303 4.231.849l.161.072c.138.06.271.13.406.196.269.131.531.272.786.423.136.08.272.159.403.245a11.294 11.294 0 0 1 .782.562c.114.089.228.178.338.271a10.787 10.787 0 0 1 .866.826c.133.14.265.282.39.429a11.77 11.77 0 0 1 .572.735c.089.125.18.248.263.377a11.59 11.59 0 0 1 .632 1.108c.07.14.14.28.204.423a10.106 10.106 0 0 1 .358.912c.047.136.097.271.139.408.084.278.157.561.218.848.024.111.042.224.062.336A11.385 11.385 0 0 1 39 32v15zm8-14v10h-6V32c0-.475-.029-.943-.079-1.405-.012-.109-.035-.215-.049-.323a13.142 13.142 0 0 0-.18-1.059c-.025-.114-.059-.224-.087-.337a12.927 12.927 0 0 0-.287-1.002c-.037-.111-.08-.219-.12-.328a12.974 12.974 0 0 0-.389-.951 9.663 9.663 0 0 0-.157-.324 12.625 12.625 0 0 0-1.245-2.029c-.073-.098-.143-.197-.219-.293a12.851 12.851 0 0 0-.693-.8c-.068-.073-.131-.15-.201-.221a12.942 12.942 0 0 0-.994-.923C42.227 22.164 47 27.035 47 33zM33.723 6.121C34.145 6.041 34.571 6 35 6c3.859 0 7 3.14 7 7s-3.141 7-7 7c-1.373 0-2.694-.4-3.826-1.144.015-.011.027-.025.041-.037a10.043 10.043 0 0 0 2.199-2.438l.055-.09c.173-.276.332-.56.478-.853l.069-.144c.133-.277.252-.561.359-.852l.066-.18a9.76 9.76 0 0 0 .252-.854c.018-.072.039-.143.055-.215.064-.283.112-.571.151-.863.011-.077.027-.153.035-.231.042-.36.066-.727.066-1.099 0-.396-.029-.784-.074-1.168-.014-.122-.037-.242-.056-.364a10.404 10.404 0 0 0-.251-1.172 9.703 9.703 0 0 0-.282-.849c-.03-.077-.054-.156-.085-.232a9.941 9.941 0 0 0-.519-1.075c-.005-.007-.007-.013-.01-.019zm-2.56-.216.061.079c.049.061.093.125.14.187.51.671.9 1.402 1.174 2.173.018.05.038.099.055.15.119.359.209.726.276 1.1.014.078.025.158.036.237.056.385.095.774.095 1.169 0 .328-.025.652-.065.973-.009.075-.023.149-.034.224a7.885 7.885 0 0 1-.159.784c-.014.054-.027.109-.042.163a8.03 8.03 0 0 1-.771 1.838l-.018.03a7.903 7.903 0 0 1-.535.8l-.053.071a8.018 8.018 0 0 1-1.414 1.42l-.095.071a8.057 8.057 0 0 1-.775.52c-.048.028-.093.059-.142.086l-.114.066C27.655 18.654 26.368 19 25 19s-2.655-.346-3.782-.954l-.114-.066c-.048-.027-.094-.058-.142-.086a8.057 8.057 0 0 1-.775-.52l-.095-.071a8.086 8.086 0 0 1-1.414-1.42l-.053-.071a8.074 8.074 0 0 1-.535-.8l-.018-.03a8.015 8.015 0 0 1-.772-1.839c-.015-.053-.028-.108-.042-.161a7.963 7.963 0 0 1-.159-.785c-.011-.075-.025-.148-.034-.224A7.858 7.858 0 0 1 17 11c0-.395.039-.784.095-1.168.012-.079.022-.158.036-.237.067-.373.157-.741.276-1.1.017-.051.037-.1.055-.15a8.002 8.002 0 0 1 1.174-2.173c.047-.062.091-.127.14-.187l.061-.079a7.986 7.986 0 0 1 12.326-.001zM8 13c0-3.86 3.141-7 7-7 .429 0 .855.041 1.277.121l-.009.019c-.193.346-.367.704-.519 1.074-.032.077-.056.156-.086.234a9.794 9.794 0 0 0-.379 1.226c-.062.261-.112.526-.154.794-.019.121-.041.241-.056.364-.045.384-.074.772-.074 1.168 0 .372.024.739.064 1.1.009.078.025.153.035.23.039.292.088.581.151.864.016.072.037.142.055.213.072.29.155.576.252.856.021.061.044.12.066.181.107.29.227.574.359.851l.07.145c.146.293.305.577.478.853l.055.09a10.082 10.082 0 0 0 2.199 2.438l.041.037A6.954 6.954 0 0 1 15 20c-3.859 0-7-3.14-7-7zM3 43V33c0-5.965 4.773-10.836 10.701-10.996-.348.289-.678.6-.994.923-.07.071-.133.148-.201.221a12.93 12.93 0 0 0-.694.801c-.075.095-.145.194-.218.292a12.763 12.763 0 0 0-.765 1.143c-.172.289-.332.584-.481.887-.053.108-.106.215-.157.324-.143.31-.271.628-.389.951-.04.11-.083.217-.12.328-.11.329-.203.664-.288 1.004-.028.112-.061.222-.086.335a13.19 13.19 0 0 0-.18 1.061c-.015.108-.037.213-.049.322C9.029 31.057 9 31.525 9 32v11H3z"></path>
+</svg>Customers</a></li>
+<li><a href="setting.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="setting">
+  <path d="M19.9 12.66a1 1 0 0 1 0-1.32l1.28-1.44a1 1 0 0 0 .12-1.17l-2-3.46a1 1 0 0 0-1.07-.48l-1.88.38a1 1 0 0 1-1.15-.66l-.61-1.83a1 1 0 0 0-.95-.68h-4a1 1 0 0 0-1 .68l-.56 1.83a1 1 0 0 1-1.15.66L5 4.79a1 1 0 0 0-1 .48L2 8.73a1 1 0 0 0 .1 1.17l1.27 1.44a1 1 0 0 1 0 1.32L2.1 14.1a1 1 0 0 0-.1 1.17l2 3.46a1 1 0 0 0 1.07.48l1.88-.38a1 1 0 0 1 1.15.66l.61 1.83a1 1 0 0 0 1 .68h4a1 1 0 0 0 .95-.68l.61-1.83a1 1 0 0 1 1.15-.66l1.88.38a1 1 0 0 0 1.07-.48l2-3.46a1 1 0 0 0-.12-1.17ZM18.41 14l.8.9-1.28 2.22-1.18-.24a3 3 0 0 0-3.45 2L12.92 20h-2.56L10 18.86a3 3 0 0 0-3.45-2l-1.18.24-1.3-2.21.8-.9a3 3 0 0 0 0-4l-.8-.9 1.28-2.2 1.18.24a3 3 0 0 0 3.45-2L10.36 4h2.56l.38 1.14a3 3 0 0 0 3.45 2l1.18-.24 1.28 2.22-.8.9a3 3 0 0 0 0 3.98Zm-6.77-6a4 4 0 1 0 4 4 4 4 0 0 0-4-4Zm0 6a2 2 0 1 1 2-2 2 2 0 0 1-2 2Z"></path>
+</svg>Settings</a></li>
+<li><a href="support.html"><svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" id="help">
+  <path d="M12.59552,8.1052856c-1.3356934-0.3458862-2.6988525,0.4564819-3.0447388,1.7921753c-0.0690308,0.2675171,0.0918579,0.5403442,0.359375,0.609375s0.5403442-0.0918579,0.609375-0.359375c0.126709-0.4932251,0.4951172-0.8884277,0.9782104-1.0494995c0.7857666-0.2619629,1.6350708,0.1627197,1.8969727,0.9484253c0.2619629,0.7857666-0.1626587,1.6350708-0.9484253,1.8969727c-0.6036377,0.2243042-0.9979858,0.8074341-0.9814453,1.4511719v0.628479c0.0001221,0.276001,0.223999,0.4996338,0.5,0.4994507h0.0005493c0.276001-0.0001831,0.4996338-0.223999,0.4994507-0.5v-0.6279297c-0.0135498-0.2148438,0.1074219-0.4155884,0.3037109-0.5039062c0.7988892-0.2697754,1.4077759-0.9243774,1.6191406-1.7406616C14.7335815,9.8143311,13.9311523,8.4511719,12.59552,8.1052856z M11.9646606,15.3973999c-0.3452148,0-0.625,0.2798462-0.625,0.625s0.2797852,0.625,0.625,0.625c0.3451538,0,0.625-0.2798462,0.625-0.625S12.3098145,15.3973999,11.9646606,15.3973999z M12,2C6.4771729,2,2,6.4771729,2,12s4.4771729,10,10,10c5.5201416-0.0064697,9.9935303-4.4798584,10-10C22,6.4771729,17.5228271,2,12,2z M12,21c-4.9705811,0-9-4.0294189-9-9s4.0294189-9,9-9c4.9683228,0.0054321,8.9945679,4.0316772,9,9C21,16.9705811,16.9705811,21,12,21z"></path>
+</svg>Help and Support</a></li>
+        </ul>
+    </nav>
+  </div>
+<div class="o-table">
+    <div class="head">
+        <h2 class="heading">Add New Product</h2>
+       <p class="subheading">Fill in the Details to add your product</p>
+       </div>
+
+	     <div class="form-container">
+   <form>
+  <!-- Row 1 -->
+  <div class="form-row">
+    <div class="form-group">
+      <label for="productName">Product Name</label>
+      <input type="text" id="productName" required="true" placeholder="Enter product name">
+    </div>
+  </div>
+
+
+   <!-- Row 2 -->
+   <div class="form-row">
+     <div class="form-group">
+       <label for="price">Price (₹)</label>
+       <input type="number" required="true" id="price" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="inventory">Inventory Quantity</label>
+        <input type="number" required="true" id="inventory" value="0">
+      </div>
+    </div>
+
+
+
+
+
+    <!-- Row 3 -->
+    <!-- // here categories dropdown comes -->
+<!-- Category Selector Section Start -->
+<div class="form-group" id="categorySelectorSection">
+  <label><h2>Product Category</h2></label>
+  <!-- Main Category Dropdown -->
+  <select id="mainCategory" required>
+    <option value="">Select Main Category</option>
+  </select>
+
+  <!-- Spinner (hidden by default, shown while loading) -->
+  <div id="categoryLoading" >
+    <span class="spinner"></span>
+    Loading categories...
+  </div>
+
+  <!-- Subcategory Dropdown (etc., will be added dynamically) -->
+  <div id="subcategoryDropdowns"></div>
+
+  <!-- Selected category "sticky" display -->
+  <div id="selectedCategoryDisplay" ></div>
+
+  <!-- Category path display -->
+  <div id="categoryPath" >
+    <b>Selected Category Path:</b> <span id="pathDisplay"></span>
+  </div>
+</div>
+
+  <!-- // here categories dropdown comes -->
+
+
+
+
+
+
+  <!-- Row 4 -->
+  <div class="form-group">
+    <label for="description" class="heading"><h2>Description</h2></label>
+    <textarea id="description" required="true" placeholder="Describe your product in detail..."></textarea>
+  </div>
+
+
+
+
+  <h2 style="margin: 20px 10px;">Product Images</h2>
+  <div class="form-row">
+    <label class="upload-box">
+      <input type="file" id="fileInput"  name="images" multiple accept="image/*">
+      <p>📂 Click to upload images</p>
+      <div class="previews" id="previews"></div>
+    </label>
+  </div>
+  <button class="submit-btn"  id="submit-btn">Add Product</button>
+</form>
+  </div>
+</div>
+
+</div>
+</div>
+
+
+   <script>
+    let selectedFiles = [];
+
+
+    //Product Image Upload Script
+    const fileInput = document.getElementById("fileInput");
+    const previews = document.getElementById("previews");
+
+    fileInput.addEventListener("change", () => {
+  // Add newly selected files to the array
+  selectedFiles = selectedFiles.concat(Array.from(fileInput.files));
+
+  // Update previews for all selected files
+  updatePreviews();
+
+  // Reset file input to allow reselection of the same files if needed
+  fileInput.value = "";
+});
+
+function updatePreviews() {
+  previews.innerHTML = ""; // Clear previous previews
+
+  selectedFiles.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const item = document.createElement("div");
+      item.classList.add("preview-item");
+
+      const img = document.createElement("img");
+      img.src = reader.result;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.classList.add("remove-btn");
+      removeBtn.innerHTML = "×";
+
+      // Remove image and remove file from array
+      removeBtn.addEventListener("click", () => {
+        selectedFiles.splice(index, 1); // Remove this file from array
+        updatePreviews(); // Re-render previews
+      });
+
+      item.appendChild(img);
+      item.appendChild(removeBtn);
+      previews.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+    //Product Image Upload Script
+
+
+
+    //category script
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+
+  // Elements:
+  const mainCategory = document.getElementById("mainCategory");
+  const categoryLoading = document.getElementById("categoryLoading");
+  const subcategoryDropdowns = document.getElementById("subcategoryDropdowns");
+  const selectedCategoryDisplay = document.getElementById("selectedCategoryDisplay");
+  const categoryPathCont = document.getElementById("categoryPath");
+  const pathDisplay = document.getElementById("pathDisplay");
+
+  let selectedPath = [];
+
+  // 1. Load main categories on page load
+  async function loadMainCategories() {
+    categoryLoading.style.display = "block";
+    document.body.style.cursor = "wait";
+    try {
+      const res = await fetch('category/root');
+      const categories = await res.json();
+      mainCategory.innerHTML = '<option value="">Select Main Category</option>' +
+        categories.map(cat => `<option value="${cat._id}">${cat.name}${cat.hasChildren ? ' →' : ''}</option>`).join('');
+    } catch {
+      mainCategory.innerHTML = '<option value="">Error loading categories</option>';
+    } finally {
+      categoryLoading.style.display = "none";
+      document.body.style.cursor = "default";
+    }
+  }
+
+  // 2. Handle main category select
+  mainCategory.addEventListener("change", async function() {
+    subcategoryDropdowns.innerHTML = ""; // Clear previous
+    selectedPath = [];
+    // Update "sticky" selected display
+    selectedCategoryDisplay.textContent = "";
+    pathDisplay.textContent = "";
+    let catId = this.value;
+    if (!catId) return;
+    let catName = this.options[this.selectedIndex].text.replace(" →", "");
+    selectedPath.push({ id: catId, name: catName});
+    selectedCategoryDisplay.textContent = "Selected Main Category: " + catName;
+    await loadSubcategories(catId, 1);
+    updatePath();
+  });
+
+  // 3. Recursive function to load subcategories
+  async function loadSubcategories(parentId, level) {
+    categoryLoading.style.display = "block";
+    document.body.style.cursor = "wait";
+    try {
+      const res = await fetch(`category/${parentId}/children`);
+      const categories = await res.json();
+      if (!categories.length) return;
+      let dropdown = document.createElement("select");
+      dropdown.setAttribute("data-level", level);
+      dropdown.innerHTML = `<option value="">Select Subcategory</option>` +
+        categories.map(cat => `<option value="${cat._id}">${cat.name}${cat.hasChildren ? ' →' : ''}</option>`).join('');
+      subcategoryDropdowns.appendChild(dropdown);
+
+      dropdown.addEventListener("change", async function() {
+        // Remove lower level dropdowns
+        Array.from(subcategoryDropdowns.children).forEach((el, idx) => {
+          if (idx > level - 1) el.remove();
+        });
+        selectedPath = selectedPath.slice(0, level);
+        let catId = this.value;
+        if (!catId) {
+          updatePath();
+          return;
+        }
+        let catName = this.options[this.selectedIndex].text.replace(" →", "");
+        selectedPath.push({ id: catId, name: catName });
+        await loadSubcategories(catId, level + 1);
+        updatePath();
+      });
+    } catch {
+      // Optionally show error dropdown
+    } finally {
+      categoryLoading.style.display = "none";
+      document.body.style.cursor = "default";
+    }
+  }
+
+  // 4. Update Category Path Display
+  function updatePath() {
+    pathDisplay.innerHTML = selectedPath.map(cat => cat.name).join(" → ") || "<span style='color:#aaa;'>None selected</span>";
+    if (selectedPath.length) categoryPathCont.style.display = "block";
+    else categoryPathCont.style.display = "none";
+    selectedCategoryDisplay.textContent = selectedPath.length ? "Selected Category: " + selectedPath[selectedPath.length-1].name : "";
+  }
+
+  // Public method to get selected path for form submit
+  window.getSelectedCategoryPath = () => selectedPath;
+
+  // Init
+  loadMainCategories();
+});
+
+
+    //category script
+
+
+
+
+
+    //collecting data and sending0
+    const form = document.querySelector("form");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!selectedFiles.length) {
+    toastr.error("Please upload at least one image.");
+    fileInput.focus(); // focus input or give feedback
+    return;
+  }
+
+      const submitButton = document.getElementById("submit-btn");
+      submitButton.disabled = true;
+      submitButton.textContent = "Adding Product...";
+
+      const formData = new FormData();
+
+
+      // Get selected category path from category selector
+      const categoryPath = window.getSelectedCategoryPath ? window.getSelectedCategoryPath() : [];
+      let deepestCategoryId = null;
+      if (categoryPath.length) {
+          deepestCategoryId = categoryPath[categoryPath.length - 1].id;
+          deepestCategoryName = categoryPath[categoryPath.length - 1].name;
+        }
+
+      formData.append("categoryPath", JSON.stringify(categoryPath));
+      formData.append("categoryId", deepestCategoryId);
+      formData.append("deepestCategoryName", deepestCategoryName);
+      formData.append("productName", document.getElementById("productName").value);
+      formData.append("description", document.getElementById("description").value);
+      formData.append("price", document.getElementById("price").value);
+      formData.append("quantity", document.getElementById("inventory").value);
+      // Get selected category path from category selector
+
+
+      // Append multiple image files
+      const fileInput = document.getElementById("fileInput"); // Assuming file input id
+      const previews = document.getElementById("previews"); // Assuming preview div id
+      for (const file of selectedFiles) {
+  formData.append("images", file);
+}
+
+
+      try {
+        const response = await fetch("/product/addProduct", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          toastr.success("Product added successfully!");
+          form.reset();
+          previews.innerHTML = ''; // Clear image previews
+          fileInput.value = '';   // Reset file input
+          selectedFiles = [];
+
+        } else {
+          toastr.error(data.message || "Error adding product");
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toastr.error("Failed to add product. Please try again.");
+  } finally {
+    // Re-enable button and reset text regardless of outcome
+    submitButton.disabled = false;
+    submitButton.textContent = "Add Product";
+  }
+});
+</script>
+
+
+</body>
+</html>

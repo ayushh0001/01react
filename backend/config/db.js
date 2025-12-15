@@ -13,12 +13,11 @@ async function connectDB() {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(process.env.ZIPIN_MONGODBURL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
       family: 4,
     }).then(mongoose => mongoose);
+    console.log("DataBase connected");
   }
   cached.conn = await cached.promise;
   return cached.conn;

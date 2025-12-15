@@ -1,21 +1,6 @@
-const cloudinary = require("../config/cloudinary");
-const streamifier = require("streamifier");
-
 const ProductModel = require("../Model/productModel");
 const CategoryModel = require("../Model/categoryModel");
-
-const uploadFromBuffer = (buffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: "ZPIN" },
-      (error, result) => {
-        if (result) resolve(result);
-        else reject(error);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(stream);
-  });
-};
+const { uploadFromBuffer } = require('./uploadController');
 
 const addProduct = async (req, res) => {
   try {
@@ -23,9 +8,9 @@ const addProduct = async (req, res) => {
     const categoryId = req.body.categoryId; // The deepest category ObjectId sent from frontend
     const categoryPathArr = JSON.parse(req.body.categoryPath);
 
-    // Upload images in parallel from memory buffers (req.files)
+    // Upload images using separated upload utility
     const uploadPromises = req.files.map((file) =>
-      uploadFromBuffer(file.buffer)
+      uploadFromBuffer(file.buffer, "ZPIN/productImage")
     );
     const uploadResults = await Promise.all(uploadPromises);
 
@@ -34,11 +19,15 @@ const addProduct = async (req, res) => {
 
     // Create the product with only the deepest category reference
     const productData = new ProductModel({
-      ...req.body,
       userId,
+      productName: req.body.productName,
+      description: req.body.description,
+      price: req.body.price,
+      quantity: req.body.quantity,
+      deepestCategoryName: req.body.deepestCategoryName,
       images: imageUrls,
       categoryId, // store only leaf node ID
-      categoryPath: categoryPathArr,
+      categoryPath: categoryPathArr, // array of {name: "category_name"} objects
     });
 
     console.log("Image URLs array before saving:", imageUrls);

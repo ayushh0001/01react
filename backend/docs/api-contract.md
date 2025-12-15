@@ -1,17 +1,19 @@
+*****always keep in mind that while desinging the api contract think that what data/field the client need for the UI if that feild is not into that particular entity or it is in related entity but you just add those field in the object*****
+
 Base URL :- "http://localhost:5000/
 
 ▣ Users:
-    • User Object (Basic - from Users collection)
+    • User Object (Basic - aggregated for client convenience)
         {
-        "id": "user_123",
-        "name": "Rahul Sharma",
-        "mobile": "9876543210",
-        "username": "abx122",
-        "email": "rahul@example.com",
-        "role": "customer",
-        "isVerified": false,
-        "profileImage": "https://cloudinary.com/image_url",
-        "TimeStamp": "2025-11-29T10:00:00Z"
+        "id": "user_123",                    // From Users entity
+        "name": "Rahul Sharma",               // From Users entity
+        "mobile": "9876543210",               // From Users entity
+        "userName": "abx122",                 // From Users entity
+        "email": "rahul@example.com",         // From Users entity
+        "userRole": "customer",               // From Users entity
+        "isVerified": true,                   // Derived from verification logic
+        "profileImage": "https://cloudinary.com/image_url", // From User_Details entity
+        "timeStamp": "2025-11-29T10:00:00Z"   // From Users entity
         }
 
     • Complete User Profile (Aggregated from all collections)
@@ -24,45 +26,85 @@ Base URL :- "http://localhost:5000/
 
 1. GET :- /users
 --------------------------------------------------------------------------------------
-Returns all users in the system.
+Returns all users with joined data from both Credential and UserDetail collections.
 • URL Params
     None
 • Data Params
     None
 • Headers
-    Content-Type: application/json
+    None
 • Success Response:
     • Code: 200
-    • Content:
-    {
-    users: [
-            {<user_object>},
-            {<user_object>},
-            {<user_object>}
-            ]
+    • Content: {
+        success: true,
+        data: [{
+            _id: string,
+            email: string,
+            userName: string,
+            name: string,
+            mobile: string,
+            userRole: string,
+            isVerified: boolean,
+            createdAt: string,
+            userDetails: [{
+                _id: string,
+                userId: string,
+                dob: string,
+                address: string,
+                city: string,
+                state: string,
+                pincode: string,
+                gender: string,
+                profileImage: string
+            }]
+        }]
     }
-
+• Error Response:
+    • Code: 500
+    • Content: { error : "Failed to fetch users" }
 
 
 2. GET  :-  /users/:id
 --------------------------------------------------------------------------------------
-Returns the specified user.
+Returns specific user with joined data from both Credential and UserDetail collections.
 • URL Params
     Required: id=[string]
 • Data Params
     None
 • Headers
-    Content-Type: application/json
-    Authorization: Bearer <OAuth Token>
+    None
 • Success Response:
     • Code: 200
-    • Content: { <user_object> }
+    • Content: {
+        success: true,
+        data: {
+            _id: string,
+            email: string,
+            userName: string,
+            name: string,
+            mobile: string,
+            userRole: string,
+            isVerified: boolean,
+            createdAt: string,
+            userDetails: [{
+                _id: string,
+                userId: string,
+                dob: string,
+                address: string,
+                city: string,
+                state: string,
+                pincode: string,
+                gender: string,
+                profileImage: string
+            }]
+        }
+    }
 • Error Response:
     • Code: 404
-    • Content: { error : "User doesn't exist" }
+    • Content: { error : "User not found" }
     OR
-    • Code: 401
-    • Content: { error : error : "You are unauthorized to make this request." }
+    • Code: 500
+    • Content: { error : "Failed to fetch user" }
 
 
 
@@ -102,28 +144,34 @@ Creates a new User and returns the new object.
     None
 • Data Params
     {
-        name: string,
+        userName: string,
         mobile: string,
-        role: string,
+        userRole: string,
         password: string,
-        username: string,
         email: string
+         name: string,
     }
 • Headers
     Content-Type: application/json
 • Success Response:
     • Code: 200
     • Content: { <user_object> }
+• Error Response:
+    • Code: 400
+    • Content: { error : "User already exists with this email" }
+    OR
+    • Code: 500
+    • Content: { error : "Internal Server Error" }
 
 
-5. POST  :- /users/sendOTP
+5. POST  :- /users/verification/sendOTP
 --------------------------------------------------------------------------------------
 Sends an OTP to the user's registered mobile number for verification.
 • URL Params
     None
 • Data Params
     {
-        mobile: string
+        mobile: string    //10digit number allow
     }
 • Headers
     Content-Type: application/json
@@ -136,76 +184,158 @@ Sends an OTP to the user's registered mobile number for verification.
 
 
 
-6. POST  :- /users/login
+6. POST  :- /users/verification/verifyOTP
+--------------------------------------------------------------------------------------
+Verifies the OTP sent to the user's mobile number for regular verification.
+• URL Params
+    None
+• Data Params
+    {
+        mobile: string,     //10digit number allow
+        otp: string
+    }
+• Headers
+    Content-Type: application/json
+• Success Response:
+    • Code: 200
+    • Content: { message : "OTP verified successfully" }
+• Error Response:
+    • Code: 400
+    • Content: { error : "Invalid OTP" }
+    OR
+    • Code: 404
+    • Content: { error : "Mobile number not found" }
+    OR
+    • Code: 500
+    • Content: { error : "Internal Server Error" }
+
+
+
+7. POST  :- /users/login
 --------------------------------------------------------------------------------------
 Authenticates a user and returns an OAuth token.
 • URL Params
     None
 • Data Params
     {
-        username/email: string,
-        password: string
+    email: string, // access from user any of them email or username but with the field name as email
+    password: string
     }
 
 • Headers
     Content-Type: application/json
 • Success Response:
     • Code: 200
-    • Content: { <user_object> }
+    • Content: { success: true, message: "Logged in successfully" }
 • Error Response:
     • Code: 401
-    • Content: { error : "Invalid credentials" }
+    • Content: { success: false, message: "Invalid credentials" }
     OR
     • Code: 500
-    • Content: { error : "Internal Server Error" }
+    • Content: { success: false, message: "Internal server error" }
 
 
-7. POST  :- /users/forgetpassword
+8. POST  :- /users/forgetPassword/sendOTP
 --------------------------------------------------------------------------------------
-Sends a password reset link to the user's registered email.
+Sends OTP to user's registered mobile number for password reset. Requires both email and mobile for unique user identification.
 • URL Params
     None
 • Data Params
     {
-        email: string,
-        mobile: string,
+        mobile: string,    //10digit number
+        email: string
     }
 • Headers
     Content-Type: application/json
 • Success Response:
     • Code: 200
-    • Content: { message : "Password reset link sent successfully" }
+    • Content: { message : "OTP sent successfully" }
 • Error Response:
+    • Code: 400
+    • Content: { error : "Mobile and email are required" }
+    OR
     • Code: 404
-    • Content: { error : "User with given email/mobile doesn't exist" }
+    • Content: { error : "No account found with this mobile and email combination" }
     OR
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
 
-
-8. PATCH  :- /users/:id
+8.1. POST  :- /users/forgetPassword/verifyOTP
 --------------------------------------------------------------------------------------
-Updates fields on the specified user and returns the updated object.
+Verifies OTP for password reset and returns JWT reset token.
 • URL Params
-    Required: id=[string]
+    None
 • Data Params
     {
-        username: string, // or whatever user want to update
-        email: string
+        mobile: string,
+        email: string,
+        otp: string
     }
 • Headers
     Content-Type: application/json
-    Authorization: Bearer <OAuth Token>
 • Success Response:
     • Code: 200
-    • Content: { <user_object> }
+    • Content: { message : "OTP verified successfully", resetToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+    Note: resetToken is a JWT with 10-minute expiry containing user data and purpose validation
 • Error Response:
-    • Code: 404
-    • Content: { error : "User doesn't exist" }
+    • Code: 400
+    • Content: { error : "Mobile, email and OTP are required" }
     OR
-    • Code: 401
-    • Content: { error : error : "You are unauthorized to make this request." }
+    • Content: { error : "Invalid OTP" }
+    OR
+    • Code: 404
+    • Content: { error : "User not found" }
+    OR
+    • Code: 500
+    • Content: { error : "Internal Server Error" }
+
+
+8.2. POST  :- /users/forgetPassword/resetPassword
+--------------------------------------------------------------------------------------
+Resets password using JWT reset token. Token is verified for signature, expiry, and purpose. Password is automatically hashed and user is logged in after successful reset.
+• URL Params
+    None
+• Data Params
+    {
+        resetToken: string,    // JWT token from step 8.1
+        newPassword: string
+    }
+• Headers
+    Content-Type: application/json
+• Success Response:
+    • Code: 200
+    • Content: { 
+        message: "Password reset successfully",
+        user: {<user_object>}
+    }
+    Note: Auth token is automatically set in cookie for auto-login
+• Error Response:
+    • Code: 400
+    • Content: { error : "Reset token and new password are required" }
+    OR
+    • Content: { error : "Invalid or expired reset token" }
+    OR
+    • Content: { error : "Invalid token purpose" }
+    OR
+    • Code: 404
+    • Content: { error : "User not found" }
+    OR
+    • Code: 500
+    • Content: { error : "Internal Server Error" }
+
+Note: Forget Password Flow (JWT-based):
+1. User enters mobile + email → call /users/forgetPassword/sendOTP
+2. User enters OTP → call /users/forgetPassword/verifyOTP (returns JWT resetToken with 10min expiry)
+3. User enters new password → call /users/forgetPassword/resetPassword (JWT verified + auto-login)
+
+Security Features:
+- JWT tokens are cryptographically signed and tamper-proof
+- Built-in expiry (10 minutes) with automatic validation
+- Purpose validation prevents token misuse
+- Stateless (no server storage required)
+- Same JWT library as login/signup for consistency
+
 
 
 9. POST  :- /users/logout
@@ -229,7 +359,7 @@ Logs out the authenticated user and invalidates their session/token.
     • Content: { error : "Internal Server Error" }
 
 
-10. POST  :- /users/verify-pan
+11. POST  :- /users/verifyPan
 --------------------------------------------------------------------------------------
 Verifies PAN number for seller registration using InstantPay API.
 • URL Params
@@ -260,7 +390,7 @@ Verifies PAN number for seller registration using InstantPay API.
     • Content: { error : "Verification service unavailable" }
 
 
-11. POST  :- /users/verify-gst
+12. POST  :- /users/verifyGst
 --------------------------------------------------------------------------------------
 Verifies GST number for seller registration using InstantPay API.
 • URL Params
@@ -291,35 +421,77 @@ Verifies GST number for seller registration using InstantPay API.
     • Content: { error : "Verification service unavailable" }
 
 
-12. POST  :- /users/profile-details
+13. POST  :- /users/profileDetails
 --------------------------------------------------------------------------------------
-Adds user details (address, profile info) for both customers and sellers.
+Adds user details with profile image upload in single request.
 • URL Params
     None
-• Data Params
+• Data Params (multipart/form-data)
     {
-        dateOfBirth: string,
+        dob: string,
         address: string,
         city: string,
         state: string,
         pincode: string,
-        gender: string
+        gender: string,
+        profileImage: File // optional image file
     }
 • Headers
-    Content-Type: application/json
+    Content-Type: multipart/form-data
     Authorization: Bearer <OAuth Token>
 • Success Response:
-    • Code: 200
-    • Content: { message: "User details added successfully" }
+    • Code: 201
+    • Content: {
+        success: true,
+        message: "User details saved successfully",
+        data: {<userDetail_object>}
+    }
 • Error Response:
     • Code: 400
     • Content: { error : "Invalid user details" }
     OR
     • Code: 401
     • Content: { error : "Unauthorized" }
+    OR
+    • Code: 500
+    • Content: { success: false, message: "Failed to save user details" }
 
 
-13. POST  :- /users/seller-details
+13.1. PUT  :- /users/profileDetails
+--------------------------------------------------------------------------------------
+Updates user profile details with optional new profile image upload.
+• URL Params
+    None
+• Data Params (multipart/form-data)
+    {
+        userName: string (optional),
+        name: string (optional),
+        dob: string,
+        address: string,
+        city: string,
+        state: string,
+        pincode: string,
+        gender: string,
+        profileImage: File (optional) // new image file to upload
+    }
+• Headers
+    Content-Type: multipart/form-data
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: {
+        success: true,
+        message: "Profile updated successfully"
+    }
+• Error Response:
+    • Code: 401
+    • Content: { error : "Unauthorized" }
+    OR
+    • Code: 500
+    • Content: { success: false, message: "Failed to update profile" }
+
+
+13.2. POST  :- /users/sellerDetails
 --------------------------------------------------------------------------------------
 Adds seller business details after PAN/GST verification.
 • URL Params
@@ -346,14 +518,14 @@ Adds seller business details after PAN/GST verification.
     • Content: { error : "Unauthorized" }
 
 
-14. POST  :- /users/bank-details
+13.3. POST  :- /users/bankDetails
 --------------------------------------------------------------------------------------
 Adds seller bank details for payments.
 • URL Params
     None
 • Data Params
     {
-        accountNumber: string,
+        accountNo: string,
         ifscCode: string,
         bankName: string,
         accountHolderName: string,
@@ -374,7 +546,7 @@ Adds seller bank details for payments.
 
 
 
-15. POST  :- /users/verify-bank-account
+13.4. POST  :- /users/verify-bank-account
 --------------------------------------------------------------------------------------
 Verifies bank account using penny drop method.
 • URL Params
@@ -398,7 +570,7 @@ Verifies bank account using penny drop method.
     • Content: { error : "Bank verification failed" }
 
 
-16. POST  :- /users/refresh-token
+13.5. POST  :- /users/refresh-token
 --------------------------------------------------------------------------------------
 Refreshes expired JWT tokens.
 • URL Params
@@ -420,82 +592,53 @@ Refreshes expired JWT tokens.
     • Content: { error : "Invalid refresh token" }
 
 
-17. POST  :- /upload/image
---------------------------------------------------------------------------------------
-Uploads images to Cloudinary for profiles, products, etc.
-• URL Params
-    None
-• Data Params (multipart/form-data)
-    {
-        image: file,
-        type: string, // "profile" | "product" | "category"
-        folder?: string // optional cloudinary folder
-    }
-• Headers
-    Content-Type: multipart/form-data
-    Authorization: Bearer <OAuth Token>
-• Success Response:
-    • Code: 200
-    • Content: {
-        imageUrl: "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/sample.jpg",
-        publicId: "sample_id",
-        message: "Image uploaded successfully"
-    }
-• Error Response:
-    • Code: 400
-    • Content: { error : "Invalid image format" }
-    OR
-    • Code: 413
-    • Content: { error : "File size too large" }
-    OR
-    • Code: 500
-    • Content: { error : "Upload failed" }
+
 
 
 ▣ Products:
     • Product Object
         {
-        "Product_Id": "product_123",
-        "seller_id": "user_456",
-        "Product_Name": "Wireless Headphones",
-        "Product_Description": "High-quality wireless headphones with noise cancellation",
-        "Category_Id": "category_789",
-        "Deepest_CategoryName": "SweatShirt",
-        "CategoryPath": "fashion-man-shirt-casual-solid"
-        "Instock": "yes",
-        "Product_Image": ["https://cloudinary.com/image1.jpg", "https://cloudinary.com/image2.jpg"],
-        "TimeStamp": "day/date/month/year/time"
+        "productId": "product_123",
+        "userId": "user_456",
+        "productName": "Wireless Headphones",
+        "description": "High-quality wireless headphones with noise cancellation",
+        "categoryId": "category_789",
+        "deepestCategoryName": "SweatShirt",
+        "categoryPath": "fashion-man-shirt-casual-solid",
+        "price": 2999.99,
+        "inStock": true,
+        "productImageId": ["image_123", "image_456"],
+        "timeStamp": "2025-11-29T10:00:00Z"
         }
 
     • Category Object
         {
-        "id": "category_123",
+        "categoryId": "category_123",
         "name": "Electronics",
         "parentId": null, // for subcategories
-        "Slug": "url_format"
-        "createdAt": "2025-11-29T10:00:00Z"
+        "slug": "url_format"
         }
 
     • Inventory Object
         {
-        "id": "123",
-        "seller_id: "user_546",
-        "Product_Id: "product_4564",
-        "Quantity": "200pcs",
-        "createdAt": "2025-11-29T10:00:00Z"
+        "inventoryId": "inventory_123",
+        "userId": "user_546",
+        "productId": "product_4564",
+        "quantity": 200,
+        "timeStamp": "2025-11-29T10:00:00Z"
         }
     • Review Object
         {
-        "id": "reviews_123",
-        "User_ID": "user_456",
-        "Product_ID": "product_989",
-        "Comments": "Premium electronics brand",
-        "Rating": 6,
+        "reviewId": "review_123",
+        "userId": "user_456",
+        "productId": "product_989",
+        "comment": "Premium electronics brand",
+        "rating": 5,
         "images": ["https://cloudinary.com/review1.jpg"],
-        "createdAt": "2025-11-29T10:00:00Z"
+        "timeStamp": "2025-11-29T10:00:00Z"
         }
 
-18. GET :- /products
+19. GET :- /products
 --------------------------------------------------------------------------------------
 Returns all products with  filters.
 • URL Params
@@ -527,34 +670,37 @@ Returns the specified product with full details.
     • Code: 404
     • Content: { error : "Product not found" }
 
-20. POST :- /products
+20. POST :- /product/addProduct
 --------------------------------------------------------------------------------------
-Creates a new product (seller only).
+Creates a new product with images (seller only). Uses multipart/form-data for file uploads.
 • URL Params
     None
-• Data Params
+• Data Params (multipart/form-data)
     {
-        "Product_Name": "string",
+        "productName": "string",
         "description": "string",
-        "categoryId": "string",
-        "deepestCategoryName": "string",
-        "categoryPath": [{"}]
+        "categoryId": "string", // ID of the deepest/leaf category
+        "deepestCategoryName": "string", // Name of the deepest category
+        "categoryPath": "string", // JSON stringified array: [{id, name}, {id, name}]
         "price": "number",
-        "Product_Quantity": "number",
-        "images": ["string"],
+        "quantity": "number", // inventory quantity
+        "images": [File, File, File] // multiple image files
     }
 • Headers
-    Content-Type: application/json
+    Content-Type: multipart/form-data
     Authorization: Bearer <OAuth Token>
 • Success Response:
-    • Code: 201
-    • Content: { <product_object> }
+    • Code: 200
+    • Content: { message : "Product added successfully" }
 • Error Response:
     • Code: 400
     • Content: { error : "Invalid product data" }
     OR
     • Code: 401
     • Content: { error : "Unauthorized - Seller access required" }
+    OR
+    • Code: 500
+    • Content: { success: false, message: "Server error" }
 
 21. PUT :- /products/:id
 --------------------------------------------------------------------------------------
@@ -563,14 +709,14 @@ Updates the specified product (seller only - own products).
     Required: id=[string]
 • Data Params
     {
-        "Product_Name": "string",
+        "productName": "string",
         "description": "string",
         "categoryId": "string",
         "deepestCategoryName": "string",
-        "categoryPath": [{"}]
+        "categoryPath": "string",
         "price": "number",
-        "Product_Quantity": "number",
-        "images": ["string"],
+        "inStock": "boolean",
+        "productImageId": ["string"]
     }
 • Headers
     Content-Type: application/json
@@ -605,11 +751,11 @@ Deletes the specified product (seller only - own products).
     • Code: 403
     • Content: { error : "Access denied - Not your product" }
 
-23. GET :- /products/:sellerId
+23. GET :- /products/seller/:userId
 --------------------------------------------------------------------------------------
 Returns all products for a specific seller.
 • URL Params
-    Required: sellerId=[string]
+    Required: userId=[string] // User ID where role='seller'
 • Data Params
     None
 • Headers
@@ -661,21 +807,96 @@ Approves a product (admin only).
 
 ▣ Categories:
 
-26. GET :- /categories
+26. GET :- /category/root
 --------------------------------------------------------------------------------------
-Returns all categories and subcategories.
+Returns all main/root categories (parent_id: null) with hasChildren flag.
 • URL Params
     None
 • Data Params
     None
 • Headers
     Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
 • Success Response:
     • Code: 200
-    • Content:
-    {
-        "categories": [{<category_object>}]
-    }
+    • Content: [
+        {
+            "_id": "64f1a2b3c4d5e6f7g8h9i0j1",
+            "name": "Electronics",
+            "parent_id": null,
+            "hasChildren": true
+        },
+        {
+            "_id": "64f1a2b3c4d5e6f7g8h9i0j2",
+            "name": "Books",
+            "parent_id": null,
+            "hasChildren": false
+        }
+    ]
+• Error Response:
+    • Code: 500
+    • Content: { error : "Server error" }
+
+26.1. GET :- /category/:parentId/children
+--------------------------------------------------------------------------------------
+Returns all subcategories for a given parent category with hasChildren flag.
+• URL Params
+    Required: parentId=[string]
+• Data Params
+    None
+• Headers
+    Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: [
+        {
+            "_id": "64f1a2b3c4d5e6f7g8h9i0j4",
+            "name": "Smartphones",
+            "parent_id": "64f1a2b3c4d5e6f7g8h9i0j1",
+            "hasChildren": true
+        },
+        {
+            "_id": "64f1a2b3c4d5e6f7g8h9i0j5",
+            "name": "Laptops",
+            "parent_id": "64f1a2b3c4d5e6f7g8h9i0j1",
+            "hasChildren": false
+        }
+    ]
+• Error Response:
+    • Code: 500
+    • Content: { error : "Server error" }
+
+26.2. GET :- /category/tree
+--------------------------------------------------------------------------------------
+Returns complete hierarchical category tree (optional - for advanced use).
+• URL Params
+    None
+• Data Params
+    None
+• Headers
+    Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: [
+        {
+            "_id": "64f1a2b3c4d5e6f7g8h9i0j1",
+            "name": "Electronics",
+            "parent_id": null,
+            "children": [
+                {
+                    "_id": "64f1a2b3c4d5e6f7g8h9i0j4",
+                    "name": "Smartphones",
+                    "parent_id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                    "children": []
+                }
+            ]
+        }
+    ]
+• Error Response:
+    • Code: 500
+    • Content: { error : "Server error" }
 
 
 ▣ Product Reviews:
@@ -696,13 +917,13 @@ Returns all reviews for a product.
     {
         "reviews":[
             {
-                "id": "review_123",
+                "reviewId": "review_123",
                 "userId": "user_456",
-                "product_ID": "Earphone",
+                "productId": "product_123",
                 "rating": 5,
                 "comment": "Excellent product!",
                 "images": ["https://cloudinary.com/review1.jpg"],
-                "timestamp": "2025-11-29T10:00:00Z"
+                "timeStamp": "2025-11-29T10:00:00Z"
             }
         ]
 
@@ -801,15 +1022,13 @@ Returns user's cart items.
     {
         "cart": [
             {
-                "id": "cartitem_123",
+                "cartItemId": "cartitem_123",
                 "productId": "product_123",
                 "product": {<product_object>},
                 "quantity": 2,
                 "priceAtAdd": 2999.99,
-                "currentPrice": 3199.99,
                 "isAvailable": true,
-                "priceChanged": true,
-                "addedAt": "2025-11-29T10:00:00Z"
+                "timeStamp": "2025-11-29T10:00:00Z"
             }
         ],
         "totalItems": 3,
