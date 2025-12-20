@@ -1,7 +1,7 @@
 const Credentialmodel = require("../Model/credentialsModel");
 const UserDetailModel = require("../Model/userDetailModel");
 const generateTokenAndSetCookie = require("../Service/tokenService");
-const cloudinary = require("../config/cloudinary");
+const cloudinary = require("../Config/cloudinary");
 const streamifier = require("streamifier");
 const mongoose = require("mongoose");
 

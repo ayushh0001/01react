@@ -26,9 +26,9 @@ Base URL :- "http://localhost:5000/
 
 1. GET :- /users
 --------------------------------------------------------------------------------------
-Returns all users with joined data from both Credential and UserDetail collections.
+Returns all users with joined data from both Credential and UserDetail collections with pagination.
 • URL Params
-    None
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -57,7 +57,8 @@ Returns all users with joined data from both Credential and UserDetail collectio
                 gender: string,
                 profileImage: string
             }]
-        }]
+        }],
+        pagination: {<pagination_object>}
     }
 • Error Response:
     • Code: 500
@@ -108,11 +109,11 @@ Returns specific user with joined data from both Credential and UserDetail colle
 
 
 
-3. GET  :- /users/:id/orders
+3. GET  :- /users/orders
 --------------------------------------------------------------------------------------
-Returns all Orders associated with the specified user.
+Returns all Orders associated with the authenticated user with pagination.
 • URL Params
-    Required: id=[string]
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -127,17 +128,15 @@ Returns all Orders associated with the specified user.
                 {<order_object>},
                 {<order_object>},
                 {<order_object>}
-            ]
+            ],
+        pagination: {<pagination_object>}
         }
 • Error Response:
-    • Code: 404
-    • Content: { error : "User doesn't exist" }
-    OR
     • Code: 401
-    • Content: { error : error : "You are unauthorized to make this request." }
+    • Content: { error : "You are unauthorized to make this request." }
 
 
-4. POST  :- /users/signup
+4. POST  :- /auth/signup
 --------------------------------------------------------------------------------------
 Creates a new User and returns the new object.
 • URL Params
@@ -164,7 +163,7 @@ Creates a new User and returns the new object.
     • Content: { error : "Internal Server Error" }
 
 
-5. POST  :- /users/verification/sendOTP
+5. POST  :- /auth/verification/sendOTP
 --------------------------------------------------------------------------------------
 Sends an OTP to the user's registered mobile number for verification.
 • URL Params
@@ -184,7 +183,7 @@ Sends an OTP to the user's registered mobile number for verification.
 
 
 
-6. POST  :- /users/verification/verifyOTP
+6. POST  :- /auth/verification/verifyOTP
 --------------------------------------------------------------------------------------
 Verifies the OTP sent to the user's mobile number for regular verification.
 • URL Params
@@ -211,7 +210,7 @@ Verifies the OTP sent to the user's mobile number for regular verification.
 
 
 
-7. POST  :- /users/login
+7. POST  :- /auth/login
 --------------------------------------------------------------------------------------
 Authenticates a user and returns an OAuth token.
 • URL Params
@@ -235,7 +234,7 @@ Authenticates a user and returns an OAuth token.
     • Content: { success: false, message: "Internal server error" }
 
 
-8. POST  :- /users/forgetPassword/sendOTP
+8. POST  :- /auth/forgetPassword/sendOTP
 --------------------------------------------------------------------------------------
 Sends OTP to user's registered mobile number for password reset. Requires both email and mobile for unique user identification.
 • URL Params
@@ -261,7 +260,7 @@ Sends OTP to user's registered mobile number for password reset. Requires both e
     • Content: { error : "Internal Server Error" }
 
 
-8.1. POST  :- /users/forgetPassword/verifyOTP
+8.1. POST  :- /auth/forgetPassword/verifyOTP
 --------------------------------------------------------------------------------------
 Verifies OTP for password reset and returns JWT reset token.
 • URL Params
@@ -291,7 +290,7 @@ Verifies OTP for password reset and returns JWT reset token.
     • Content: { error : "Internal Server Error" }
 
 
-8.2. POST  :- /users/forgetPassword/resetPassword
+8.2. POST  :- /auth/forgetPassword/resetPassword
 --------------------------------------------------------------------------------------
 Resets password using JWT reset token. Token is verified for signature, expiry, and purpose. Password is automatically hashed and user is logged in after successful reset.
 • URL Params
@@ -305,7 +304,7 @@ Resets password using JWT reset token. Token is verified for signature, expiry, 
     Content-Type: application/json
 • Success Response:
     • Code: 200
-    • Content: { 
+    • Content: {
         message: "Password reset successfully",
         user: {<user_object>}
     }
@@ -324,21 +323,7 @@ Resets password using JWT reset token. Token is verified for signature, expiry, 
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
-Note: Forget Password Flow (JWT-based):
-1. User enters mobile + email → call /users/forgetPassword/sendOTP
-2. User enters OTP → call /users/forgetPassword/verifyOTP (returns JWT resetToken with 10min expiry)
-3. User enters new password → call /users/forgetPassword/resetPassword (JWT verified + auto-login)
-
-Security Features:
-- JWT tokens are cryptographically signed and tamper-proof
-- Built-in expiry (10 minutes) with automatic validation
-- Purpose validation prevents token misuse
-- Stateless (no server storage required)
-- Same JWT library as login/signup for consistency
-
-
-
-9. POST  :- /users/logout
+9. POST  :- /auth/logout
 --------------------------------------------------------------------------------------
 Logs out the authenticated user and invalidates their session/token.
 • URL Params
@@ -358,8 +343,7 @@ Logs out the authenticated user and invalidates their session/token.
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
-
-11. POST  :- /users/verifyPan
+10. POST  :- /auth/profileDetails
 --------------------------------------------------------------------------------------
 Verifies PAN number for seller registration using InstantPay API.
 • URL Params
@@ -638,11 +622,21 @@ Refreshes expired JWT tokens.
         "timeStamp": "2025-11-29T10:00:00Z"
         }
 
+    • Pagination Object
+        {
+        "currentPage": 1,
+        "totalPages": 10,
+        "totalItems": 95,
+        "itemsPerPage": 10,
+        "hasNextPage": true,
+        "hasPrevPage": false
+        }
+
 19. GET :- /products
 --------------------------------------------------------------------------------------
-Returns all products with  filters.
+Returns all products with filters and pagination.
 • URL Params
-    None
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -652,9 +646,10 @@ Returns all products with  filters.
     • Content:
     {
         "products": [{<product_object>}],
+        "pagination": {<pagination_object>}
     }
 
-19. GET :- /products/:id
+20. GET :- /products/:id
 --------------------------------------------------------------------------------------
 Returns the specified product with full details.
 • URL Params
@@ -670,7 +665,7 @@ Returns the specified product with full details.
     • Code: 404
     • Content: { error : "Product not found" }
 
-20. POST :- /product/addProduct
+21. POST :- /product/addProduct
 --------------------------------------------------------------------------------------
 Creates a new product with images (seller only). Uses multipart/form-data for file uploads.
 • URL Params
@@ -702,7 +697,7 @@ Creates a new product with images (seller only). Uses multipart/form-data for fi
     • Code: 500
     • Content: { success: false, message: "Server error" }
 
-21. PUT :- /products/:id
+22. PUT :- /products/:id
 --------------------------------------------------------------------------------------
 Updates the specified product (seller only - own products).
 • URL Params
@@ -731,7 +726,7 @@ Updates the specified product (seller only - own products).
     • Code: 403
     • Content: { error : "Access denied - Not your product" }
 
-22. DELETE :- /products/:id
+23. DELETE :- /products/:id
 --------------------------------------------------------------------------------------
 Deletes the specified product (seller only - own products).
 • URL Params
@@ -751,11 +746,12 @@ Deletes the specified product (seller only - own products).
     • Code: 403
     • Content: { error : "Access denied - Not your product" }
 
-23. GET :- /products/seller/:userId
+24. GET :- /products/seller/:userId
 --------------------------------------------------------------------------------------
-Returns all products for a specific seller.
+Returns all products for a specific seller with pagination.
 • URL Params
     Required: userId=[string] // User ID where role='seller'
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -768,11 +764,12 @@ Returns all products for a specific seller.
         "pagination": {<pagination_object>}
     }
 
-24. GET :- /products/category/:categoryId
+25. GET :- /products/category/:categoryId
 --------------------------------------------------------------------------------------
-Returns all products in a specific category.
+Returns all products in a specific category with pagination.
 • URL Params
     Required: categoryId=[string]
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -782,9 +779,10 @@ Returns all products in a specific category.
     • Content:
     {
         "products": [{<product_object>}],
+        "pagination": {<pagination_object>}
     }
 
-25. POST :- /products/:id/approve
+26. POST :- /products/:id/approve
 --------------------------------------------------------------------------------------
 Approves a product (admin only).
 • URL Params
@@ -903,7 +901,7 @@ Returns complete hierarchical category tree (optional - for advanced use).
 
 31. GET :- /products/:id/reviews
 --------------------------------------------------------------------------------------
-Returns all reviews for a product.
+Returns all reviews for a product with pagination.
 • URL Params
     Required: id=[string]
     Optional: page=[number], limit=[number]
@@ -915,9 +913,12 @@ Returns all reviews for a product.
     • Code: 200
     • Content:
     {
-        "reviews":[
-            {
-                "reviewId": "review_123",
+        "reviews": [{<review_object>}],
+        "pagination": {<pagination_object>}
+    }
+• Error Response:
+    • Code: 404
+    • Content: { error : "Product not found" }
                 "userId": "user_456",
                 "productId": "product_123",
                 "rating": 5,
@@ -955,11 +956,11 @@ Adds a review for a product (authenticated users only).
 
 ▣ Wishlist:
 
-33. GET :- /users/:id/wishlist
+33. GET :- /users/wishlist
 --------------------------------------------------------------------------------------
-Returns user's wishlist.
+Returns user's wishlist with pagination.
 • URL Params
-    Required: id=[string]
+    Optional: page=[number], limit=[number]
 • Data Params
     None
 • Headers
@@ -969,14 +970,15 @@ Returns user's wishlist.
     • Code: 200
     • Content:
     {
-        "wishlist": [{<product_object>}]
+        "wishlist": [{<product_object>}],
+        "pagination": {<pagination_object>}
     }
 
-34. POST :- /users/:id/wishlist
+34. POST :- /users/wishlist
 --------------------------------------------------------------------------------------
 Adds product to wishlist.
 • URL Params
-    Required: id=[string]
+    None
 • Data Params
     {
         "productId": "string"
@@ -988,11 +990,11 @@ Adds product to wishlist.
     • Code: 200
     • Content: { message : "Product added to wishlist" }
 
-35. DELETE :- /users/:id/wishlist/:productId
+35. DELETE :- /users/wishlist/:productId
 --------------------------------------------------------------------------------------
 Removes product from wishlist.
 • URL Params
-    Required: id=[string], productId=[string]
+    Required: productId=[string]
 • Data Params
     None
 • Headers
@@ -1006,11 +1008,11 @@ Removes product from wishlist.
 
 ▣ Cart:
 
-36. GET :- /users/:id/cart
+36. GET :- /users/cart
 --------------------------------------------------------------------------------------
 Returns user's cart items.
 • URL Params
-    Required: id=[string]
+    None
 • Data Params
     None
 • Headers
@@ -1037,11 +1039,11 @@ Returns user's cart items.
         "hasPriceChanges": true
     }
 
-37. POST :- /users/:id/cart
+37. POST :- /users/cart
 --------------------------------------------------------------------------------------
-Adds product to cart.
+Adds product to cart. (in cart component we'll use useEffect so when page load it will get items added in the cart, and when quantity increase just make update request for cart item update and refresh page so the subtotal will be update )
 • URL Params
-    Required: id=[string]
+    None
 • Data Params
     {
         "productId": "string",
@@ -1055,11 +1057,11 @@ Adds product to cart.
     • Content: { message : "Product added to cart" }
 
 
-38. PUT :- /users/:id/cart/:productId
+38. PUT :- /users/cart/:productId
 --------------------------------------------------------------------------------------
 Updates quantity of product in cart.
 • URL Params
-    Required: id=[string], productId=[string]
+    Required: productId=[string]
 • Data Params
     {
         "quantity": "number"
@@ -1072,11 +1074,11 @@ Updates quantity of product in cart.
     • Content: { message : "Cart updated successfully" }
 
 
-39. DELETE :- /users/:id/cart/:productId
+39. DELETE :- /users/cart/:productId
 --------------------------------------------------------------------------------------
 Removes product from cart.
 • URL Params
-    Required: id=[string], productId=[string]
+    Required: productId=[string]
 • Data Params
     None
 • Headers
@@ -1087,11 +1089,11 @@ Removes product from cart.
     • Content: { message : "Product removed from cart" }
 
 
-40. DELETE :- /users/:id/cart
+40. DELETE :- /users/cart
 --------------------------------------------------------------------------------------
 Clears entire cart.
 • URL Params
-    Required: id=[string]
+    None
 • Data Params
     None
 • Headers

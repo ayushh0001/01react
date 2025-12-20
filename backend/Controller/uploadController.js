@@ -1,4 +1,4 @@
-const cloudinary = require("../config/cloudinary");
+const cloudinary = require("../Config/cloudinary");
 const streamifier = require("streamifier");
 
 const uploadFromBuffer = (buffer, folder) => {
@@ -17,10 +17,10 @@ const uploadFromBuffer = (buffer, folder) => {
 const uploadImage = async (req, res) => {
   try {
     const { type } = req.body;
-    
+
     // Check if files exist (handles both single and multiple files)
     const files = req.files || (req.file ? [req.file] : null);
-    
+
     if (!files || files.length === 0) {
       return res.status(400).json({
         success: false,
@@ -36,13 +36,13 @@ const uploadImage = async (req, res) => {
     };
 
     const folder = folderMap[type] || "ZPIN/misc";
-    
+
     // Handle multiple files
     const uploadPromises = files.map(file => uploadFromBuffer(file.buffer, folder));
     const uploadResults = await Promise.all(uploadPromises);
 
     // Format response based on single or multiple files
-    const responseData = uploadResults.length === 1 
+    const responseData = uploadResults.length === 1
       ? {
           imageUrl: uploadResults[0].secure_url,
           publicId: uploadResults[0].public_id

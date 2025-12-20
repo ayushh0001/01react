@@ -1,14 +1,17 @@
 const express = require('express')
 const router = express.Router();
-const {addProduct,getAllUserProduct,getProductPreview} = require('../Controller/productController')
-const upload = require('../config/multer');
+const {addProduct,getAllSellerProduct,getProductPreview,getAllProducts,getProductById,getProductsByCategory} = require('../Controller/productController')
+const upload = require('../Config/multer');
 
 
 
 
 // Using multer middleware on the route to accept multiple images with field name 'images'
 router.post("/addProduct",upload.array('images', 10),addProduct )
-.get("/getAllUserProduct", getAllUserProduct)
+.get("/seller/:userId", getAllSellerProduct)
 .get("/productPreview/:productId",getProductPreview )
+.get("/category/:categoryId", getProductsByCategory)
+.get("/", getAllProducts)
+.get("/:id", getProductById)
 
 module.exports = router

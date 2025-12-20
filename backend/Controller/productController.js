@@ -42,9 +42,9 @@ console.log("Product data images field:", productData.images);
   }
 };
 
-const getAllUserProduct = async (req, res) => {
+const getAllSellerProduct = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.params.userId;
 
     // Fetching products from DB that match this userId
     const products = await ProductModel.find({ userId: userId });
@@ -57,6 +57,7 @@ const getAllUserProduct = async (req, res) => {
 };
 
 const getProductPreview = async (req,res) =>{
+  // seller privew his product
   try {
     const {productId} = req.params;
     const product = await ProductModel.findById(productId);
@@ -71,4 +72,87 @@ const getProductPreview = async (req,res) =>{
   }
 }
 
-module.exports = { addProduct, getAllUserProduct,getProductPreview };
+const getAllProducts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const products = await ProductModel.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalItems = await ProductModel.countDocuments();
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const pagination = {
+      currentPage: page,
+      totalPages,
+      totalItems,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    };
+
+    res.status(200).json({
+      products,
+      pagination
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await ProductModel.findById(id);
+    
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const products = await ProductModel.find({ categoryId })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalItems = await ProductModel.countDocuments({ categoryId });
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const pagination = {
+      currentPage: page,
+      totalPages,
+      totalItems,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    };
+
+    res.status(200).json({
+      products,
+      pagination
+    });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports = { addProduct, getAllSellerProduct, getProductPreview, getAllProducts, getProductById, getProductsByCategory };

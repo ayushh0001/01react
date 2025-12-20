@@ -28,7 +28,8 @@ const credentialSchema = new mongoose.Schema({
   },
   userRole:{
     type:String,
-    required:true
+    required:true,
+    enum: ["customer", "seller", "delivery", "admin"]
   },
   password: {
     type:String,
