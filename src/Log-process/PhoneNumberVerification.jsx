@@ -1,6 +1,8 @@
+// src/pages/PhoneNumberVerification.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Phone Number Verification Component
 export default function PhoneNumberVerification() {
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
@@ -8,6 +10,7 @@ export default function PhoneNumberVerification() {
   const [otpSent, setOtpSent] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Send OTP
   const handleSendOtp = (e) => {
     e.preventDefault();
 
@@ -20,6 +23,7 @@ export default function PhoneNumberVerification() {
     setMessage('OTP sent successfully!');
   };
 
+  // Verify OTP
   const handleVerifyOtp = (e) => {
     e.preventDefault();
 

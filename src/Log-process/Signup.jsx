@@ -1,12 +1,15 @@
+// src/pages/Signup.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Logo component (reusable)
 const ZipinLogo = ({ className = "h-8 w-auto" }) => (
   <div className={`flex items-center justify-center font-['Bungee',cursive] text-2xl font-bold text-amber-500 ${className}`}>
     ZPIN
   </div>
 );
 
+// Alert Box component (reusable)
 const AlertBox = ({ message, type = 'info', onClose }) => {
   if (!message) return null;
 
@@ -39,6 +42,7 @@ const AlertBox = ({ message, type = 'info', onClose }) => {
   );
 };
 
+// Signup Component
 export default function Signup() {
   const [username, setUsername] = useState('');
   const [alertMessage, setAlertMessage] = useState(null);
@@ -46,6 +50,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle signup form submission
   const handleSignup = async (e) => {
     e.preventDefault();
     setAlertMessage(null);
@@ -59,9 +64,13 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       setAlertMessage('Username/Email saved! Proceeding to next step...');
       setAlertType('success');
+
+      // Redirect to phone verification after a short delay
       setTimeout(() => {
         setAlertMessage(null);
         navigate('/phone');
@@ -81,6 +90,7 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 bg-[url('https://placehold.co/1920x1080/f5f5f5/000000?text=Background+Image')] bg-cover">
       <AlertBox message={alertMessage} type={alertType} onClose={() => setAlertMessage(null)} />
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-amber-300 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
+        {/* Left Side - Form */}
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
           <div className="flex justify-center mb-6">
             <ZipinLogo className="h-10 w-auto" />
@@ -115,6 +125,7 @@ export default function Signup() {
             This site is protected by reCAPTCHA and the Google Privacy Policy and Term of Service apply.
           </p>
         </div>
+        {/* Right Side - Illustration */}
         <div className="hidden md:flex md:w-1/2 bg-amber-500/10 items-center justify-center p-8">
           <img
             src="https://placehold.co/500x500/fccf03/242424?text=Signup+Illustration"
