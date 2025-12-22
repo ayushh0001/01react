@@ -21,7 +21,7 @@ Base URL :- "http://localhost:5000/api/v1/
         "user": {<user_object>},
         "details": {<user_details_object>},
         "sellerDetails": {<seller_details_object>}, // if seller
-        "bankDetails": {<bank_details_object>} // if seller
+        "bankDetails": {<bank_details_object>} // if  seller
         }
 
 1. GET :- /api/v1/users
