@@ -1,7 +1,19 @@
 const CartModel = require("../Model/cartModel");
 const ProductModel = require("../Model/productModel");
 
-// GET /users/cart - View cart items
+// GET /api/v1/cart/count - Get cart items count
+const getCartCount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const count = await CartModel.countDocuments({ userId });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching cart count:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// GET /api/v1/cart - View cart items
 const getCartItems = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -52,7 +64,7 @@ const getCartItems = async (req, res) => {
   }
 };
 
-// POST /users/cart - Add product to cart
+// POST /api/v1/cart - Add product to cart
 const addToCart = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -86,7 +98,7 @@ const addToCart = async (req, res) => {
   }
 };
 
-// PUT /users/cart/:productId - Update cart item quantity
+// PUT /api/v1/cart/:productId - Update cart item quantity
 const updateCartItem = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -108,7 +120,7 @@ const updateCartItem = async (req, res) => {
   }
 };
 
-// DELETE /users/cart/:productId - Remove item from cart
+// DELETE /api/v1/cart/:productId - Remove item from cart
 const removeFromCart = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -122,7 +134,7 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-// DELETE /users/cart - Clear entire cart
+// DELETE /api/v1/cart - Clear entire cart
 const clearCart = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -137,6 +149,7 @@ const clearCart = async (req, res) => {
 
 module.exports = {
   getCartItems,
+  getCartCount,
   addToCart,
   updateCartItem,
   removeFromCart,

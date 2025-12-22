@@ -7,6 +7,7 @@ const businessDetailRoutes = require('./Routes/businessDetailRoute');
 const productRoutes = require('./Routes/productRoute');
 const categoryRoutes = require('./Routes/categoryRoutes');
 const cartRoutes = require('./Routes/cartRoute');
+const wishlistRoutes = require('./Routes/wishlistRoute');
 const userRoutes = require('./Routes/userRoute');
 
 const path = require('path');
@@ -21,21 +22,14 @@ server.use(cookieParser());
 server.use(morgan("dev"));
 
 
-// Debug routes (before authentication middleware)
-server.get('/users/test', (req, res) => {
-  res.json({ message: 'Users route is working' });
-});
 
-server.post('/users/cart-test', (req, res) => {
-  res.json({ message: 'Cart route is reachable', body: req.body });
-});
-
-server.use('/auth', credentialsRoutes);           // Authentication routes
-server.use('/users', authenticateToken, userRoutes);  // User management routes
-server.use('/users', authenticateToken, cartRoutes);  // User-specific routes (cart, wishlist, orders)
-server.use('/sellers', authenticateToken, businessDetailRoutes); // Seller-specific routes
-server.use('/products', productRoutes);               // Product routes (public + protected)
-server.use('/categories', categoryRoutes);            // Category routes
+server.use('/api/v1/auth', credentialsRoutes);           // Authentication routes
+server.use('/api/v1/users', authenticateToken, userRoutes);  // User profile management
+server.use('/api/v1/cart', authenticateToken, cartRoutes);   // Cart operations
+server.use('/api/v1/wishlist', authenticateToken, wishlistRoutes); // Wishlist operations
+server.use('/api/v1/sellers', authenticateToken, businessDetailRoutes); // Seller operations
+server.use('/api/v1/products', productRoutes);               // Product catalog (public + protected)
+server.use('/api/v1/categories', categoryRoutes);            // Category management
 
 
 

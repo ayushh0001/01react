@@ -1,6 +1,6 @@
 *****always keep in mind that while desinging the api contract think that what data/field the client need for the UI if that feild is not into that particular entity or it is in related entity but you just add those field in the object*****
 
-Base URL :- "http://localhost:5000/
+Base URL :- "http://localhost:5000/api/v1/
 
 ▣ Users:
     • User Object (Basic - aggregated for client convenience)
@@ -24,7 +24,7 @@ Base URL :- "http://localhost:5000/
         "bankDetails": {<bank_details_object>} // if seller
         }
 
-1. GET :- /users
+1. GET :- /api/v1/users
 --------------------------------------------------------------------------------------
 Returns all users with joined data from both Credential and UserDetail collections with pagination.
 • URL Params
@@ -65,7 +65,7 @@ Returns all users with joined data from both Credential and UserDetail collectio
     • Content: { error : "Failed to fetch users" }
 
 
-2. GET  :-  /users/:id
+2. GET  :-  /api/v1/users/:id
 --------------------------------------------------------------------------------------
 Returns specific user with joined data from both Credential and UserDetail collections.
 • URL Params
@@ -109,7 +109,7 @@ Returns specific user with joined data from both Credential and UserDetail colle
 
 
 
-3. GET  :- /users/orders
+3. GET  :- /api/v1/users/orders
 --------------------------------------------------------------------------------------
 Returns all Orders associated with the authenticated user with pagination.
 • URL Params
@@ -136,7 +136,7 @@ Returns all Orders associated with the authenticated user with pagination.
     • Content: { error : "You are unauthorized to make this request." }
 
 
-4. POST  :- /auth/signup
+4. POST  :- /api/v1/auth/signup
 --------------------------------------------------------------------------------------
 Creates a new User and returns the new object.
 • URL Params
@@ -148,7 +148,7 @@ Creates a new User and returns the new object.
         userRole: string,
         password: string,
         email: string
-         name: string,
+        name: string,
     }
 • Headers
     Content-Type: application/json
@@ -163,7 +163,7 @@ Creates a new User and returns the new object.
     • Content: { error : "Internal Server Error" }
 
 
-5. POST  :- /auth/verification/sendOTP
+5. POST  :- /api/v1/auth/verification/sendOTP
 --------------------------------------------------------------------------------------
 Sends an OTP to the user's registered mobile number for verification.
 • URL Params
@@ -183,7 +183,7 @@ Sends an OTP to the user's registered mobile number for verification.
 
 
 
-6. POST  :- /auth/verification/verifyOTP
+6. POST  :- /api/v1/auth/verification/verifyOTP
 --------------------------------------------------------------------------------------
 Verifies the OTP sent to the user's mobile number for regular verification.
 • URL Params
@@ -210,7 +210,7 @@ Verifies the OTP sent to the user's mobile number for regular verification.
 
 
 
-7. POST  :- /auth/login
+7. POST  :- /api/v1/auth/login
 --------------------------------------------------------------------------------------
 Authenticates a user and returns an OAuth token.
 • URL Params
@@ -234,7 +234,7 @@ Authenticates a user and returns an OAuth token.
     • Content: { success: false, message: "Internal server error" }
 
 
-8. POST  :- /auth/forgetPassword/sendOTP
+8. POST  :- /api/v1/auth/forgetPassword/sendOTP
 --------------------------------------------------------------------------------------
 Sends OTP to user's registered mobile number for password reset. Requires both email and mobile for unique user identification.
 • URL Params
@@ -260,7 +260,7 @@ Sends OTP to user's registered mobile number for password reset. Requires both e
     • Content: { error : "Internal Server Error" }
 
 
-8.1. POST  :- /auth/forgetPassword/verifyOTP
+8.1. POST  :- /api/v1/auth/forgetPassword/verifyOTP
 --------------------------------------------------------------------------------------
 Verifies OTP for password reset and returns JWT reset token.
 • URL Params
@@ -290,7 +290,7 @@ Verifies OTP for password reset and returns JWT reset token.
     • Content: { error : "Internal Server Error" }
 
 
-8.2. POST  :- /auth/forgetPassword/resetPassword
+8.2. POST  :- /api/v1/auth/forgetPassword/resetPassword
 --------------------------------------------------------------------------------------
 Resets password using JWT reset token. Token is verified for signature, expiry, and purpose. Password is automatically hashed and user is logged in after successful reset.
 • URL Params
@@ -323,7 +323,7 @@ Resets password using JWT reset token. Token is verified for signature, expiry, 
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
-9. POST  :- /auth/logout
+9. POST  :- /api/v1/auth/logout
 --------------------------------------------------------------------------------------
 Logs out the authenticated user and invalidates their session/token.
 • URL Params
@@ -343,7 +343,7 @@ Logs out the authenticated user and invalidates their session/token.
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
-10. POST  :- /auth/profileDetails
+10. POST  :- /api/v1/auth/profileDetails
 --------------------------------------------------------------------------------------
 Verifies PAN number for seller registration using InstantPay API.
 • URL Params
@@ -374,7 +374,7 @@ Verifies PAN number for seller registration using InstantPay API.
     • Content: { error : "Verification service unavailable" }
 
 
-12. POST  :- /users/verifyGst
+12. POST  :- /api/v1/users/verifyGst
 --------------------------------------------------------------------------------------
 Verifies GST number for seller registration using InstantPay API.
 • URL Params
@@ -405,7 +405,7 @@ Verifies GST number for seller registration using InstantPay API.
     • Content: { error : "Verification service unavailable" }
 
 
-13. POST  :- /users/profileDetails
+13. POST  :- /api/v1/users/profileDetails
 --------------------------------------------------------------------------------------
 Adds user details with profile image upload in single request.
 • URL Params
@@ -441,7 +441,7 @@ Adds user details with profile image upload in single request.
     • Content: { success: false, message: "Failed to save user details" }
 
 
-13.1. PUT  :- /users/profileDetails
+13.1. PUT  :- /api/v1/users/profileDetails
 --------------------------------------------------------------------------------------
 Updates user profile details with optional new profile image upload.
 • URL Params
@@ -475,7 +475,7 @@ Updates user profile details with optional new profile image upload.
     • Content: { success: false, message: "Failed to update profile" }
 
 
-13.2. POST  :- /users/sellerDetails
+13.2. POST  :- /api/v1/users/sellerDetails
 --------------------------------------------------------------------------------------
 Adds seller business details after PAN/GST verification.
 • URL Params
@@ -502,7 +502,7 @@ Adds seller business details after PAN/GST verification.
     • Content: { error : "Unauthorized" }
 
 
-13.3. POST  :- /users/bankDetails
+13.3. POST  :- /api/v1/users/bankDetails
 --------------------------------------------------------------------------------------
 Adds seller bank details for payments.
 • URL Params
@@ -530,7 +530,7 @@ Adds seller bank details for payments.
 
 
 
-13.4. POST  :- /users/verify-bank-account
+13.4. POST  :- /api/v1/users/verify-bank-account
 --------------------------------------------------------------------------------------
 Verifies bank account using penny drop method.
 • URL Params
@@ -554,7 +554,7 @@ Verifies bank account using penny drop method.
     • Content: { error : "Bank verification failed" }
 
 
-13.5. POST  :- /users/refresh-token
+13.5. POST  :- /api/v1/users/refresh-token
 --------------------------------------------------------------------------------------
 Refreshes expired JWT tokens.
 • URL Params
@@ -632,7 +632,7 @@ Refreshes expired JWT tokens.
         "hasPrevPage": false
         }
 
-19. GET :- /products
+19. GET :- /api/v1/products
 --------------------------------------------------------------------------------------
 Returns all products with filters and pagination.
 • URL Params
@@ -649,7 +649,7 @@ Returns all products with filters and pagination.
         "pagination": {<pagination_object>}
     }
 
-20. GET :- /products/:id
+20. GET :- /api/v1/products/:id
 --------------------------------------------------------------------------------------
 Returns the specified product with full details.
 • URL Params
@@ -665,7 +665,7 @@ Returns the specified product with full details.
     • Code: 404
     • Content: { error : "Product not found" }
 
-21. POST :- /product/addProduct
+21. POST :- /api/v1/products/addProduct
 --------------------------------------------------------------------------------------
 Creates a new product with images (seller only). Uses multipart/form-data for file uploads.
 • URL Params
@@ -697,7 +697,7 @@ Creates a new product with images (seller only). Uses multipart/form-data for fi
     • Code: 500
     • Content: { success: false, message: "Server error" }
 
-22. PUT :- /products/:id
+22. PUT :- /api/v1/products/:id
 --------------------------------------------------------------------------------------
 Updates the specified product (seller only - own products).
 • URL Params
@@ -726,7 +726,7 @@ Updates the specified product (seller only - own products).
     • Code: 403
     • Content: { error : "Access denied - Not your product" }
 
-23. DELETE :- /products/:id
+23. DELETE :- /api/v1/products/:id
 --------------------------------------------------------------------------------------
 Deletes the specified product (seller only - own products).
 • URL Params
@@ -746,7 +746,7 @@ Deletes the specified product (seller only - own products).
     • Code: 403
     • Content: { error : "Access denied - Not your product" }
 
-24. GET :- /products/seller/:userId
+24. GET :- /api/v1/products/seller/:userId
 --------------------------------------------------------------------------------------
 Returns all products for a specific seller with pagination.
 • URL Params
@@ -764,7 +764,7 @@ Returns all products for a specific seller with pagination.
         "pagination": {<pagination_object>}
     }
 
-25. GET :- /products/category/:categoryId
+25. GET :- /api/v1/products/category/:categoryId
 --------------------------------------------------------------------------------------
 Returns all products in a specific category with pagination.
 • URL Params
@@ -782,7 +782,7 @@ Returns all products in a specific category with pagination.
         "pagination": {<pagination_object>}
     }
 
-26. POST :- /products/:id/approve
+26. POST :- /api/v1/products/:id/approve
 --------------------------------------------------------------------------------------
 Approves a product (admin only).
 • URL Params
@@ -805,7 +805,7 @@ Approves a product (admin only).
 
 ▣ Categories:
 
-26. GET :- /category/root
+26. GET :- /api/v1/categories/root
 --------------------------------------------------------------------------------------
 Returns all main/root categories (parent_id: null) with hasChildren flag.
 • URL Params
@@ -835,7 +835,7 @@ Returns all main/root categories (parent_id: null) with hasChildren flag.
     • Code: 500
     • Content: { error : "Server error" }
 
-26.1. GET :- /category/:parentId/children
+26.1. GET :- /api/v1/categories/:parentId/children
 --------------------------------------------------------------------------------------
 Returns all subcategories for a given parent category with hasChildren flag.
 • URL Params
@@ -865,7 +865,7 @@ Returns all subcategories for a given parent category with hasChildren flag.
     • Code: 500
     • Content: { error : "Server error" }
 
-26.2. GET :- /category/tree
+26.2. GET :- /api/v1/categories/tree
 --------------------------------------------------------------------------------------
 Returns complete hierarchical category tree (optional - for advanced use).
 • URL Params
@@ -899,7 +899,7 @@ Returns complete hierarchical category tree (optional - for advanced use).
 
 ▣ Product Reviews:
 
-31. GET :- /products/:id/reviews
+31. GET :- /api/v1/products/:id/reviews
 --------------------------------------------------------------------------------------
 Returns all reviews for a product with pagination.
 • URL Params
@@ -930,7 +930,7 @@ Returns all reviews for a product with pagination.
 
     }
 
-32. POST :- /products/:id/reviews
+32. POST :- /api/v1/products/:id/reviews
 --------------------------------------------------------------------------------------
 Adds a review for a product (authenticated users only).
 • URL Params
@@ -956,7 +956,7 @@ Adds a review for a product (authenticated users only).
 
 ▣ Wishlist:
 
-33. GET :- /users/wishlist
+33. GET :- /api/v1/wishlist
 --------------------------------------------------------------------------------------
 Returns user's wishlist with pagination.
 • URL Params
@@ -974,7 +974,24 @@ Returns user's wishlist with pagination.
         "pagination": {<pagination_object>}
     }
 
-34. POST :- /users/wishlist
+33.1. GET :- /api/v1/wishlist/count
+--------------------------------------------------------------------------------------
+Returns the count of items in user's wishlist.
+• URL Params
+    None
+• Data Params
+    None
+• Headers
+    Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: { "count": 5 }
+• Error Response:
+    • Code: 401
+    • Content: { error : "Unauthorized" }
+
+34. POST :- /api/v1/wishlist
 --------------------------------------------------------------------------------------
 Adds product to wishlist.
 • URL Params
@@ -990,7 +1007,7 @@ Adds product to wishlist.
     • Code: 200
     • Content: { message : "Product added to wishlist" }
 
-35. DELETE :- /users/wishlist/:productId
+35. DELETE :- /api/v1/wishlist/:productId
 --------------------------------------------------------------------------------------
 Removes product from wishlist.
 • URL Params
@@ -1003,12 +1020,25 @@ Removes product from wishlist.
 • Success Response:
     • Code: 200
     • Content: { message : "Product removed from wishlist" }
+35.1. DELETE :- /api/v1/wishlist/clear
+--------------------------------------------------------------------------------------
+Clears entire wishlist.
+• URL Params
+    None
+• Data Params
+    None
+• Headers
+    Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: { message : "Wishlist cleared successfully" }
 
 
 
 ▣ Cart:
 
-36. GET :- /users/cart
+36. GET :- /api/v1/cart
 --------------------------------------------------------------------------------------
 Returns user's cart items.
 • URL Params
@@ -1039,7 +1069,7 @@ Returns user's cart items.
         "hasPriceChanges": true
     }
 
-37. POST :- /users/cart
+37. POST :- /api/v1/cart
 --------------------------------------------------------------------------------------
 Adds product to cart. (in cart component we'll use useEffect so when page load it will get items added in the cart, and when quantity increase just make update request for cart item update and refresh page so the subtotal will be update )
 • URL Params
@@ -1057,7 +1087,7 @@ Adds product to cart. (in cart component we'll use useEffect so when page load i
     • Content: { message : "Product added to cart" }
 
 
-38. PUT :- /users/cart/:productId
+38. PUT :- /api/v1/cart/:productId
 --------------------------------------------------------------------------------------
 Updates quantity of product in cart.
 • URL Params
@@ -1074,7 +1104,7 @@ Updates quantity of product in cart.
     • Content: { message : "Cart updated successfully" }
 
 
-39. DELETE :- /users/cart/:productId
+39. DELETE :- /api/v1/cart/:productId
 --------------------------------------------------------------------------------------
 Removes product from cart.
 • URL Params
@@ -1089,7 +1119,7 @@ Removes product from cart.
     • Content: { message : "Product removed from cart" }
 
 
-40. DELETE :- /users/cart
+40. DELETE :- /api/v1/cart
 --------------------------------------------------------------------------------------
 Clears entire cart.
 • URL Params
@@ -1102,6 +1132,23 @@ Clears entire cart.
 • Success Response:
     • Code: 200
     • Content: { message : "Cart cleared successfully" }
+
+40.1. GET :- /api/v1/cart/count
+--------------------------------------------------------------------------------------
+Returns the count of items in user's cart.
+• URL Params
+    None
+• Data Params
+    None
+• Headers
+    Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
+• Success Response:
+    • Code: 200
+    • Content: { "count": 3 }
+• Error Response:
+    • Code: 401
+    • Content: { error : "Unauthorized" }
 
 
 
