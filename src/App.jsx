@@ -8,7 +8,7 @@ import CreateAccount from './Log-process/CreateAccount'; // newly added page
 import Details from './Log-process/Details'; // newly added page
 import GSTDetails from './Log-process/GSTDetails'; // newly added page
 import BankDetails from './Log-process/BankDetails'; // newly added page
-
+import Customers from './Dashboard/Customers';
 
 //Dashboard pages....
 
@@ -43,6 +43,7 @@ export default function App() {
         <Route path="/dashboard/add-product" element={<AddProduct />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/dashboard/support" element={<Support />} />
+        <Route path="/dashboard/customers" element={<Customers />} />
       </Routes>
     </Router>
   );
