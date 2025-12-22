@@ -1,52 +1,81 @@
-// src/pages/PhoneNumberVerification.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  sendOtpApi,
+  verifyOtpApi,
+} from "../api/otp.api";
 
-// Phone Number Verification Component
 export default function PhoneNumberVerification() {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [message, setMessage] = useState('');
 
-  // Send OTP
-  const handleSendOtp = (e) => {
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // SEND OTP
+  const handleSendOtp = async (e) => {
     e.preventDefault();
 
     if (phone.length !== 10) {
-      setMessage('Please enter a valid 10-digit phone number.');
+      setMessage("Please enter a valid 10-digit mobile number.");
       return;
     }
 
-    setOtpSent(true);
-    setMessage('OTP sent successfully!');
+    try {
+      setLoading(true);
+      setMessage("");
+
+      await sendOtpApi({ mobile: phone });
+
+      setOtpSent(true);
+      setMessage("OTP sent successfully!");
+    } catch (err) {
+      setMessage(
+        err?.response?.data?.error || "Failed to send OTP"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = (e) => {
+  // VERIFY OTP
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
-    if (!otp) {
-      setMessage('Please enter the OTP.');
+    if (!otp || otp.length !== 4) {
+      setMessage("Please enter a valid 4-digit OTP.");
       return;
     }
 
-    // Simulate OTP validation success
-    if (otp === '1234' || otp.length === 4) {
-      setMessage('Phone number verified successfully!');
+    try {
+      setLoading(true);
+      setMessage("");
+
+      await verifyOtpApi({
+        mobile: phone,
+        otp,
+      });
+
+      setMessage("Phone number verified successfully!");
+
       setTimeout(() => {
-        navigate('/create-account'); // Redirect to Create Account page
-      }, 1200);
-    } else {
-      setMessage('Invalid OTP. Please try again.');
+        navigate("/create-account");
+      }, 1000);
+    } catch (err) {
+      setMessage(
+        err?.response?.data?.error || "Invalid OTP"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-amber-300">
-        <h1 className="text-3xl font-bold text-center mb-6 text-amber-600">
+        <h1 className="text-2xl font-bold text-center mb-6 text-amber-600">
           Verify Your Phone Number
         </h1>
 
@@ -58,50 +87,46 @@ export default function PhoneNumberVerification() {
 
         {!otpSent ? (
           <form onSubmit={handleSendOtp} className="space-y-5">
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Enter Mobile Number
-              </label>
-              <input
-                id="phone"
-                type="text"
-                maxLength={10}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                placeholder="10-digit mobile number"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              maxLength={10}
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Enter 10-digit mobile number"
+              className="w-full px-4 py-3 border rounded-lg"
+              required
+            />
+
             <button
               type="submit"
-              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition duration-300"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg"
             >
-              Send OTP
+              {loading ? "Sending OTP..." : "Send OTP"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-5">
-            <div>
-              <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
-                Enter OTP
-              </label>
-              <input
-                id="otp"
-                type="text"
-                maxLength={4}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                placeholder="Enter 4-digit code"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              maxLength={4}
+              value={otp}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Enter 4-digit OTP"
+              className="w-full px-4 py-3 border rounded-lg"
+              required
+            />
+
             <button
               type="submit"
-              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition duration-300"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg"
             >
-              Verify OTP
+              {loading ? "Verifying..." : "Verify OTP"}
             </button>
           </form>
         )}
