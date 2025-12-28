@@ -343,7 +343,7 @@ Logs out the authenticated user and invalidates their session/token.
     • Code: 500
     • Content: { error : "Internal Server Error" }
 
-10. POST  :- /api/v1/auth/profileDetails
+10. POST  :- /api/v1/verification/verifyPan
 --------------------------------------------------------------------------------------
 Verifies PAN number for seller registration using InstantPay API.
 • URL Params
@@ -355,6 +355,7 @@ Verifies PAN number for seller registration using InstantPay API.
     }
 • Headers
     Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
 • Success Response:
     • Code: 200
     • Content: {
@@ -372,9 +373,12 @@ Verifies PAN number for seller registration using InstantPay API.
     OR
     • Code: 500
     • Content: { error : "Verification service unavailable" }
+    OR
+    • Code: 401
+    • Content: { error : "Unauthorized" }
 
 
-12. POST  :- /api/v1/users/verifyGst
+12. POST  :- /api/v1/verification/verifyGst
 --------------------------------------------------------------------------------------
 Verifies GST number for seller registration using InstantPay API.
 • URL Params
@@ -385,6 +389,7 @@ Verifies GST number for seller registration using InstantPay API.
     }
 • Headers
     Content-Type: application/json
+    Authorization: Bearer <OAuth Token>
 • Success Response:
     • Code: 200
     • Content: {
@@ -403,6 +408,9 @@ Verifies GST number for seller registration using InstantPay API.
     OR
     • Code: 500
     • Content: { error : "Verification service unavailable" }
+    OR
+    • Code: 401
+    • Content: { error : "Unauthorized" }
 
 
 13. POST  :- /api/v1/users/profileDetails

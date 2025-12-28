@@ -42,7 +42,6 @@ const getCartItems = async (req, res) => {
 
       return {
         cartItemId: item._id,
-        productId: product._id,
         product: product,
         quantity: item.quantity,
         priceAtAdd: item.priceAtAdd,

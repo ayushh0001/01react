@@ -9,6 +9,7 @@ const categoryRoutes = require('./Routes/categoryRoutes');
 const cartRoutes = require('./Routes/cartRoute');
 const wishlistRoutes = require('./Routes/wishlistRoute');
 const userRoutes = require('./Routes/userRoute');
+const verificationRoutes = require('./Routes/verificationRoute');
 
 const path = require('path');
 const authenticateToken = require('./Middleware/tokenauth');
@@ -24,6 +25,7 @@ server.use(morgan("dev"));
 
 
 server.use('/api/v1/auth', credentialsRoutes);           // Authentication routes
+server.use('/api/v1/verification', authenticateToken, verificationRoutes); // Verification services (GST/PAN)
 server.use('/api/v1/users', authenticateToken, userRoutes);  // User profile management
 server.use('/api/v1/cart', authenticateToken, cartRoutes);   // Cart operations
 server.use('/api/v1/wishlist', authenticateToken, wishlistRoutes); // Wishlist operations
