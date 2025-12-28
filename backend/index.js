@@ -21,7 +21,7 @@ const cors = require('cors');
 
 const server = express();
 
-const cors = require('cors');
+
 
 // Allow frontend Vercel domain + localhost for dev
 server.use(cors({
