@@ -31,6 +31,7 @@ const login = async (req, res) => {
     // Generate JWT token and set cookie
     generateTokenAndSetCookie(res, user);
 
+
     res.status(200).json({ success: true, message: "Logged in successfully" });
   } catch (err) {
     console.error("Login route error:", err);
