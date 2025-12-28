@@ -1,6 +1,7 @@
 *****always keep in mind that while desinging the api contract think that what data/field the client need for the UI if that feild is not into that particular entity or it is in related entity but you just add those field in the object*****
 
-Base URL :- "http://localhost:5000/api/v1/
+Base URL (for localhost):- "http://localhost:5000/api/v1/"
+Base URL (for render deployed):- "https://zpin-ecommerce-backend-997x.onrender.com/api/v1/"
 
 ▣ Users:
     • User Object (Basic - aggregated for client convenience)

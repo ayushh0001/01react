@@ -15,8 +15,26 @@ const path = require('path');
 const authenticateToken = require('./Middleware/tokenauth');
 const { connectDB } = require('./config/db');
 const morgan = require('morgan');
+const cors = require('cors');
+
+
 
 const server = express();
+
+const cors = require('cors');
+
+// Allow frontend Vercel domain + localhost for dev
+server.use(cors({
+  origin: [
+    'https://01react.vercel.app/',// frontend live URL
+    'http://localhost:3000',       // frontend local dev
+    'http://localhost:5174'        // Vite dev server
+  ],
+  credentials: true  // if using cookies/JWT
+}));
+
+// Your other middleware and routes below...
+
 
 server.use(express.json());
 server.use(cookieParser());
