@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const {addProduct,getAllSellerProduct,getProductPreview,getAllProducts,getProductById,getProductsByCategory} = require('../Controller/productController')
-const upload = require('../Config/multer');
+const upload = require('../config/multer');
 
 
 

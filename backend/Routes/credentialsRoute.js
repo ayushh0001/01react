@@ -3,7 +3,7 @@ const router = express.Router();
 const {login,signup,logout,checkAuth,userDetail,getAllUsers,getUserById,updateProfileDetail} = require('../Controller/credentialsController')
 const {sendOTP,verifyOTP,forgetPasswordSendOTP,forgetPasswordVerifyOTP,forgetPasswordResetPassword} = require('../Controller/mobile-twilioController')
 const authenticateToken = require('../Middleware/tokenauth');
-const upload = require("../Config/multer")
+const upload = require("../config/multer")
 
 
 router

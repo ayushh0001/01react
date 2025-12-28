@@ -13,7 +13,7 @@ const verificationRoutes = require('./Routes/verificationRoute');
 
 const path = require('path');
 const authenticateToken = require('./Middleware/tokenauth');
-const { connectDB } = require('./Config/db');
+const { connectDB } = require('./config/db');
 const morgan = require('morgan');
 
 const server = express();
