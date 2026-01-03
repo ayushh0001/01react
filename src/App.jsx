@@ -10,12 +10,15 @@ import GSTDetails from './Log-process/GSTDetails'; // newly added page
 import BankDetails from './Log-process/BankDetails'; // newly added page
 
 
+
+
 //Dashboard pages....
 
 import DashboardHome from './Dashboard/DashboardHome';
 import Orders from './Dashboard/Orders';
 import Products from './Dashboard/Products';
 import AddProduct from './Dashboard/AddProduct';
+import Preview from './Dashboard/Preview';
 import Settings from './Dashboard/Settings';
 import Support from './Dashboard/Support';
 
@@ -41,9 +44,16 @@ export default function App() {
         <Route path="/dashboard/orders" element={<Orders />} />
         <Route path="/dashboard/products" element={<Products />} />
         <Route path="/dashboard/add-product" element={<AddProduct />} />
+        <Route path="/dashboard/preview" element={<Preview />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/dashboard/support" element={<Support />} />
       </Routes>
     </Router>
   );
 }
+
+
+
+
+
+

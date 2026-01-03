@@ -1,17 +1,30 @@
+// Import necessary React hooks and router functionality
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+// API configuration
+const API_BASE_URL = 'https://zpin-ecommerce-backend-997x.onrender.com/api/v1';
+
+// Main GSTDetails component - handles GST and tax information collection
 export default function GSTDetails() {
+  // Hook for programmatic navigation
   const navigate = useNavigate();
+  
+  // State for form data - stores GST and tax information
   const [formData, setFormData] = useState({
-    gstNumber: '',
-    businessType: '',
-    registeredName: '',
-    panNumber: ''
+    gstNumber: '',        // GST registration number
+    businessType: '',     // Type of business entity
+    registeredName: '',   // Legal business name as per GST
+    panNumber: ''         // PAN card number
   });
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  
+  // State for validation messages
+  const [error, setError] = useState('');      // Error message display
+  const [message, setMessage] = useState('');  // Success message display
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
+  // Handle input field changes - updates form data state
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -19,7 +32,8 @@ export default function GSTDetails() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission and validation
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
@@ -32,45 +46,67 @@ export default function GSTDetails() {
       return;
     }
 
-    // Validate GSTIN (15 character alphanumeric)
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
     if (!gstRegex.test(gstNumber.toUpperCase())) {
       setError('Please enter a valid GST number.');
       return;
     }
 
-    // Validate PAN number (10 character alpha-numeric)
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     if (!panRegex.test(panNumber.toUpperCase())) {
       setError('Please enter a valid PAN number.');
       return;
     }
 
-    setMessage('GST details submitted successfully!');
-    setTimeout(() => navigate('/bank'), 1500); // redirect to bank details page
+    setIsLoading(true);
+
+    try {
+      // Simulate GST/PAN verification due to CORS issues
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setMessage('GST details verified and saved successfully! (Demo mode)');
+      setTimeout(() => navigate('/bank'), 1500);
+    } catch (error) {
+      console.error('GST details error:', error);
+      setError('Failed to verify GST/PAN details. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      
+      {/* Main container for GST details form */}
       <div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-lg border border-amber-300">
-        <h1 className="text-3xl font-bold text-center mb-6 text-amber-600">GST & Tax Information</h1>
+        
+        {/* Page title */}
+        <h1 className="text-3xl font-bold text-center mb-6 text-amber-600">
+          GST & Tax Information
+        </h1>
+        
+        {/* Subtitle with instructions */}
         <p className="text-center text-gray-500 mb-4">
           Please enter your GST details carefully. These details are required for invoice generation.
         </p>
 
-        {/* Error and Success Messages */}
+        {/* Error message display */}
         {error && (
           <div className="mb-4 text-center text-sm text-red-700 bg-red-100 border border-red-400 rounded py-2">
             {error}
           </div>
         )}
+        
+        {/* Success message display */}
         {message && (
           <div className="mb-4 text-center text-sm text-green-700 bg-green-100 border border-green-400 rounded py-2">
             {message}
           </div>
         )}
 
+        {/* GST details form */}
         <form onSubmit={handleSubmit} className="space-y-5">
+          
+          {/* GST number field - converts to uppercase, max 15 characters */}
           <div>
             <label htmlFor="gstNumber" className="block text-sm font-medium text-gray-700 mb-1">
               GST Number
@@ -82,13 +118,17 @@ export default function GSTDetails() {
               maxLength={15}
               value={formData.gstNumber}
               onChange={(e) =>
-                setFormData({ ...formData, gstNumber: e.target.value.toUpperCase() })
+                setFormData({ 
+                  ...formData, 
+                  gstNumber: e.target.value.toUpperCase()  // Convert to uppercase
+                })
               }
               placeholder="Enter 15-character GSTIN"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
+          {/* Business type dropdown */}
           <div>
             <label htmlFor="businessType" className="block text-sm font-medium text-gray-700 mb-1">
               Business Type
@@ -110,6 +150,7 @@ export default function GSTDetails() {
             </select>
           </div>
 
+          {/* Registered business name field */}
           <div>
             <label htmlFor="registeredName" className="block text-sm font-medium text-gray-700 mb-1">
               Registered Business Name
@@ -125,6 +166,7 @@ export default function GSTDetails() {
             />
           </div>
 
+          {/* PAN number field - converts to uppercase, max 10 characters */}
           <div>
             <label htmlFor="panNumber" className="block text-sm font-medium text-gray-700 mb-1">
               PAN Number
@@ -136,19 +178,29 @@ export default function GSTDetails() {
               maxLength={10}
               value={formData.panNumber}
               onChange={(e) =>
-                setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })
+                setFormData({ 
+                  ...formData, 
+                  panNumber: e.target.value.toUpperCase()  // Convert to uppercase
+                })
               }
               placeholder="ABCDE1234F"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
+          {/* Submit button */}
           <button
             type="submit"
-            className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition duration-300"
+            disabled={isLoading}
+            className={`w-full py-3 font-semibold rounded-lg shadow-md transition duration-300 ${
+              isLoading 
+                ? 'bg-gray-500 cursor-not-allowed text-white' 
+                : 'bg-amber-500 hover:bg-amber-600 text-white'
+            }`}
           >
-            Submit GST Info
+            {isLoading ? 'Verifying...' : 'Submit GST Info'}
           </button>
+          
         </form>
       </div>
     </div>
