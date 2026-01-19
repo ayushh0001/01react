@@ -1,12 +1,39 @@
 const ProductModel = require("../Model/productModel");
 const CategoryModel = require("../Model/categoryModel");
+const UserDetailModel = require("../Model/userDetailModel");
 const { uploadFromBuffer } = require('./uploadController');
+const { getCoordinatesFromPincode } = require('../utils/geocoding');
 
 const addProduct = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log(req.user);
+
     const categoryId = req.body.categoryId; // The deepest category ObjectId sent from frontend
     const categoryPathArr = JSON.parse(req.body.categoryPath);
+
+    // Get seller location from user details
+    const userDetails = await UserDetailModel.findOne({ userId });
+    let sellerLocation = {};
+
+    if (userDetails) {
+      // Get coordinates for the seller's location
+      const locationData = await getCoordinatesFromPincode(
+        userDetails.pincode,
+        userDetails.city,
+        userDetails.state
+      );
+
+      sellerLocation = {
+        city: userDetails.city,
+        state: userDetails.state,
+        pincode: userDetails.pincode,
+        coordinates: {
+          type: 'Point',
+          coordinates: locationData.coordinates // [lng, lat]
+        }
+      };
+    }
 
     // Upload images using separated upload utility
     const uploadPromises = req.files.map((file) =>
@@ -28,6 +55,7 @@ const addProduct = async (req, res) => {
       images: imageUrls,
       categoryId, // store only leaf node ID
       categoryPath: categoryPathArr, // array of {name: "category_name"} objects
+      sellerLocation
     });
 
     console.log("Image URLs array before saving:", imageUrls);
@@ -78,12 +106,43 @@ const getAllProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const products = await ProductModel.find()
+    // Location-based filtering (25km radius)
+    const { lat, lng, city, state, pincode } = req.query;
+    let locationFilter = {};
+
+    if (lat && lng) {
+      // Validate coordinates
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lng);
+
+      // Check if coordinates are valid numbers
+      if (!isNaN(latitude) && !isNaN(longitude) &&
+          latitude >= -90 && latitude <= 90 &&
+          longitude >= -180 && longitude <= 180) {
+        // Use coordinates for 25km radius search
+        locationFilter = {
+          'sellerLocation.coordinates': {
+            $geoWithin: {
+              $centerSphere: [[longitude, latitude], 25 / 6371] // 25km radius
+            }
+          }
+        };
+      }
+      // If invalid coordinates, fall back to showing all products (no location filter)
+    } else if (city) {
+      locationFilter['sellerLocation.city'] = new RegExp(city, 'i');
+    } else if (state) {
+      locationFilter['sellerLocation.state'] = new RegExp(state, 'i');
+    } else if (pincode) {
+      locationFilter['sellerLocation.pincode'] = pincode;
+    }
+
+    const products = await ProductModel.find(locationFilter)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    const totalItems = await ProductModel.countDocuments();
+    const totalItems = await ProductModel.countDocuments(locationFilter);
     const totalPages = Math.ceil(totalItems / limit);
 
     const pagination = {
@@ -95,10 +154,24 @@ const getAllProducts = async (req, res) => {
       hasPrevPage: page > 1
     };
 
-    res.status(200).json({
+    // Add location info to response when coordinates are used
+    const response = {
       products,
       pagination
-    });
+    };
+
+    if (lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
+      response.locationInfo = {
+        searchRadius: 25,
+        userLocation: {
+          lat: parseFloat(lat),
+          lng: parseFloat(lng)
+        },
+        totalNearbyProducts: totalItems
+      };
+    }
+
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -128,12 +201,41 @@ const getProductsByCategory = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const products = await ProductModel.find({ categoryId })
+    // Location-based filtering
+    const { lat, lng, city, state, pincode } = req.query;
+    let filter = { categoryId };
+
+    if (lat && lng) {
+      // Validate coordinates
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lng);
+
+      // Check if coordinates are valid numbers
+      if (!isNaN(latitude) && !isNaN(longitude) &&
+          latitude >= -90 && latitude <= 90 &&
+          longitude >= -180 && longitude <= 180) {
+        // Use coordinates for 25km radius search
+        filter['sellerLocation.coordinates'] = {
+          $geoWithin: {
+            $centerSphere: [[longitude, latitude], 25 / 6371] // 25km radius
+          }
+        };
+      }
+      // If invalid coordinates, fall back to category filter only
+    } else if (city) {
+      filter['sellerLocation.city'] = new RegExp(city, 'i');
+    } else if (state) {
+      filter['sellerLocation.state'] = new RegExp(state, 'i');
+    } else if (pincode) {
+      filter['sellerLocation.pincode'] = pincode;
+    }
+
+    const products = await ProductModel.find(filter)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    const totalItems = await ProductModel.countDocuments({ categoryId });
+    const totalItems = await ProductModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / limit);
 
     const pagination = {
@@ -145,10 +247,27 @@ const getProductsByCategory = async (req, res) => {
       hasPrevPage: page > 1
     };
 
-    res.status(200).json({
+    // Build response with category and location info
+    const response = {
       products,
-      pagination
-    });
+      pagination,
+      categoryInfo: {
+        categoryId: categoryId
+      }
+    };
+
+    if (lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
+      response.locationInfo = {
+        searchRadius: 25,
+        userLocation: {
+          lat: parseFloat(lat),
+          lng: parseFloat(lng)
+        },
+        totalNearbyProducts: totalItems
+      };
+    }
+
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching products by category:", error);
     res.status(500).json({ message: "Internal Server Error" });

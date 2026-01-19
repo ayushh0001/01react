@@ -119,6 +119,10 @@ const userDetail = async (req, res) => {
       profileImageUrl = uploadResult.secure_url;
     }
 
+    // Get coordinates from address using geocoding utility
+    const { getCoordinatesFromPincode } = require('../utils/geocoding');
+    const locationData = await getCoordinatesFromPincode(pincode, city, state);
+
     const userDetail = await new UserDetailModel({
       userId,
       dob,
@@ -126,6 +130,10 @@ const userDetail = async (req, res) => {
       city,
       state,
       pincode,
+      coordinates: {
+        type: 'Point',
+        coordinates: locationData.coordinates // [lng, lat]
+      },
       gender,
       profileImage: profileImageUrl
     }).save();
@@ -241,6 +249,10 @@ const updateProfileDetail = async (req, res) => {
       await Credentialmodel.findByIdAndUpdate(userId, credentialUpdate);
     }
 
+    // Get coordinates from updated address
+    const { getCoordinatesFromPincode } = require('../utils/geocoding');
+    const locationData = await getCoordinatesFromPincode(pincode, city, state);
+
     // Update UserDetail model
     const userDetailUpdate = {
       dob,
@@ -248,6 +260,10 @@ const updateProfileDetail = async (req, res) => {
       city,
       state,
       pincode,
+      coordinates: {
+        type: 'Point',
+        coordinates: locationData.coordinates // [lng, lat]
+      },
       gender
     };
 

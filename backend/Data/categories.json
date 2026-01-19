@@ -2299,22 +2299,590 @@
     ]
   },
   {
-    "name": "accessories"
+    "name": "accessories",
+    "subcategories": [
+      {
+        "name": "bags & backpacks",
+        "subcategories": [
+          {
+            "name": "handbags"
+          },
+          {
+            "name": "backpacks"
+          },
+          {
+            "name": "laptop bags"
+          },
+          {
+            "name": "school bags"
+          },
+          {
+            "name": "travel/gym bags"
+          },
+          {
+            "name": "sling & clutch bags"
+          }
+        ]
+      },
+      {
+        "name": "wallets & belts",
+        "subcategories": [
+          {
+            "name": "wallets"
+          },
+          {
+            "name": "belts"
+          },
+          {
+            "name": "card holders"
+          },
+          {
+            "name": "coin pouches"
+          }
+        ]
+      },
+      {
+        "name": "watches",
+        "subcategories": [
+          {
+            "name": "analog"
+          },
+          {
+            "name": "digital"
+          },
+          {
+            "name": "smart watches"
+          },
+          {
+            "name": "sports watches"
+          }
+        ]
+      },
+      {
+        "name": "sunglasses & eyewear",
+        "subcategories": [
+          {
+            "name": "sunglasses"
+          },
+          {
+            "name": "blue light glasses"
+          },
+          {
+            "name": "reading glasses"
+          },
+          {
+            "name": "frames"
+          }
+        ]
+      },
+      {
+        "name": "jewellery",
+        "subcategories": [
+          {
+            "name": "earrings"
+          },
+          {
+            "name": "necklaces"
+          },
+          {
+            "name": "bangles & bracelets"
+          },
+          {
+            "name": "rings"
+          },
+          {
+            "name": "jewellery sets"
+          }
+        ]
+      },
+      {
+        "name": "hair accessories",
+        "subcategories": [
+          {
+            "name": "clips & pins"
+          },
+          {
+            "name": "hair bands & scrunchies"
+          },
+          {
+            "name": "headbands"
+          },
+          {
+            "name": "bridal accessories"
+          }
+        ]
+      },
+      {
+        "name": "caps & hats",
+        "subcategories": [
+          {
+            "name": "caps"
+          },
+          {
+            "name": "hats"
+          },
+          {
+            "name": "winter caps"
+          }
+        ]
+      },
+      {
+        "name": "scarves & stoles",
+        "subcategories": [
+          {
+            "name": "scarves"
+          },
+          {
+            "name": "stoles"
+          },
+          {
+            "name": "winter wear"
+          }
+        ]
+      }
+    ]
   },
   {
-    "name": "beauty"
+    "name": "beauty",
+    "subcategories": [
+      {
+        "name": "skincare",
+        "subcategories": [
+          {
+            "name": "face wash & cleanser"
+          },
+          {
+            "name": "moisturizers & creams"
+          },
+          {
+            "name": "sunscreen"
+          },
+          {
+            "name": "serums & masks"
+          }
+        ]
+      },
+      {
+        "name": "haircare",
+        "subcategories": [
+          {
+            "name": "shampoo & conditioner"
+          },
+          {
+            "name": "hair oil & serum"
+          },
+          {
+            "name": "hair color"
+          },
+          {
+            "name": "styling products"
+          }
+        ]
+      },
+      {
+        "name": "makeup",
+        "subcategories": [
+          {
+            "name": "face makeup"
+          },
+          {
+            "name": "eye makeup"
+          },
+          {
+            "name": "lip makeup"
+          },
+          {
+            "name": "makeup kits"
+          }
+        ]
+      },
+      {
+        "name": "personal care",
+        "subcategories": [
+          {
+            "name": "soaps & body wash"
+          },
+          {
+            "name": "deodorants"
+          },
+          {
+            "name": "oral care"
+          },
+          {
+            "name": "feminine hygiene"
+          }
+        ]
+      },
+      {
+        "name": "grooming",
+        "subcategories": [
+          {
+            "name": "shaving & trimming"
+          },
+          {
+            "name": "hair removal"
+          },
+          {
+            "name": "grooming kits"
+          },
+          {
+            "name": "beard & styling products"
+          }
+        ]
+      },
+      {
+        "name": "fragrances & deodorants",
+        "subcategories": [
+          {
+            "name": "perfumes"
+          },
+          {
+            "name": "body sprays"
+          },
+          {
+            "name": "roll-ons"
+          },
+          {
+            "name": "gift sets"
+          }
+        ]
+      },
+      {
+        "name": "beauty tools & appliances",
+        "subcategories": [
+          {
+            "name": "hair dryers"
+          },
+          {
+            "name": "straighteners & curlers"
+          },
+          {
+            "name": "trimmers & shavers"
+          },
+          {
+            "name": "face & skin tools"
+          }
+        ]
+      }
+    ]
   },
   {
-    "name": "home&living"
+    "name": "home&living",
+    "subcategories": [
+      {
+        "name": "kitchenware",
+        "subcategories": [
+          {
+            "name": "cookware"
+          },
+          {
+            "name": "utensils"
+          },
+          {
+            "name": "storage containers"
+          },
+          {
+            "name": "kitchen tools"
+          }
+        ]
+      },
+      {
+        "name": "dining essentials",
+        "subcategories": [
+          {
+            "name": "dinner sets"
+          },
+          {
+            "name": "plates & bowls"
+          },
+          {
+            "name": "glasses & mugs"
+          },
+          {
+            "name": "serving items"
+          }
+        ]
+      },
+      {
+        "name": "storage & organizers",
+        "subcategories": [
+          {
+            "name": "storage boxes"
+          },
+          {
+            "name": "wardrobe organizers"
+          },
+          {
+            "name": "kitchen organizers"
+          },
+          {
+            "name": "multipurpose racks"
+          }
+        ]
+      },
+      {
+        "name": "cleaning & utility",
+        "subcategories": [
+          {
+            "name": "cleaning tools"
+          },
+          {
+            "name": "cleaning supplies"
+          },
+          {
+            "name": "laundry items"
+          },
+          {
+            "name": "utility accessories"
+          }
+        ]
+      },
+      {
+        "name": "bedding & linen",
+        "subcategories": [
+          {
+            "name": "bedsheets"
+          },
+          {
+            "name": "blankets & quilts"
+          },
+          {
+            "name": "pillow covers"
+          },
+          {
+            "name": "towels"
+          }
+        ]
+      },
+      {
+        "name": "bathroom accessories",
+        "subcategories": [
+          {
+            "name": "soap dispensers & holders"
+          },
+          {
+            "name": "bathroom racks"
+          },
+          {
+            "name": "mirrors"
+          },
+          {
+            "name": "bath essentials"
+          }
+        ]
+      },
+      {
+        "name": "home improvement items",
+        "subcategories": [
+          {
+            "name": "tools & hardware"
+          },
+          {
+            "name": "electrical fittings"
+          },
+          {
+            "name": "plumbing essentials"
+          },
+          {
+            "name": "repair & maintenance"
+          }
+        ]
+      }
+    ]
   },
   {
     "name": "furniture"
   },
   {
-    "name": "gadgets"
+    "name": "gadgets",
+    "subcategories": [
+      {
+        "name": "mobile accessories",
+        "subcategories": [
+          {
+            "name": "mobile covers"
+          },
+          {
+            "name": "screen guards"
+          },
+          {
+            "name": "mobile holders"
+          },
+          {
+            "name": "cables"
+          }
+        ]
+      },
+      {
+        "name": "audio devices",
+        "subcategories": [
+          {
+            "name": "earphones"
+          },
+          {
+            "name": "headphones"
+          },
+          {
+            "name": "bluetooth speakers"
+          }
+        ]
+      },
+      {
+        "name": "smart devices",
+        "subcategories": [
+          {
+            "name": "smart watches"
+          },
+          {
+            "name": "fitness bands"
+          },
+          {
+            "name": "smart accessories"
+          }
+        ]
+      },
+      {
+        "name": "computer accessories",
+        "subcategories": [
+          {
+            "name": "keyboards & mouse"
+          },
+          {
+            "name": "laptop bags"
+          },
+          {
+            "name": "webcam & mic"
+          },
+          {
+            "name": "usb & storage devices"
+          }
+        ]
+      },
+      {
+        "name": "gaming accessories",
+        "subcategories": [
+          {
+            "name": "controllers"
+          },
+          {
+            "name": "gaming mouse & keyboard"
+          },
+          {
+            "name": "headsets"
+          },
+          {
+            "name": "gaming chairs"
+          }
+        ]
+      },
+      {
+        "name": "chargers & power banks",
+        "subcategories": [
+          {
+            "name": "mobile chargers"
+          },
+          {
+            "name": "fast chargers"
+          },
+          {
+            "name": "power banks"
+          },
+          {
+            "name": "multi-port chargers"
+          }
+        ]
+      }
+    ]
   },
   {
-    "name": "electrical appliances"
+    "name": "electrical appliances",
+    "subcategories": [
+      {
+        "name": "large appliances",
+        "subcategories": [
+          {
+            "name": "refrigerator"
+          },
+          {
+            "name": "washing machine"
+          },
+          {
+            "name": "air conditioner"
+          },
+          {
+            "name": "television"
+          }
+        ]
+      },
+      {
+        "name": "small appliances",
+        "subcategories": [
+          {
+            "name": "mixer grinder"
+          },
+          {
+            "name": "toaster"
+          },
+          {
+            "name": "electric kettle"
+          },
+          {
+            "name": "juicer"
+          }
+        ]
+      },
+      {
+        "name": "kitchen appliances",
+        "subcategories": [
+          {
+            "name": "microwave oven"
+          },
+          {
+            "name": "induction cooktop"
+          },
+          {
+            "name": "gas stove"
+          },
+          {
+            "name": "rice cooker"
+          }
+        ]
+      },
+      {
+        "name": "heating & cooling appliances",
+        "subcategories": [
+          {
+            "name": "room heater"
+          },
+          {
+            "name": "geyser"
+          },
+          {
+            "name": "fans"
+          },
+          {
+            "name": "air coolers"
+          }
+        ]
+      },
+      {
+        "name": "personal appliances",
+        "subcategories": [
+          {
+            "name": "iron"
+          },
+          {
+            "name": "trimmer & shaver"
+          },
+          {
+            "name": "hair dryer"
+          },
+          {
+            "name": "straightener"
+          }
+        ]
+      }
+    ]
   },
   {
     "name": "hardware & sanitary"

@@ -10,6 +10,8 @@ const cartRoutes = require('./Routes/cartRoute');
 const wishlistRoutes = require('./Routes/wishlistRoute');
 const userRoutes = require('./Routes/userRoute');
 const verificationRoutes = require('./Routes/verificationRoute');
+const locationRoutes = require('./Routes/locationRoute');
+const publicLocationRoutes = require('./Routes/publicLocationRoute'); // DEVELOPMENT ONLY - Remove when you get Google Maps API key
 
 const path = require('path');
 const authenticateToken = require('./Middleware/tokenauth');
@@ -50,6 +52,8 @@ server.use('/api/v1/wishlist', authenticateToken, wishlistRoutes); // Wishlist o
 server.use('/api/v1/sellers', authenticateToken, businessDetailRoutes); // Seller operations
 server.use('/api/v1/products', productRoutes);               // Product catalog (public + protected)
 server.use('/api/v1/categories', categoryRoutes);            // Category management
+server.use('/api/v1/locations', authenticateToken, locationRoutes); // Address management
+server.use('/api/v1/public/location', publicLocationRoutes); // DEVELOPMENT ONLY - Remove when you get Google Maps API key
 
 
 

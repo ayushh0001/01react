@@ -43,10 +43,38 @@ images: {
   type: [String],
   required: true
 },
+sellerLocation: {
+  city: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  pincode: {
+    type: String,
+    match: [/^\d{6}$/, "Pincode must be 6 digits"]
+  },
+  coordinates: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
+  }
+},
   },
   {
     timestamp: true,
   }
 );
+
+// Create geospatial index for location-based queries
+productSchema.index({ "sellerLocation.coordinates": "2dsphere" });
 
 module.exports = mongoose.model("AddProduct", productSchema);

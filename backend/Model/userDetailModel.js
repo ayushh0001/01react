@@ -31,6 +31,17 @@ const userDetailSchema = new mongoose.Schema({
     required: true,
     match: /^[1-9][0-9]{5,6}$/
   },
+  coordinates: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
+  },
   gender: {
     type: String,
     required: true,
