@@ -4,7 +4,7 @@ const CateogoryModel = require('../Model/categoryModel');
 const getRootCategories = async (req, res) => {
   try {
     const categories = await CateogoryModel.find({ parent_id: null });
-    
+
     // Add hasChildren flag for each category
     const categoriesWithChildren = await Promise.all(
       categories.map(async (category) => {
@@ -17,7 +17,7 @@ const getRootCategories = async (req, res) => {
         };
       })
     );
-    
+
     res.json(categoriesWithChildren);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
@@ -28,24 +28,30 @@ const getRootCategories = async (req, res) => {
 const getChildrenCategories = async (req, res) => {
   try {
     const { parentId } = req.params;
-    const categories = await CateogoryModel.find({ parent_id: parentId });
-    
-    // Add hasChildren flag for each category
+
+    const categories = await CateogoryModel.find({
+      parent_id: new mongoose.Types.ObjectId(parentId),
+    });
+
     const categoriesWithChildren = await Promise.all(
       categories.map(async (category) => {
-        const childCount = await CateogoryModel.countDocuments({ parent_id: category._id });
+        const childCount = await CateogoryModel.countDocuments({
+          parent_id: category._id,
+        });
+
         return {
           _id: category._id,
           name: category.name,
           parent_id: category.parent_id,
-          hasChildren: childCount > 0
+          hasChildren: childCount > 0,
         };
       })
     );
-    
+
     res.json(categoriesWithChildren);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
