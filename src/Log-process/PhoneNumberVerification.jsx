@@ -17,7 +17,6 @@ export default function PhoneNumberVerification() {
   const [otpSent, setOtpSent] = useState(false); // Track if OTP has been sent
   const [message, setMessage] = useState('');    // Status message display
 
-  // Handle OTP sending - validates phone number and sends OTP via API
   const handleSendOtp = async (e) => {
     e.preventDefault();
 
@@ -27,16 +26,17 @@ export default function PhoneNumberVerification() {
     }
 
     try {
-      // Simulate OTP sending due to CORS issues
+      const response = await axios.post(`${API_BASE_URL}/auth/verification/sendOTP`, {
+        mobile: phone
+      });
+
       setOtpSent(true);
-      setMessage('OTP sent successfully! (Demo: Use 1234)');
+      setMessage(response.data.message || 'OTP sent successfully!');
     } catch (error) {
-      console.error('Send OTP error:', error);
-      setMessage('Failed to send OTP. Please try again.');
+      setMessage(error.response?.data?.error || 'Failed to send OTP.');
     }
   };
 
-  // Handle OTP verification - validates OTP via API and proceeds to next step
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
@@ -46,20 +46,19 @@ export default function PhoneNumberVerification() {
     }
 
     try {
-      // Simulate OTP verification due to CORS issues
-      if (otp === '1234' || otp.length === 4) {
-        setMessage('Phone number verified successfully!');
-        localStorage.setItem('verifiedPhone', phone);
-        
-        setTimeout(() => {
-          navigate('/create-account');
-        }, 1200);
-      } else {
-        setMessage('Invalid OTP. Please use 1234 for demo.');
-      }
+      const response = await axios.post(`${API_BASE_URL}/auth/verification/verifyOTP`, {
+        mobile: phone,
+        otp: otp
+      });
+
+      setMessage(response.data.message || 'Phone number verified successfully!');
+      localStorage.setItem('verifiedPhone', phone);
+      
+      setTimeout(() => {
+        navigate('/create-account');
+      }, 1200);
     } catch (error) {
-      console.error('Verify OTP error:', error);
-      setMessage('OTP verification failed. Please try again.');
+      setMessage(error.response?.data?.error || 'Invalid OTP. Please try again.');
     }
   };
 
@@ -130,7 +129,7 @@ export default function PhoneNumberVerification() {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}  // Remove non-digits
-                placeholder="Enter 4-digit code"
+                placeholder="Enter 6-digit code"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 required
               />
