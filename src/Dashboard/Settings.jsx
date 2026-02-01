@@ -9,7 +9,7 @@ const SectionCard = ({ icon, title, children }) => {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 mb-7 p-1.5">
       
       {/* Card header with icon and title */}
-      <div className="flex items-center px-4 lg:px-7 pt-6 pb-2">
+      <div className="flex items-center px-7 pt-6 pb-2">
         <span className="text-blue-700 text-lg mr-2">
           {icon}
         </span>
@@ -19,7 +19,7 @@ const SectionCard = ({ icon, title, children }) => {
       </div>
       
       {/* Card content area */}
-      <div className="p-4 lg:p-6 pb-4 space-y-1">
+      <div className="p-6 pb-4 space-y-1">
         {children}
       </div>
       
@@ -45,7 +45,7 @@ const Row = ({ label, value, icon, showEdit }) => {
           <div className="text-xs font-medium text-gray-400 mb-1px">
             {label}
           </div>
-          <div className="text-sm lg:text-base font-semibold text-gray-700 break-words">
+          <div className="text-base font-semibold text-gray-700 break-words">
             {value}
           </div>
         </div>
@@ -75,7 +75,6 @@ const Row = ({ label, value, icon, showEdit }) => {
 
 // Main Settings component - displays and manages seller profile settings
 export default function Settings() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState({ owner: "", company: "" });
   const [shop, setShop] = useState({ name: "", owner: "", address: "" });
   const [contact, setContact] = useState({ phone: "", email: "" });
@@ -132,10 +131,8 @@ export default function Settings() {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
-        <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-50 lg:z-auto`}>
-          <Sidebar />
-        </div>
-        <main className="flex-1 p-4 lg:p-7 flex items-center justify-center">
+        <Sidebar />
+        <main className="flex-1 p-7 flex items-center justify-center">
           <div className="text-lg font-semibold text-gray-600">Loading profile...</div>
         </main>
       </div>
@@ -146,41 +143,21 @@ export default function Settings() {
     <div className="flex min-h-screen bg-gray-50">
       
       {/* Sidebar navigation */}
-      <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-50 lg:z-auto`}>
-        <Sidebar />
-      </div>
-      
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <Sidebar />
       
       {/* Main settings content */}
-      <main className="flex-1 p-4 lg:p-7">
+      <main className="flex-1 p-7">
         
         {/* Page header with profile summary */}
         <div className="flex flex-col-reverse md:flex-row md:justify-between max-w-5xl mx-auto mb-7 mt-4 items-start">
           
           {/* Left side - page title and description */}
-          <div className="flex items-center gap-4 mb-4 md:mb-0">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg bg-white shadow-sm border"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold leading-tight mb-0">
-                Profile Settings
-              </h1>
-              <div className="text-gray-500 mb-2 text-sm md:text-base">
-                Manage your seller profile and account information
-              </div>
+          <div>
+            <h1 className="text-2xl md:text-2xl font-bold leading-tight mb-0">
+              Profile Settings
+            </h1>
+            <div className="text-gray-500 mb-2 text-sm md:text-base">
+              Manage your seller profile and account information
             </div>
           </div>
           
