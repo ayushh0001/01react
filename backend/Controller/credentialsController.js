@@ -55,6 +55,9 @@ const signup = async (req, res) => {
         error: "User already exists with this email",
       });
     }
+     if (userRole !== 'deliveryBoy' && !userName) {
+      return res.status(400).json({ error: 'userName is required for non-deliveryBoy users' });
+    }
 
     const signupdata = await new Credentialmodel({
       email,

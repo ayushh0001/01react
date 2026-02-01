@@ -10,7 +10,6 @@ const credentialSchema = new mongoose.Schema({
     },
   userName: {
     type:String,
-    required:true,
     trim:true //trim remove white space from begining and the end of string
   },
   name:{
@@ -21,10 +20,6 @@ const credentialSchema = new mongoose.Schema({
   mobile: {
     type:String,
     required:true,
-  },
-  address:{
-    type:String,
-    // required:true
   },
   userRole:{
     type:String,

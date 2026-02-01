@@ -3,7 +3,7 @@ const express = require("express");
 const colors = require('colors');
 const cookieParser = require('cookie-parser');
 const credentialsRoutes = require('./Routes/credentialsRoute');
-const businessDetailRoutes = require('./Routes/businessDetailRoute');
+const sellerRoutes = require('./Routes/sellerRoutes');
 const productRoutes = require('./Routes/productRoute');
 const categoryRoutes = require('./Routes/categoryRoutes');
 const cartRoutes = require('./Routes/cartRoute');
@@ -12,6 +12,10 @@ const userRoutes = require('./Routes/userRoute');
 const verificationRoutes = require('./Routes/verificationRoute');
 const locationRoutes = require('./Routes/locationRoute');
 const publicLocationRoutes = require('./Routes/publicLocationRoute'); // DEVELOPMENT ONLY - Remove when you get Google Maps API key
+const customerProfileRoutes = require('./Routes/customerProfileRoute');
+const sellerProfileRoutes = require('./Routes/sellerProfileRoute');
+const deliveryProfileRoutes = require('./Routes/deliveryProfileRoute');
+const shippingAddressRoutes = require('./Routes/shippingAddressRoute');
 
 const path = require('path');
 const authenticateToken = require('./Middleware/tokenauth');
@@ -47,9 +51,13 @@ server.use(morgan("dev"));
 server.use('/api/v1/auth', credentialsRoutes);           // Authentication routes
 server.use('/api/v1/verification', authenticateToken, verificationRoutes); // Verification services (GST/PAN)
 server.use('/api/v1/users', authenticateToken, userRoutes);  // User profile management
+server.use('/api/v1/users/customer', authenticateToken, customerProfileRoutes); // Customer profile management
+server.use('/api/v1/users/seller', authenticateToken, sellerProfileRoutes); // Seller profile management
+server.use('/api/v1/users/delivery', authenticateToken, deliveryProfileRoutes); // Delivery profile management
+server.use('/api/v1/users/shipping-address', authenticateToken, shippingAddressRoutes); // Shipping address management
 server.use('/api/v1/cart', authenticateToken, cartRoutes);   // Cart operations
 server.use('/api/v1/wishlist', authenticateToken, wishlistRoutes); // Wishlist operations
-server.use('/api/v1/sellers', authenticateToken, businessDetailRoutes); // Seller operations
+server.use('/api/v1/sellers', authenticateToken, sellerRoutes); // All seller operations (business details + earnings + payouts)
 server.use('/api/v1/products', productRoutes);               // Product catalog (public + protected)
 server.use('/api/v1/categories', categoryRoutes);            // Category management
 server.use('/api/v1/locations', authenticateToken, locationRoutes); // Address management
