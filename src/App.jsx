@@ -10,12 +10,17 @@ import GSTDetails from './Log-process/GSTDetails'; // newly added page
 import BankDetails from './Log-process/BankDetails'; // newly added page
 
 
+
+
 //Dashboard pages....
 
 import DashboardHome from './Dashboard/DashboardHome';
+import Earning from './Dashboard/earning';
 import Orders from './Dashboard/Orders';
 import Products from './Dashboard/Products';
 import AddProduct from './Dashboard/AddProduct';
+import Preview from './Dashboard/Preview';
+import Customer from './Dashboard/Customer';
 import Settings from './Dashboard/Settings';
 import Support from './Dashboard/Support';
 
@@ -24,26 +29,31 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-  <Route path="/login" element={<Login />} />
-  <Route path="/dashboard" element={<DashboardHome />} />
-  <Route path="/signup" element={<Signup />} />
-  <Route path="/phone" element={<PhoneNumberVerification />} />
-  <Route path="/create-account" element={<CreateAccount />} />
-  <Route path="/details" element={<Details />} /> 
-  <Route path="/gst-details" element={<GSTDetails />} />
-  <Route path="/bank" element={<BankDetails />} /> 
-      
-
-
-    
-        {/* Add other dashboard routes here as needed */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/phone" element={<PhoneNumberVerification />} />
+        <Route path="/create-account" element={<CreateAccount />} />
+        <Route path="/details" element={<Details />} /> 
+        <Route path="/gst-details" element={<GSTDetails />} />
+        <Route path="/bank" element={<BankDetails />} /> 
+        
+        {/* Dashboard routes */}
         <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/dashboard/earnings" element={<Earning />} />
         <Route path="/dashboard/orders" element={<Orders />} />
         <Route path="/dashboard/products" element={<Products />} />
         <Route path="/dashboard/add-product" element={<AddProduct />} />
+        <Route path="/dashboard/preview" element={<Preview />} />
+        <Route path="/dashboard/customers" element={<Customer />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/dashboard/support" element={<Support />} />
       </Routes>
     </Router>
   );
 }
+
+
+
+
+
+
