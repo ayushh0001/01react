@@ -11,7 +11,7 @@ const login = async (req, res) => {
 
     // Find user by email or username
     const user = await Credentialmodel.findOne({
-      $or: [{ email: email }, { username: email }],
+      $or: [{ email: email }, { userName: email }],
     });
 
     if (!user) {
