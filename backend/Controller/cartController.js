@@ -17,15 +17,6 @@ const getCartCount = async (req, res) => {
 const getCartItems = async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log("Hello world");
-    if()
-
-       {{
-
-
-        fkdfjaldkdfjadks
-       }}
-
     const cartItems = await CartModel.find({ userId })
       .populate('productId')
       .sort({ createdAt: -1 });
