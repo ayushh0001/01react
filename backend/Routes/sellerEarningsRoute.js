@@ -5,6 +5,7 @@ const {
     getEarningsSummary,
     getOrderEarnings,
     getPayouts,
+    getWalletSummary,
     requestPayout,
     createMockEarnings
 } = require('../Controller/sellerEarningsController');
@@ -21,7 +22,10 @@ router.get('/earnings/:orderId', getOrderEarnings);
 // 57. GET /api/v1/sellers/payouts - Returns seller's payout history
 router.get('/payouts', getPayouts);
 
-// 58. POST /api/v1/sellers/payouts/request - Requests payout for processed earnings
+// 58. GET /api/v1/sellers/wallet - Returns seller's wallet summary
+router.get('/wallet', getWalletSummary);
+
+// 59. POST /api/v1/sellers/payouts/request - Requests payout for withdrawable earnings
 router.post('/payouts/request', requestPayout);
 
 // Helper route for testing - Create mock earnings data

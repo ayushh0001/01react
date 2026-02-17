@@ -92,6 +92,30 @@ const getSellerEarnings = async (req, res) => {
                             $cond: [{ $eq: ["$status", "processed"] }, "$netAmount", 0]
                         }
                     },
+                    walletBalance: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ["$status", "pending"] },
+                                    { $eq: ["$isWithdrawable", true] }
+                                ]}, 
+                                "$netAmount", 
+                                0
+                            ]
+                        }
+                    },
+                    lockedBalance: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ["$status", "pending"] },
+                                    { $eq: ["$isWithdrawable", false] }
+                                ]}, 
+                                "$netAmount", 
+                                0
+                            ]
+                        }
+                    },
                     totalOrders: { $sum: 1 }
                 }
             }
@@ -102,6 +126,8 @@ const getSellerEarnings = async (req, res) => {
             totalEarnings: 0,
             pendingEarnings: 0,
             processedEarnings: 0,
+            walletBalance: 0,
+            lockedBalance: 0,
             totalOrders: 0
         };
 
@@ -290,27 +316,116 @@ const getPayouts = async (req, res) => {
     }
 };
 
-// 58. POST /api/v1/sellers/payouts/request - Requests payout for processed earnings
+// 58. GET /api/v1/sellers/wallet - Returns seller's wallet summary
+const getWalletSummary = async (req, res) => {
+    try {
+        const sellerId = req.user.userId;
+        
+        const summary = await SellerEarnings.aggregate([
+            { $match: { sellerId } },
+            {
+                $group: {
+                    _id: null,
+                    totalWalletBalance: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ["$status", "pending"] },
+                                    { $eq: ["$isWithdrawable", true] }
+                                ]}, 
+                                "$netAmount", 0
+                            ]
+                        }
+                    },
+                    lockedAmount: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ["$status", "pending"] },
+                                    { $eq: ["$isWithdrawable", false] }
+                                ]}, 
+                                "$netAmount", 0
+                            ]
+                        }
+                    },
+                    totalEarnings: { $sum: "$netAmount" },
+                    withdrawnAmount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "paid"] }, "$netAmount", 0]
+                        }
+                    }
+                }
+            }
+        ]);
+        
+        const walletData = summary[0] || {
+            totalWalletBalance: 0,
+            lockedAmount: 0,
+            totalEarnings: 0,
+            withdrawnAmount: 0
+        };
+        
+        res.status(200).json({
+            success: true,
+            wallet: walletData
+        });
+        
+    } catch (error) {
+        console.error("Error fetching wallet summary:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: "Failed to fetch wallet summary" 
+        });
+    }
+};
+
+// Helper function to unlock withdrawable earnings (run daily via cron)
+const unlockWithdrawableEarnings = async () => {
+    try {
+        const now = new Date();
+        
+        const result = await SellerEarnings.updateMany(
+            {
+                withdrawableDate: { $lte: now },
+                isWithdrawable: false,
+                status: 'pending'
+            },
+            {
+                isWithdrawable: true
+            }
+        );
+        
+        console.log(`Unlocked ${result.modifiedCount} earnings for withdrawal`);
+        return result;
+        
+    } catch (error) {
+        console.error("Error unlocking withdrawable earnings:", error);
+        throw error;
+    }
+};
+
+// 59. POST /api/v1/sellers/payouts/request - Requests payout for withdrawable earnings
 const requestPayout = async (req, res) => {
     try {
         const sellerId = req.user.userId;
         const { amount, bankAccountId } = req.body;
 
-        // Get all processed earnings for this seller
-        const processedEarnings = await SellerEarnings.find({
+        // Get all withdrawable earnings for this seller
+        const withdrawableEarnings = await SellerEarnings.find({
             sellerId,
-            status: 'processed'
+            status: 'pending',
+            isWithdrawable: true
         });
 
-        if (processedEarnings.length === 0) {
+        if (withdrawableEarnings.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: "No processed earnings available for payout"
+                error: "No withdrawable earnings available for payout"
             });
         }
 
         // Calculate total available amount
-        const totalAvailable = processedEarnings.reduce((sum, earning) => sum + earning.netAmount, 0);
+        const totalAvailable = withdrawableEarnings.reduce((sum, earning) => sum + earning.netAmount, 0);
         const payoutAmount = amount || totalAvailable;
 
         if (payoutAmount > totalAvailable) {
@@ -327,16 +442,20 @@ const requestPayout = async (req, res) => {
         const payout = new Payout({
             sellerId,
             totalAmount: payoutAmount,
-            earningsCount: processedEarnings.length,
+            earningsCount: withdrawableEarnings.length,
             bankAccount: bankAccountId || "****1234", // Mock bank account
             estimatedPayoutDate
         });
 
         await payout.save();
 
-        // Update earnings status to 'paid' (in real implementation, do this after actual payout)
+        // Update earnings status to 'paid'
         await SellerEarnings.updateMany(
-            { sellerId, status: 'processed' },
+            { 
+                sellerId, 
+                status: 'pending',
+                isWithdrawable: true
+            },
             { 
                 status: 'paid', 
                 payoutDate: new Date(),
@@ -429,6 +548,8 @@ module.exports = {
     getEarningsSummary,
     getOrderEarnings,
     getPayouts,
+    getWalletSummary,
+    unlockWithdrawableEarnings,
     requestPayout,
-    createMockEarnings // For testing only
+    createMockEarnings
 };

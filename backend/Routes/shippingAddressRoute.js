@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { createShippingAddress, getShippingAddresses, getShippingAddress, updateShippingAddress, deleteShippingAddress } = require('../Controller/shippingAddressController');
-const authMiddleware = require('../Middleware/authMiddleware');
+const authenticateToken = require('../Middleware/tokenauth');
 
 // Shipping address routes
-router.post('/', authMiddleware, createShippingAddress);
-router.get('/', authMiddleware, getShippingAddresses);
-router.get('/:id', authMiddleware, getShippingAddress);
-router.put('/:id', authMiddleware, updateShippingAddress);
-router.delete('/:id', authMiddleware, deleteShippingAddress);
+router.post('/', authenticateToken, createShippingAddress);
+router.get('/', authenticateToken, getShippingAddresses);
+router.get('/:id', authenticateToken, getShippingAddress);
+router.put('/:id', authenticateToken, updateShippingAddress);
+router.delete('/:id', authenticateToken, deleteShippingAddress);
 
 module.exports = router;

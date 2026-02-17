@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { createCustomerProfile, getCustomerProfile, updateCustomerProfile } = require('../Controller/customerProfileController');
-const authMiddleware = require('../Middleware/authMiddleware');
+const authenticateToken = require('../Middleware/tokenauth');
 
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
 // Customer profile routes
-router.post('/profile', authMiddleware, upload.single('profileImage'), createCustomerProfile);
-router.get('/profile', authMiddleware, getCustomerProfile);
-router.put('/profile', authMiddleware, upload.single('profileImage'), updateCustomerProfile);
+router.post('/profile', authenticateToken, upload.single('profileImage'), createCustomerProfile);
+router.get('/profile', authenticateToken, getCustomerProfile);
+router.put('/profile', authenticateToken, upload.single('profileImage'), updateCustomerProfile);
 
 module.exports = router;

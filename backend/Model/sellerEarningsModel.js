@@ -34,6 +34,18 @@ const sellerEarningsSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    deliveredDate: {
+        type: Date,
+        required: true
+    },
+    withdrawableDate: {
+        type: Date,
+        required: true
+    },
+    isWithdrawable: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ['pending', 'processed', 'paid'],
@@ -58,9 +70,14 @@ const sellerEarningsSchema = new mongoose.Schema({
     }
 });
 
-// Update the updatedAt field before saving
+// Set withdrawableDate to 15 days after deliveredDate
 sellerEarningsSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
+    
+    if (this.deliveredDate && !this.withdrawableDate) {
+        this.withdrawableDate = new Date(this.deliveredDate.getTime() + 15 * 24 * 60 * 60 * 1000);
+    }
+    
     next();
 });
 
