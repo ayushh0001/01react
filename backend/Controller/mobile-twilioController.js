@@ -15,7 +15,7 @@ const client = new twilio(accountSid,authToken)
         // By twilio service API
 
 
- const sendOTP = async(req, res)=> {
+  const sendOTP = async(req, res)=> {
   const { mobile } = req.body;
   const formattedMobile = `+91${mobile}`;
   try {
@@ -76,11 +76,11 @@ const forgetPasswordSendOTP = async(req, res) => {
     }
 
     // Check if user exists with both mobile and email
-    const user = await Credentialmodel.findOne({ 
-      mobile: formattedMobile, 
-      email: email 
+    const user = await Credentialmodel.findOne({
+      mobile: formattedMobile,
+      email: email
     });
-    
+
     if (!user) {
       return res.status(404).json({ error: "No account found with this mobile and email combination" });
     }
@@ -113,11 +113,11 @@ const forgetPasswordVerifyOTP = async(req, res) => {
 
     if (verificationCheck.status === 'approved') {
       // Find user to get userId for JWT payload
-      const user = await Credentialmodel.findOne({ 
-        mobile: formattedMobile, 
-        email: email 
+      const user = await Credentialmodel.findOne({
+        mobile: formattedMobile,
+        email: email
       });
-      
+
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -171,26 +171,26 @@ const forgetPasswordResetPassword = async (req, res) => {
 
     // Hash password manually (same as model's pre-save middleware)
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Update only password field without triggering full validation
     const user = await Credentialmodel.findOneAndUpdate(
-      { 
+      {
         _id: decoded.userId,
         mobile: decoded.mobile,
-        email: decoded.email 
+        email: decoded.email
       },
       { password: hashedPassword },
       { new: true } // Return updated document
     );
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     // Generate auth token and set cookie (auto-login after password reset)
     generateTokenAndSetCookie(res, user);
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Password reset successfully",
       user: {
         id: user._id,

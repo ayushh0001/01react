@@ -32,7 +32,7 @@ const server = express();
 // Allow frontend Vercel domain + localhost for dev
 server.use(cors({
   origin: [
-    'https://01react.vercel.app/',// frontend live URL
+    'https://01react.vercel.app',// frontend live URL
     'http://localhost:3000',       // frontend local dev
     'http://localhost:5174'        // Vite dev server
   ],
