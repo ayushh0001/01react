@@ -33,8 +33,9 @@ const server = express();
 server.use(cors({
   origin: [
     'https://01react.vercel.app',// frontend live URL
-    'http://localhost:3000',       // frontend local dev
-    'http://localhost:5174'        // Vite dev server
+    'http://localhost:5174',        // Vite dev server
+    'http://localhost:8081',        // Jay Frontend
+    'https://www.zpinshop.com'      //ayush seller side
   ],
   credentials: true  // if using cookies/JWT
 }));
