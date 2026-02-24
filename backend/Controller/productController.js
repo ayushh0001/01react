@@ -70,6 +70,53 @@ console.log("Product data images field:", productData.images);
   }
 };
 
+
+const deleteProduct = async (req, res) => {
+  try {
+    // 1. Get IDs from request
+    const productId = req.params.id; // Matches /:id in your docs
+    const loggedInUserId = req.user.userId; // Provided by your auth middleware
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required in the URL path"
+      });
+    }
+
+    // 2. Attempt to find and delete ONLY if the product belongs to this user
+    // This is a more efficient single-step database operation
+    const deletedProduct = await ProductModel.findOneAndDelete({
+      _id: productId,
+      userId: loggedInUserId
+    });
+
+    // 3. Handle result
+    if (!deletedProduct) {
+      /* If no product is found with this ID belonging to this user,
+         we return 404 to avoid revealing if the product exists
+         but belongs to someone else (security best practice).
+      */
+      return res.status(404).json({
+        success: false,
+        message: "Product not found or you do not have permission to delete it"
+      });
+    }
+
+    // 4. Success Response
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error occurred while deleting the product"
+    });
+  }
+};
 const getAllSellerProduct = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -274,4 +321,4 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, getAllSellerProduct, getProductPreview, getAllProducts, getProductById, getProductsByCategory };
+module.exports = { addProduct,deleteProduct, getAllSellerProduct, getProductPreview, getAllProducts, getProductById, getProductsByCategory };

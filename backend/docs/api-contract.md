@@ -742,10 +742,30 @@ Deletes the specified product (seller only - own products).
     None
 • Headers
     Content-Type: application/json
-    Authorization: Bearer <OAuth Token>
+    Authorization: Bearer <JWT Token>
 • Success Response:
     • Code: 200
-    • Content: { message: "Product deleted successfully" }
+    • Content: { "success": true, "message": "Product deleted successfully" }
+• Error Responses:
+    • Code: 400 BAD REQUEST
+    • Reason: Product ID missing or malformed.
+    • Content: { "success": false, "message": "Product ID is required" }
+
+    • Code: 401 UNAUTHORIZED
+    • Reason: No token provided or token expired.
+    • Content: { "success": false, "message": "Authentication required" }
+
+    • Code: 404 NOT FOUND
+    • Reason: Product does not exist OR product does not belong to the logged-in seller.
+    • Content: { "success": false, "message": "Product not found or permission denied" }
+
+    • Code: 500 INTERNAL SERVER ERROR
+    • Reason: Database connection failure or server crash.
+    • Content: { "success": false, "message": "Product ID is required" }
+
+    • Code: 400 BAD REQUEST
+    • Reason: Product ID missing or malformed.
+    • Content: { "success": false, "message": "Internal server error" }
 
 26. GET :- /api/v1/products/seller/:userId
 --------------------------------------------------------------------------------------

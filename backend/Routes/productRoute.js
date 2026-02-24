@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router();
-const {addProduct,getAllSellerProduct,getProductPreview,getAllProducts,getProductById,getProductsByCategory} = require('../Controller/productController')
+const {addProduct,deleteProduct,getAllSellerProduct,getProductPreview,getAllProducts,getProductById,getProductsByCategory} = require('../Controller/productController')
 const upload = require('../config/multer');
 const authenticateToken = require('../Middleware/tokenauth');
 
@@ -8,6 +8,7 @@ const authenticateToken = require('../Middleware/tokenauth');
 
 // Using multer middleware on the route to accept multiple images with field name 'images'
 router.post("/addProduct",authenticateToken,upload.array('images', 10),addProduct )
+.delete("/deleteProduct/:id",authenticateToken, deleteProduct)
 .get("/seller/:userId", getAllSellerProduct)
 .get("/productPreview/:productId",getProductPreview )
 .get("/category/:categoryId", getProductsByCategory)
