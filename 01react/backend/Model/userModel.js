@@ -88,7 +88,7 @@ export const findOrCreateGoogleUser = async (googleData) => {
   const newUser = await createUser({
     userName,
     name,
-    mobile: '', // Will be added later during profile completion
+    mobile: null, // Will be added later during profile completion
     email,
     password: null, // No password for OAuth users
     userRole: 'customer',
