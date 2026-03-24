@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://zpin-ecommerce-backend-997x.onrender.com/api/:path*"
+            "destination": "https://zpin-backend.onrender.com/api/:path*"
         },
         {
             "source": "/(.*)",

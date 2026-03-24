@@ -172,7 +172,7 @@ export default function Login() {
   // Handle Google OAuth login
   const handleGoogleLogin = () => {
     const backendUrl = import.meta.env.PROD 
-      ? 'https://zpin-ecommerce-backend-997x.onrender.com'
+      ? 'https://zpin-backend.onrender.com'
       : 'http://localhost:5000';
     window.location.href = `${backendUrl}/api/v1/auth/google`;
   };
