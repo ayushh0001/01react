@@ -135,12 +135,9 @@ export default function Signup() {
 
   // Handle Google OAuth signup
   const handleGoogleSignup = () => {
-    // Determine the backend URL based on environment
     const backendUrl = import.meta.env.PROD 
-      ? 'https://www.zpinshop.com'  // Production backend
-      : 'http://localhost:5000';     // Development backend
-    
-    // Redirect to backend Google OAuth endpoint
+      ? 'https://zpin-ecommerce-backend-997x.onrender.com'
+      : 'http://localhost:5000';
     window.location.href = `${backendUrl}/api/v1/auth/google`;
   };
 
