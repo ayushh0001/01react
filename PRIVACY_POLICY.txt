@@ -1,0 +1,360 @@
+================================================================================
+                      PRIVACY POLICY — ZPIN VENDOR DASHBOARD
+                        (Seller / Merchant Portal)
+================================================================================
+Effective Date: March 24, 2026
+Last Updated: March 24, 2026
+
+This Privacy Policy applies to the ZPIN Vendor Dashboard ("Vendor Portal",
+"Platform", "we", "us", or "our"), the seller-facing application that enables
+merchants to list products, manage inventory, process orders, and track earnings
+on the ZPIN e-commerce ecosystem.
+
+By registering as a seller and using the ZPIN Vendor Dashboard, you agree to
+the collection and use of your information as described in this Privacy Policy.
+
+────────────────────────────────────────────────────────────────────────────────
+1. WHO WE ARE
+────────────────────────────────────────────────────────────────────────────────
+
+ZPIN operates a multi-sided e-commerce platform connecting sellers (vendors)
+with customers. The Vendor Dashboard is the dedicated portal through which
+sellers manage their storefronts, products, and business operations on ZPIN.
+
+For privacy-related queries, contact us at:
+  Email  : vendor-privacy@zpin.com
+  Address: [Company Address], India
+
+────────────────────────────────────────────────────────────────────────────────
+2. INFORMATION WE COLLECT FROM SELLERS
+────────────────────────────────────────────────────────────────────────────────
+
+2.1 ACCOUNT AND IDENTITY INFORMATION
+
+  a) Registration Details
+     - Full name
+     - Email address
+     - Mobile number
+     - Password (stored in hashed/encrypted form using bcrypt)
+     - Username (auto-generated from email prefix)
+
+  b) Personal Profile
+     - Date of birth
+     - Gender
+     - Personal address
+     - Personal PAN number (for tax compliance)
+     - Profile photograph (optional)
+
+2.2 BUSINESS INFORMATION
+
+  a) Business Details
+     - Business name
+     - Business description
+     - Business type (sole proprietor, partnership, company, etc.)
+     - GST number (Goods and Services Tax registration)
+     - Business PAN number
+     - Business address (street, city, state, pincode)
+     - Business verification status
+
+  b) Bank and Financial Details
+     - Bank name
+     - Bank account number
+     - Account holder name
+     - Account type (savings / current)
+     - IFSC code
+     - Bank verification status
+     These details are used exclusively for processing seller payouts and
+     are stored with encryption. We do not share bank details with customers.
+
+2.3 PRODUCT AND INVENTORY INFORMATION
+
+  a) Product Listings
+     - Product name, description, and category
+     - Product images (uploaded to secure object storage)
+     - Price, discount, and size-based quantities
+     - Stock availability status (in stock / out of stock)
+     - Product approval status
+
+  b) Category Data
+     - Category hierarchy selections (e.g., Fashion > Men > T-Shirts)
+     - Size chart associations per category
+
+2.4 ORDER AND TRANSACTION INFORMATION
+
+  a) Order Data
+     - Order IDs and order numbers
+     - Customer name and delivery address (for fulfillment purposes only)
+     - Products ordered, quantities, and prices
+     - Order status (pending, processing, shipped, delivered, cancelled)
+     - Payment method and payment status
+
+  b) Earnings and Payouts
+     - Gross order amount
+     - Platform commission / fee deducted
+     - Net payout amount
+     - Payout history and status
+     - Total orders and revenue statistics
+
+2.5 AUTHENTICATION AND SESSION DATA
+
+  a) Login and Session
+     - Login timestamps and session duration
+     - Authentication tokens (JWT) with 24-hour expiry
+     - Session cookies (secure, httpOnly in production)
+     - Password reset tokens and timestamps
+
+  b) OAuth Authentication
+     - If you sign in using Google OAuth, we receive your name, email, and
+       profile picture from Google as permitted by your Google account settings.
+
+2.6 USAGE AND ACTIVITY DATA
+
+  a) Dashboard Interactions
+     - Pages visited within the dashboard
+     - Products added, edited, or deleted
+     - Orders viewed and status updates made
+     - Earnings reports accessed
+
+  b) Technical Data
+     - IP address
+     - Browser type and version
+     - Device type and operating system
+     - HTTP request logs (method, path, timestamp)
+
+2.7 UPLOADED FILES AND MEDIA
+
+  - Product images uploaded by sellers are stored in our secure object
+    storage system (MinIO / S3-compatible storage).
+  - Profile photographs are stored separately in a dedicated profile
+    image bucket with appropriate access controls.
+
+────────────────────────────────────────────────────────────────────────────────
+3. HOW WE USE SELLER INFORMATION
+────────────────────────────────────────────────────────────────────────────────
+
+3.1 Account and Identity Verification
+     - Verify seller identity before granting access to the platform
+     - Conduct KYC (Know Your Customer) checks as required by law
+     - Verify GST registration and business legitimacy
+     - Verify bank account details before processing payouts
+
+3.2 Platform Operations
+     - Enable product listing, editing, and inventory management
+     - Process and route customer orders to the correct seller
+     - Coordinate with delivery partners for order fulfillment
+     - Manage product approval workflows (admin review before listing)
+     - Enable real-time order notifications via WebSocket connections
+
+3.3 Financial Processing
+     - Calculate seller earnings after platform commission deduction
+     - Process payouts to verified bank accounts
+     - Generate earnings reports and transaction histories
+     - Comply with GST and income tax reporting requirements
+
+3.4 Communication
+     - Send order notifications (new orders, status updates, cancellations)
+     - Send payout confirmation and earnings summaries
+     - Notify sellers of product approval or rejection decisions
+     - Send platform updates, policy changes, and feature announcements
+     - Respond to seller support queries
+
+3.5 Platform Integrity and Compliance
+     - Monitor for fraudulent listings or transactions
+     - Enforce seller terms of service
+     - Resolve disputes between sellers and customers
+     - Comply with legal and regulatory requirements
+
+3.6 Analytics and Improvement
+     - Analyze seller performance metrics to improve platform tools
+     - Identify popular categories and pricing trends
+     - Improve the product listing and order management experience
+
+────────────────────────────────────────────────────────────────────────────────
+4. LEGAL BASIS FOR PROCESSING
+────────────────────────────────────────────────────────────────────────────────
+
+  - Contractual Necessity: Processing required to fulfill our seller
+    agreement, including account management, order processing, and payouts.
+
+  - Legal Obligation: GST compliance, income tax reporting, KYC requirements
+    under the Prevention of Money Laundering Act (PMLA), and compliance with
+    the Digital Personal Data Protection Act 2023.
+
+  - Legitimate Interests: Fraud prevention, platform security, analytics,
+    and improving seller tools.
+
+  - Consent: Marketing communications and optional features where you have
+    given explicit consent.
+
+────────────────────────────────────────────────────────────────────────────────
+5. SHARING SELLER INFORMATION
+────────────────────────────────────────────────────────────────────────────────
+
+We do not sell seller data. We share information only as follows:
+
+5.1 With Customers
+     - Your business/store name and product information are visible to
+       customers on the ZPIN website.
+     - Your personal contact details (personal mobile, personal address)
+       are NOT shared with customers.
+
+5.2 With Delivery Partners
+     - Pickup address and order details are shared with delivery partners
+       to enable order collection from your location.
+
+5.3 With the ZPIN Admin Panel
+     - Your account details, business information, product listings, orders,
+       and earnings are accessible to ZPIN administrators for platform
+       management, compliance, and dispute resolution.
+
+5.4 With Payment and Banking Partners
+     - Bank account details are shared with our payment processing partners
+       solely for the purpose of processing seller payouts.
+
+5.5 With Service Providers
+     - Cloud hosting and database providers
+     - Object storage providers (for product and profile images)
+     - Email and SMS notification providers
+     - Analytics and monitoring tools
+     All service providers are bound by data processing agreements.
+
+5.6 For Legal Compliance
+     - We may disclose seller information to tax authorities (GST, income
+       tax), law enforcement, or courts when required by applicable law.
+
+5.7 Business Transfers
+     - In the event of a merger, acquisition, or asset sale, seller data
+       may be transferred to the successor entity.
+
+────────────────────────────────────────────────────────────────────────────────
+6. SENSITIVE FINANCIAL DATA HANDLING
+────────────────────────────────────────────────────────────────────────────────
+
+We treat bank account details, PAN numbers, and GST numbers as sensitive
+financial data. These are:
+
+  - Stored with encryption at rest
+  - Accessible only to authorized ZPIN personnel with a legitimate need
+  - Never displayed in full in the dashboard UI (masked where shown)
+  - Never shared with customers or unauthorized third parties
+  - Retained for the period required by Indian financial regulations
+
+────────────────────────────────────────────────────────────────────────────────
+7. PRODUCT IMAGES AND MEDIA
+────────────────────────────────────────────────────────────────────────────────
+
+Product images uploaded by sellers are:
+  - Stored in a secure, access-controlled object storage system
+  - Used to display products to customers on the ZPIN website
+  - Retained as long as the product listing is active
+  - Deleted within 30 days of product deletion upon request
+
+Profile photographs are stored in a separate bucket with public-read access
+to enable display within the dashboard and on seller profiles.
+
+────────────────────────────────────────────────────────────────────────────────
+8. DATA RETENTION
+────────────────────────────────────────────────────────────────────────────────
+
+  - Account and profile data    : Retained while the seller account is active
+                                  and for 3 years after account closure.
+  - Business and KYC documents  : Retained for 7 years as required by PMLA
+                                  and GST regulations.
+  - Order and transaction data  : Retained for 7 years for tax compliance.
+  - Earnings and payout records : Retained for 7 years.
+  - Product listings            : Retained while active; deleted listings
+                                  retained for 1 year for dispute resolution.
+  - Session and log data        : Retained for 90 days.
+  - Password reset tokens       : Expire after 1 hour and are purged.
+
+────────────────────────────────────────────────────────────────────────────────
+9. DATA SECURITY
+────────────────────────────────────────────────────────────────────────────────
+
+  - Passwords are hashed using bcrypt (never stored in plain text)
+  - JWT tokens are used for authentication with configurable expiry
+  - Session cookies use "secure" and "httpOnly" flags in production
+  - Database connections are encrypted
+  - Object storage access is controlled via bucket policies
+  - Role-based access control limits data access within the platform
+  - Regular security audits and vulnerability assessments are conducted
+  - Password reset flows use time-limited, single-use tokens
+
+────────────────────────────────────────────────────────────────────────────────
+10. YOUR RIGHTS AS A SELLER
+────────────────────────────────────────────────────────────────────────────────
+
+Under the Digital Personal Data Protection Act 2023 and applicable laws:
+
+  a) Right to Access
+     Request a copy of the personal and business data we hold about you.
+
+  b) Right to Correction
+     Request correction of inaccurate business or personal information.
+
+  c) Right to Erasure
+     Request deletion of your account and associated data, subject to
+     legal retention requirements (financial records, tax compliance).
+
+  d) Right to Data Portability
+     Request your product listings, order history, and earnings data in
+     a structured, exportable format.
+
+  e) Right to Withdraw Consent
+     Withdraw consent for marketing communications at any time.
+
+  f) Right to Grievance Redressal
+     Lodge a complaint with our Data Protection Officer or with the
+     Data Protection Board of India.
+
+To exercise these rights, contact vendor-privacy@zpin.com. We will respond
+within 30 days.
+
+────────────────────────────────────────────────────────────────────────────────
+11. ACCOUNT SUSPENSION AND TERMINATION
+────────────────────────────────────────────────────────────────────────────────
+
+If your seller account is suspended or terminated:
+  - Active product listings will be unpublished immediately
+  - Pending orders will be handled per our seller agreement
+  - Financial records will be retained for the legally required period
+  - You may request a data export before account closure
+  - Personal data not subject to legal retention will be deleted within
+    90 days of account closure
+
+────────────────────────────────────────────────────────────────────────────────
+12. COOKIES AND TRACKING
+────────────────────────────────────────────────────────────────────────────────
+
+The Vendor Dashboard uses:
+  - Session cookies for authentication (required, cannot be disabled)
+  - Functional cookies to remember dashboard preferences
+  - Analytics cookies to monitor dashboard performance and usage
+
+────────────────────────────────────────────────────────────────────────────────
+13. CHANGES TO THIS PRIVACY POLICY
+────────────────────────────────────────────────────────────────────────────────
+
+We may update this Privacy Policy periodically. Material changes will be
+communicated via email and a notice within the Vendor Dashboard. Continued
+use of the platform after the effective date constitutes acceptance of the
+updated policy.
+
+────────────────────────────────────────────────────────────────────────────────
+14. CONTACT US
+────────────────────────────────────────────────────────────────────────────────
+
+  Vendor Privacy Team
+  ZPIN E-Commerce Platform
+  Email  : vendor-privacy@zpin.com
+  Phone  : [Contact Number]
+  Address: [Company Address], India
+
+  Grievance Officer:
+  Name   : [Grievance Officer Name]
+  Email  : grievance@zpin.com
+  Response time: Within 30 days of receipt of complaint
+
+================================================================================
+                    © 2026 ZPIN. All Rights Reserved.
+================================================================================

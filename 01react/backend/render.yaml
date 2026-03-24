@@ -1,0 +1,62 @@
+# Render Blueprint for Zpin E-Commerce Backend
+# This file helps Render automatically configure your deployment
+
+services:
+  # Backend Web Service
+  - type: web
+    name: zpin-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: FRONTEND_URL
+        value: https://www.zpinshop.com
+      - key: ALLOWED_ORIGINS
+        value: https://www.zpinshop.com
+      - key: BASE_URL
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: zpin-ecommerce-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: zpin-ecommerce-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: zpin-ecommerce-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: zpin-ecommerce-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: zpin-ecommerce-db
+          property: password
+      # Add these manually in Render dashboard:
+      # - JWT_SECRET
+      # - JWT_REFRESH_SECRET
+      # - GOOGLE_CLIENT_ID
+      # - GOOGLE_CLIENT_SECRET
+      # - GOOGLE_CALLBACK_URL
+      # - TWILIO_ACCOUNT_SID
+      # - TWILIO_AUTH_TOKEN
+      # - TWILIO_PHONE_NUMBER
+
+databases:
+  # PostgreSQL Database
+  - name: zpin-ecommerce-db
+    databaseName: zpin_ecommerce
+    user: zpin_user
+    region: singapore
+    plan: free
+    ipAllowList: []
