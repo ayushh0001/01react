@@ -91,7 +91,7 @@ export const findOrCreateGoogleUser = async (googleData) => {
     mobile: null, // Will be added later during profile completion
     email,
     password: null, // No password for OAuth users
-    userRole: 'customer',
+    userRole: 'seller',
     googleId,
     isVerified: emailVerified || true
   });
