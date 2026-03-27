@@ -15,7 +15,7 @@ export default function DashboardHome() {
     totalSales: 0,
     avgOrderValue: 0,
     totalOrders: 0,
-    customerSatisfaction: 4.5,
+    totalProducts: 0,
     chartLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     salesData: [0, 0, 0, 0, 0, 0, 0],
     orders: []
@@ -111,7 +111,7 @@ export default function DashboardHome() {
           totalSales: stats.total_revenue || 0,
           avgOrderValue: stats.avg_order_value || 0,
           totalOrders: stats.delivered_orders || 0,
-          customerSatisfaction: 4.5, // TODO: Calculate from reviews
+          totalProducts: stats.total_products || 0,
           chartLabels,
           salesData: chartValues,
           orders: recent_orders || []
@@ -125,7 +125,7 @@ export default function DashboardHome() {
         totalSales: 0,
         avgOrderValue: 0,
         totalOrders: 0,
-        customerSatisfaction: 4.5,
+        totalProducts: 0,
         chartLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         salesData: [0, 0, 0, 0, 0, 0, 0],
         orders: []
@@ -257,14 +257,14 @@ export default function DashboardHome() {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <text x="4" y="18" fontSize="16" fontFamily="sans-serif" fill="white" stroke="none">₹</text>
                 </svg>
               </div>
             </div>
             <div className="text-blue-600 text-sm font-medium mb-1">Total Sales</div>
             <div className="text-2xl lg:text-3xl font-bold text-blue-900">
-              {loading ? '...' : `₹${dashboardData.totalSales.toLocaleString()}`}
+              {loading ? '...' : `₹${Number(dashboardData.totalSales).toLocaleString('en-IN')}`}
             </div>
           </div>
 
@@ -279,7 +279,7 @@ export default function DashboardHome() {
             </div>
             <div className="text-purple-600 text-sm font-medium mb-1">Average Order Value</div>
             <div className="text-2xl lg:text-3xl font-bold text-purple-900">
-              {loading ? '...' : `₹${Math.round(dashboardData.avgOrderValue).toLocaleString()}`}
+              {loading ? '...' : `₹${Math.round(dashboardData.avgOrderValue).toLocaleString('en-IN')}`}
             </div>
           </div>
 
@@ -298,17 +298,21 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {/* Customer satisfaction metric */}
+          {/* Total products metric */}
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </div>
             </div>
-            <div className="text-orange-600 text-sm font-medium mb-1">Customer Satisfaction</div>
-            <div className="text-2xl lg:text-3xl font-bold text-orange-900">{dashboardData.customerSatisfaction}/5</div>
+            <div className="text-orange-600 text-sm font-medium mb-1">Total Products</div>
+            <div className="text-2xl lg:text-3xl font-bold text-orange-900">
+              {loading ? '...' : dashboardData.totalProducts}
+            </div>
           </div>
 
         </div>

@@ -1,5 +1,4 @@
-// Import necessary React hooks and router functionality
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../utils/api'; // ← use shared instance so response interceptor captures the JWT
 
@@ -55,8 +54,7 @@ const AlertBox = ({ message, type = 'info', onClose }) => {
         return {
           bgColor: 'bg-red-100 border-red-400',
           textColor: 'text-red-700'
-        };
-      case 'info':
+        };      case 'info':
       default:
         return {
           bgColor: 'bg-blue-100 border-blue-400',
@@ -96,6 +94,22 @@ export default function Login() {
 
   // Hook for programmatic navigation
   const navigate = useNavigate();
+
+  // Handle error params from OAuth redirects
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error === 'account_suspended') {
+      setAlertMessage('🚫 Your account has been suspended by the admin. Please contact support at support@zpinshop.com.');
+      setAlertType('error');
+      // Clean the URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (error === 'auth_failed') {
+      setAlertMessage('Google login failed. Please try again.');
+      setAlertType('error');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   // Handle form submission — calls POST /api/v1/auth/login
   const handleLogin = async (e) => {
@@ -154,11 +168,16 @@ export default function Login() {
         'Login failed. Please check your credentials and try again.';
 
       const serverMessage = typeof raw === 'object' ? JSON.stringify(raw) : String(raw);
+      const code = error?.response?.data?.code;
 
-      console.error('Login error:', error?.response?.data || error.message);
-      console.error('Full error response:', error?.response); // Added for debugging
-      setAlertMessage(serverMessage);
-      setAlertType('error');
+      // Show a prominent suspension alert
+      if (code === 'ACCOUNT_SUSPENDED' || error?.response?.status === 403) {
+        setAlertMessage('🚫 Your account has been suspended by the admin. Please contact support at support@zpinshop.com.');
+        setAlertType('error');
+      } else {
+        setAlertMessage(serverMessage);
+        setAlertType('error');
+      }
     } finally {
       setIsLoading(false);
     }

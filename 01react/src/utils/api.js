@@ -108,6 +108,13 @@ API.interceptors.response.use(
           window.location.href = '/login';
         }
       }
+
+      // Suspended account (403 ACCOUNT_SUSPENDED) - redirect to login with message
+      if (status === 403 && error.response?.data?.code === 'ACCOUNT_SUSPENDED') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        window.location.href = '/login?error=account_suspended';
+      }
     } else if (error.request) {
       // Network error - no response received
       console.error('[API] Network error - no response from server');

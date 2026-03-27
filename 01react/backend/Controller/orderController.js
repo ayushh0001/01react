@@ -233,6 +233,12 @@ export const getSellerDashboardStats = async (req, res) => {
 
     const statsResult = await pool.query(statsQuery, [userId]);
 
+    // Get total products count for this seller
+    const productsResult = await pool.query(
+      'SELECT COUNT(*) as total_products FROM products WHERE user_id = $1',
+      [userId]
+    );
+
     // Get recent orders
     const recentOrdersQuery = `
       SELECT 
@@ -289,7 +295,8 @@ export const getSellerDashboardStats = async (req, res) => {
         pending_orders: parseInt(statsResult.rows[0].pending_orders) || 0,
         cancelled_orders: parseInt(statsResult.rows[0].cancelled_orders) || 0,
         total_revenue: parseFloat(statsResult.rows[0].total_revenue) || 0,
-        avg_order_value: parseFloat(statsResult.rows[0].avg_order_value) || 0
+        avg_order_value: parseFloat(statsResult.rows[0].avg_order_value) || 0,
+        total_products: parseInt(productsResult.rows[0].total_products) || 0,
       },
       recent_orders: recentOrders,
       sales_over_time: salesOverTimeResult.rows

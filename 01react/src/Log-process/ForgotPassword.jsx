@@ -27,17 +27,15 @@ export default function ForgotPassword() {
       
       if (response.data.success) {
         setMessage(response.data.message);
-        
-        // Navigate to OTP verification page after 1 second
         setTimeout(() => {
-          navigate('/verify-reset-otp', { 
-            state: { 
+          navigate('/verify-reset-otp', {
+            state: {
               mobile,
               expiresIn: response.data.expiresIn,
-              otp: response.data.otp // Only in development mode
-            } 
+              otp: response.data.otp // shown in dev mode
+            }
           });
-        }, 1000);
+        }, response.data.otp ? 0 : 1000); // skip delay in dev so OTP is visible
       }
     } catch (err) {
       console.error('Error requesting password reset:', err);

@@ -114,7 +114,8 @@ export const login = async (req, res) => {
     if (!user.is_active) {
       return res.status(403).json({
         success: false,
-        error: 'Account is deactivated'
+        error: 'Your account has been suspended. Please contact support at support@zpinshop.com.',
+        code: 'ACCOUNT_SUSPENDED'
       });
     }
 
@@ -157,6 +158,11 @@ export const googleCallback = async (req, res) => {
 
     if (!user) {
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    }
+
+    // Block suspended accounts
+    if (!user.is_active) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=account_suspended`);
     }
 
     // Generate tokens

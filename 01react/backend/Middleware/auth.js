@@ -49,7 +49,8 @@ export const authenticateToken = async (req, res, next) => {
     if (!user.is_active) {
       return res.status(403).json({
         success: false,
-        error: 'Account is deactivated'
+        error: 'Your account has been suspended. Please contact support.',
+        code: 'ACCOUNT_SUSPENDED'
       });
     }
 

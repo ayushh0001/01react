@@ -1,365 +1,188 @@
 import { pool } from '../config/database.js';
 import bcrypt from 'bcryptjs';
-import twilio from 'twilio';
 
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Generate 6-digit OTP
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+// Ensure otp column exists (table already exists from schema migration)
+const ensureTable = async () => {
+  await pool.query(`
+    ALTER TABLE password_reset_tokens ADD COLUMN IF NOT EXISTS otp VARCHAR(6)
+  `);
 };
 
-/**
- * Request password reset - Send OTP to user's mobile
- */
+/** POST /password-reset/request — send OTP */
 export const requestPasswordReset = async (req, res) => {
   try {
+    await ensureTable();
     const { mobile } = req.body;
+    if (!mobile) return res.status(400).json({ success: false, error: 'Mobile number is required' });
 
-    if (!mobile) {
-      return res.status(400).json({
-        success: false,
-        error: 'Mobile number is required'
-      });
+    const { rows } = await pool.query(
+      'SELECT id, email FROM users WHERE mobile = $1', [mobile]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, error: 'No account found with this mobile number' });
+
+    const user = rows[0];
+
+    // Rate limit: max 3 OTPs per 10 minutes
+    const { rows: recent } = await pool.query(
+      `SELECT COUNT(*) FROM password_reset_tokens
+       WHERE user_id = $1 AND created_at > NOW() - INTERVAL '10 minutes'`, [user.id]
+    );
+    if (parseInt(recent[0].count) >= 3) {
+      return res.status(429).json({ success: false, error: 'Too many requests. Try again in 10 minutes.' });
     }
 
-    // Check if user exists
-    const userQuery = 'SELECT id, email, mobile, user_name FROM users WHERE mobile = $1';
-    const userResult = await pool.query(userQuery, [mobile]);
-
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'No account found with this mobile number'
-      });
-    }
-
-    const user = userResult.rows[0];
-
-    // Generate OTP
     const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Store OTP in database
-    const insertQuery = `
-      INSERT INTO password_reset_tokens (user_id, email, otp, expires_at)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id
-    `;
-    await pool.query(insertQuery, [user.id, user.email, otp, expiresAt]);
+    await pool.query(
+      'INSERT INTO password_reset_tokens (user_id, otp, reset_token, expires_at) VALUES ($1, $2, $3, $4)',
+      [user.id, otp, '', expiresAt]
+    );
 
-    // Send OTP via Twilio
-    try {
-      await twilioClient.messages.create({
-        body: `Your Zpin Shop password reset OTP is: ${otp}. Valid for 10 minutes. Do not share this code.`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: mobile
-      });
+    // Log OTP to console (visible in server logs)
+    console.log(`[Password Reset] OTP for ${mobile}: ${otp}`);
 
-      console.log(`[Password Reset] OTP sent to ${mobile}: ${otp}`);
-
-      res.json({
-        success: true,
-        message: 'OTP sent successfully to your mobile number',
-        mobile: mobile,
-        expiresIn: 600 // 10 minutes in seconds
-      });
-    } catch (twilioError) {
-      console.error('[Password Reset] Twilio error:', twilioError);
-      
-      // For development, return OTP in response if Twilio fails
-      if (process.env.NODE_ENV === 'development') {
-        res.json({
-          success: true,
-          message: 'OTP generated (Twilio unavailable in dev)',
-          mobile: mobile,
-          otp: otp, // Only in development!
-          expiresIn: 600
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: 'Failed to send OTP. Please try again.'
-        });
-      }
-    }
-  } catch (error) {
-    console.error('[Password Reset] Error requesting reset:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process password reset request',
-      message: error.message
+    // In dev mode return OTP in response for easy testing
+    const isDev = process.env.NODE_ENV === 'development';
+    res.json({
+      success: true,
+      message: isDev ? `OTP: ${otp} (dev mode)` : 'OTP sent to your registered mobile number',
+      expiresIn: 600,
+      ...(isDev && { otp }),
     });
+  } catch (err) {
+    console.error('[Password Reset] requestPasswordReset:', err);
+    res.status(500).json({ success: false, error: 'Server error. Please try again.' });
   }
 };
 
-/**
- * Verify OTP
- */
+/** POST /password-reset/verify-otp — verify OTP, return reset token */
 export const verifyResetOTP = async (req, res) => {
   try {
+    await ensureTable();
     const { mobile, otp } = req.body;
+    if (!mobile || !otp) return res.status(400).json({ success: false, error: 'Mobile and OTP are required' });
 
-    if (!mobile || !otp) {
-      return res.status(400).json({
-        success: false,
-        error: 'Mobile number and OTP are required'
-      });
-    }
+    const { rows: users } = await pool.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
+    if (!users.length) return res.status(404).json({ success: false, error: 'User not found' });
+    const userId = users[0].id;
 
-    // Find user
-    const userQuery = 'SELECT id FROM users WHERE mobile = $1';
-    const userResult = await pool.query(userQuery, [mobile]);
+    const { rows: tokens } = await pool.query(
+      `SELECT id, expires_at, is_used FROM password_reset_tokens
+       WHERE user_id = $1 AND otp = $2 AND is_used = FALSE
+       ORDER BY created_at DESC LIMIT 1`,
+      [userId, otp]
+    );
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
+    if (!tokens.length) return res.status(400).json({ success: false, error: 'Invalid OTP' });
 
-    const userId = userResult.rows[0].id;
-
-    // Verify OTP
-    const otpQuery = `
-      SELECT id, expires_at, is_used
-      FROM password_reset_tokens
-      WHERE user_id = $1 AND otp = $2
-      ORDER BY created_at DESC
-      LIMIT 1
-    `;
-    const otpResult = await pool.query(otpQuery, [userId, otp]);
-
-    if (otpResult.rows.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid OTP'
-      });
-    }
-
-    const token = otpResult.rows[0];
-
-    // Check if OTP is expired
+    const token = tokens[0];
     if (new Date() > new Date(token.expires_at)) {
-      return res.status(400).json({
-        success: false,
-        error: 'OTP has expired. Please request a new one.'
-      });
+      return res.status(400).json({ success: false, error: 'OTP has expired. Please request a new one.' });
     }
 
-    // Check if OTP is already used
-    if (token.is_used) {
-      return res.status(400).json({
-        success: false,
-        error: 'OTP has already been used'
-      });
-    }
-
-    // Mark OTP as used
-    await pool.query(
-      'UPDATE password_reset_tokens SET is_used = TRUE WHERE id = $1',
+    // Generate a reset token and mark OTP as used
+    const { rows: updated } = await pool.query(
+      `UPDATE password_reset_tokens
+       SET is_used = TRUE, reset_token = gen_random_uuid()::text
+       WHERE id = $1 RETURNING reset_token`,
       [token.id]
     );
 
     res.json({
       success: true,
       message: 'OTP verified successfully',
-      resetToken: token.id // Use this token to reset password
+      resetToken: updated[0].reset_token,
     });
-  } catch (error) {
-    console.error('[Password Reset] Error verifying OTP:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to verify OTP',
-      message: error.message
-    });
+  } catch (err) {
+    console.error('[Password Reset] verifyResetOTP:', err);
+    res.status(500).json({ success: false, error: 'Server error. Please try again.' });
   }
 };
 
-/**
- * Reset password with verified token
- */
+/** POST /password-reset/reset — set new password */
 export const resetPassword = async (req, res) => {
   try {
+    await ensureTable();
     const { mobile, resetToken, newPassword } = req.body;
-
     if (!mobile || !resetToken || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        error: 'Mobile number, reset token, and new password are required'
-      });
+      return res.status(400).json({ success: false, error: 'mobile, resetToken and newPassword are required' });
     }
-
-    // Validate password strength
     if (newPassword.length < 6) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password must be at least 6 characters long'
-      });
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
     }
 
-    // Find user
-    const userQuery = 'SELECT id FROM users WHERE mobile = $1';
-    const userResult = await pool.query(userQuery, [mobile]);
+    const { rows: users } = await pool.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
+    if (!users.length) return res.status(404).json({ success: false, error: 'User not found' });
+    const userId = users[0].id;
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
+    // Validate reset token — must be used (OTP verified) and not expired
+    const { rows: tokens } = await pool.query(
+      `SELECT id FROM password_reset_tokens
+       WHERE user_id = $1 AND reset_token = $2 AND is_used = TRUE
+         AND expires_at > NOW() - INTERVAL '30 minutes'`,
+      [userId, resetToken]
+    );
+    if (!tokens.length) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired reset token. Please start over.' });
     }
 
-    const userId = userResult.rows[0].id;
+    const hash = await bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10);
 
-    // Verify reset token
-    const tokenQuery = `
-      SELECT id, expires_at, is_used
-      FROM password_reset_tokens
-      WHERE id = $1 AND user_id = $2 AND is_used = TRUE
-    `;
-    const tokenResult = await pool.query(tokenQuery, [resetToken, userId]);
-
-    if (tokenResult.rows.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid or expired reset token'
-      });
-    }
-
-    const token = tokenResult.rows[0];
-
-    // Check if token is still valid (within 30 minutes of verification)
-    const tokenAge = Date.now() - new Date(token.expires_at).getTime();
-    if (tokenAge > 30 * 60 * 1000) { // 30 minutes
-      return res.status(400).json({
-        success: false,
-        error: 'Reset token has expired. Please request a new OTP.'
-      });
-    }
-
-    // Hash new password
-    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-    // Update password
+    // Update password_hash (correct column name)
     await pool.query(
-      'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [hashedPassword, userId]
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [hash, userId]
     );
 
-    // Delete all password reset tokens for this user
-    await pool.query(
-      'DELETE FROM password_reset_tokens WHERE user_id = $1',
-      [userId]
-    );
+    // Clean up all reset tokens for this user
+    await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [userId]);
 
-    console.log(`[Password Reset] Password reset successful for user: ${userId}`);
-
-    res.json({
-      success: true,
-      message: 'Password reset successfully. You can now login with your new password.'
-    });
-  } catch (error) {
-    console.error('[Password Reset] Error resetting password:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to reset password',
-      message: error.message
-    });
+    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+  } catch (err) {
+    console.error('[Password Reset] resetPassword:', err);
+    res.status(500).json({ success: false, error: 'Server error. Please try again.' });
   }
 };
 
-/**
- * Resend OTP
- */
+/** POST /password-reset/resend-otp */
 export const resendOTP = async (req, res) => {
   try {
+    await ensureTable();
     const { mobile } = req.body;
+    if (!mobile) return res.status(400).json({ success: false, error: 'Mobile number is required' });
 
-    if (!mobile) {
-      return res.status(400).json({
-        success: false,
-        error: 'Mobile number is required'
-      });
+    const { rows } = await pool.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
+    if (!rows.length) return res.status(404).json({ success: false, error: 'No account found with this mobile number' });
+    const userId = rows[0].id;
+
+    const { rows: recent } = await pool.query(
+      `SELECT COUNT(*) FROM password_reset_tokens
+       WHERE user_id = $1 AND created_at > NOW() - INTERVAL '10 minutes'`, [userId]
+    );
+    if (parseInt(recent[0].count) >= 3) {
+      return res.status(429).json({ success: false, error: 'Too many requests. Try again in 10 minutes.' });
     }
 
-    // Check if user exists
-    const userQuery = 'SELECT id, email FROM users WHERE mobile = $1';
-    const userResult = await pool.query(userQuery, [mobile]);
-
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'No account found with this mobile number'
-      });
-    }
-
-    const user = userResult.rows[0];
-
-    // Check rate limiting (max 3 OTPs per 10 minutes)
-    const recentOTPsQuery = `
-      SELECT COUNT(*) as count
-      FROM password_reset_tokens
-      WHERE user_id = $1 AND created_at > NOW() - INTERVAL '10 minutes'
-    `;
-    const recentOTPs = await pool.query(recentOTPsQuery, [user.id]);
-
-    if (parseInt(recentOTPs.rows[0].count) >= 3) {
-      return res.status(429).json({
-        success: false,
-        error: 'Too many OTP requests. Please try again after 10 minutes.'
-      });
-    }
-
-    // Generate new OTP
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    // Store OTP
     await pool.query(
-      'INSERT INTO password_reset_tokens (user_id, email, otp, expires_at) VALUES ($1, $2, $3, $4)',
-      [user.id, user.email, otp, expiresAt]
+      'INSERT INTO password_reset_tokens (user_id, otp, reset_token, expires_at) VALUES ($1, $2, $3, $4)',
+      [userId, otp, '', expiresAt]
     );
 
-    // Send OTP via Twilio
-    try {
-      await twilioClient.messages.create({
-        body: `Your Zpin Shop password reset OTP is: ${otp}. Valid for 10 minutes.`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: mobile
-      });
-
-      res.json({
-        success: true,
-        message: 'OTP resent successfully',
-        expiresIn: 600
-      });
-    } catch (twilioError) {
-      console.error('[Password Reset] Twilio error on resend:', twilioError);
-      
-      if (process.env.NODE_ENV === 'development') {
-        res.json({
-          success: true,
-          message: 'OTP generated (Twilio unavailable)',
-          otp: otp,
-          expiresIn: 600
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: 'Failed to send OTP'
-        });
-      }
-    }
-  } catch (error) {
-    console.error('[Password Reset] Error resending OTP:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to resend OTP',
-      message: error.message
+    console.log(`[Password Reset] Resend OTP for ${mobile}: ${otp}`);
+    const isDev = process.env.NODE_ENV === 'development';
+    res.json({
+      success: true,
+      message: isDev ? `OTP: ${otp} (dev mode)` : 'OTP resent successfully',
+      expiresIn: 600,
+      ...(isDev && { otp }),
     });
+  } catch (err) {
+    console.error('[Password Reset] resendOTP:', err);
+    res.status(500).json({ success: false, error: 'Server error. Please try again.' });
   }
 };

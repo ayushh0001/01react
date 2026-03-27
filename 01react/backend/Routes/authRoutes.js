@@ -13,6 +13,7 @@ import {
   verifyOTP,
   resendOTP
 } from '../Controller/otpController.js';
+import { verifyFirebasePhone } from '../Controller/firebaseAuthController.js';
 import { authenticateToken } from '../Middleware/auth.js';
 
 const router = express.Router();
@@ -23,10 +24,13 @@ router.post('/login', login);
 router.post('/logout', authenticateToken, logout);
 router.post('/refresh-token', refreshToken);
 
-// OTP verification routes
+// OTP verification routes (signup phone verification)
 router.post('/verification/sendOTP', sendOTP);
 router.post('/verification/verifyOTP', verifyOTP);
 router.post('/verification/resendOTP', resendOTP);
+
+// Firebase Phone Auth verification
+router.post('/verify-firebase-phone', verifyFirebasePhone);
 
 // Google OAuth routes
 router.get('/google',

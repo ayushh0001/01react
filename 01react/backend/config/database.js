@@ -1,9 +1,14 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-// Load .env for local development (no-op on Render where env vars are injected)
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env from backend root explicitly — must happen before pool config
+dotenv.config({ path: join(__dirname, '../.env') });
 
 // PostgreSQL connection pool configuration
 // Render injects DATABASE_URL automatically when a Postgres DB is linked.
@@ -11,7 +16,7 @@ dotenv.config();
 const poolConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // required for Render Postgres
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,

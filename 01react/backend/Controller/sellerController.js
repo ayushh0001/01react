@@ -365,35 +365,30 @@ export const getSellerProfile = async (req, res) => {
 // Get all customers for the seller
 export const getCustomers = async (req, res) => {
   try {
-    const query = `
-      SELECT 
-        id,
-        user_name,
-        name,
-        mobile,
-        email,
-        user_role,
-        is_verified,
-        is_active,
-        created_at
-      FROM users
-      WHERE user_role = 'customer'
-      ORDER BY created_at DESC
-    `;
-    
-    const result = await pool.query(query);
+    const result = await pool.query(`
+      SELECT
+        u.id,
+        u.user_name,
+        u.name,
+        u.mobile,
+        u.email,
+        u.is_verified,
+        u.is_active,
+        u.created_at,
+        COUNT(o.id)::int                          AS total_orders,
+        MAX(o.created_at)                         AS last_order_date,
+        COALESCE(SUM(o.final_amount), 0)::numeric AS total_spent
+      FROM users u
+      LEFT JOIN orders o ON o.user_id = u.id
+      WHERE u.user_role = 'customer'
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+    `);
 
-    res.json({
-      success: true,
-      data: result.rows,
-      count: result.rows.length
-    });
+    res.json({ success: true, data: result.rows, count: result.rows.length });
   } catch (error) {
     console.error('Error fetching customers:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch customers'
-    });
+    res.status(500).json({ success: false, error: 'Failed to fetch customers' });
   }
 };
 

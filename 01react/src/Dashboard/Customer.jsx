@@ -30,27 +30,21 @@ export default function Customer() {
     try {
       setLoading(true);
       setError('');
-      // API contract #1: GET /api/v1/users
-      // Response: { success: true, data: [<user_object>], pagination: {...} }
-      const res = await API.get('/users');
-      const allUsers = res.data.data || res.data.users || [];
+      // Correct endpoint: GET /api/v1/customers
+      const res = await API.get('/users/customers');
+      const allUsers = res.data.data || [];
 
-      // Filter to only customer-role users for the seller dashboard
-      const customerUsers = allUsers.filter(
-        (u) => !u.userRole || u.userRole === 'customer'
-      );
-
-      // Map to a flat display shape
-      const mapped = customerUsers.map((u, idx) => ({
-        id: u._id || u.id || `#${1001 + idx}`,
-        name: u.name || u.userName || 'N/A',
+      const mapped = allUsers.map((u) => ({
+        id: u.id,
+        name: u.name || u.user_name || 'N/A',
         phone: u.mobile ? `+91 ••••••${String(u.mobile).slice(-4)}` : 'N/A',
-        area: u.city || u.address?.city || u.details?.city || '—',
-        orders: u.totalOrders ?? u.ordersCount ?? 0,
-        lastOrder: u.lastOrderDate
-          ? new Date(u.lastOrderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+        area: '—',
+        orders: u.total_orders || 0,
+        totalSpent: u.total_spent ? `₹${Number(u.total_spent).toLocaleString('en-IN')}` : '₹0',
+        lastOrder: u.last_order_date
+          ? new Date(u.last_order_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
           : '—',
-        status: deriveStatus(u),
+        status: !u.is_active ? 'Blocked' : u.is_verified ? 'Active' : 'New',
       }));
 
       setCustomers(mapped);
@@ -143,12 +137,12 @@ export default function Customer() {
                       <span className="text-gray-700">{c.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Area:</span>
-                      <span className="text-gray-700">{c.area}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-gray-500">Orders:</span>
                       <span className="text-gray-700">{c.orders}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Total Spent:</span>
+                      <span className="font-semibold text-gray-900">{c.totalSpent}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Last Order:</span>
@@ -172,7 +166,7 @@ export default function Customer() {
               <span>CUSTOMER ID</span>
               <span>NAME</span>
               <span>PHONE</span>
-              <span>AREA</span>
+              <span>TOTAL SPENT</span>
               <span>ORDERS</span>
               <span>LAST ORDER</span>
               <span className="text-right">STATUS</span>
@@ -193,7 +187,7 @@ export default function Customer() {
                     <span className="text-gray-600 font-mono text-xs">{String(c.id).slice(-6)}</span>
                     <span className="text-blue-600 font-semibold">{c.name}</span>
                     <span className="text-gray-500 text-xs">{c.phone}</span>
-                    <span className="text-gray-600 text-xs">{c.area}</span>
+                    <span className="text-gray-700 text-xs font-semibold">{c.totalSpent}</span>
                     <span className="text-gray-700 text-xs">{c.orders}</span>
                     <span className="text-gray-500 text-xs">{c.lastOrder}</span>
                     <div className="flex justify-end">
