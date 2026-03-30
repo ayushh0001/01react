@@ -3,11 +3,11 @@ import axios from "axios";
 
 // Determine base URL based on environment
 const getBaseURL = () => {
-  // In production (Vite build), use the production backend
   if (import.meta.env.PROD) {
-    return 'https://www.zpinshop.com/api/v1';
+    return import.meta.env.VITE_API_URL
+      ? `${import.meta.env.VITE_API_URL}/api/v1`
+      : 'https://zpin-backend.onrender.com/api/v1';
   }
-  // In development, use Vite's proxy to avoid CORS
   return '/api/v1';
 };
 

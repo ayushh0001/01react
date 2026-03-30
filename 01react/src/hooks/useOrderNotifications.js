@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const VENDOR_BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Use same backend as the rest of the app — in prod this is the Render URL
+const VENDOR_BACKEND = import.meta.env.PROD
+  ? 'https://zpin-backend.onrender.com'
+  : 'http://localhost:5000';
 
 export function useOrderNotifications() {
   const [notifications, setNotifications] = useState(() => {
@@ -23,7 +26,9 @@ export function useOrderNotifications() {
 
   const connect = useCallback(() => {
     if (esRef.current) esRef.current.close();
-    const es = new EventSource(`${VENDOR_BACKEND}/api/v1/notifications/stream`);
+    const url = `${VENDOR_BACKEND}/api/v1/notifications/stream`;
+    console.log('[SSE] Connecting to', url);
+    const es = new EventSource(url);
     esRef.current = es;
 
     es.addEventListener('new_order', (e) => {
