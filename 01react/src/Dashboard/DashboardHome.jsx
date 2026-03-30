@@ -1,12 +1,13 @@
 // Import necessary React components and Chart.js library
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 import { Line } from 'react-chartjs-2';
-import { Chart, LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip } from 'chart.js';
+import { Chart, LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js';
 import API from '../utils/api';
 
 // Register Chart.js components for line chart functionality
-Chart.register(LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip);
+Chart.register(LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip, Filler);
+
 
 // Main DashboardHome component - displays business overview and analytics
 export default function DashboardHome() {
@@ -18,19 +19,32 @@ export default function DashboardHome() {
     totalProducts: 0,
     chartLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     salesData: [0, 0, 0, 0, 0, 0, 0],
-    orders: []
+    orders: [],
+    // Full dataset for scrollable chart (all days)
+    allChartLabels: [],
+    allSalesData: []
   });
   const [loading, setLoading] = useState(true);
   const [sellerName, setSellerName] = useState('');
   const [updatingOrder, setUpdatingOrder] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [allOrders, setAllOrders] = useState([]);
+  // Ref for the horizontally scrollable chart container
+  const chartScrollRef = useRef(null);
+
 
   useEffect(() => {
     fetchDashboardData();
     fetchSellerProfile();
     fetchAllOrders();
   }, []);
+
+  // Auto-scroll chart to the right end so latest 7 days are visible on load
+  useEffect(() => {
+    if (!loading && chartScrollRef.current) {
+      chartScrollRef.current.scrollLeft = chartScrollRef.current.scrollWidth;
+    }
+  }, [loading]);
 
   const handleAcceptOrder = async (orderId) => {
     setUpdatingOrder(orderId);
@@ -87,7 +101,7 @@ export default function DashboardHome() {
     try {
       // Fetch dashboard statistics from backend
       const response = await API.get('/orders/dashboard/stats');
-      
+
       if (response.data.success) {
         const { stats, recent_orders, sales_over_time } = response.data;
 
@@ -112,6 +126,10 @@ export default function DashboardHome() {
           avgOrderValue: stats.avg_order_value || 0,
           totalOrders: stats.delivered_orders || 0,
           totalProducts: stats.total_products || 0,
+          // Full dataset stored for scrollable chart
+          allChartLabels: chartLabels,
+          allSalesData: chartValues,
+          // chartLabels/salesData kept for backward compat (unused by new chart)
           chartLabels,
           salesData: chartValues,
           orders: recent_orders || []
@@ -128,39 +146,63 @@ export default function DashboardHome() {
         totalProducts: 0,
         chartLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         salesData: [0, 0, 0, 0, 0, 0, 0],
-        orders: []
+        orders: [],
+        allChartLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        allSalesData: [0, 0, 0, 0, 0, 0, 0]
       });
     } finally {
       setLoading(false);
     }
   };
 
+  // Full dataset for the scrollable chart (all days)
+  const allLabels = dashboardData.allChartLabels?.length > 0
+    ? dashboardData.allChartLabels
+    : dashboardData.chartLabels;
+  const allValues = dashboardData.allSalesData?.length > 0
+    ? dashboardData.allSalesData
+    : dashboardData.salesData;
+
+  // Each day column is 80px wide; minimum width shows 7 days
+  const POINTS_PER_VIEW = 7;
+  const PX_PER_POINT = 80;
+  const totalPoints = allLabels.length;
+  const chartInnerWidth = Math.max(totalPoints * PX_PER_POINT, POINTS_PER_VIEW * PX_PER_POINT);
+
+  // Compute Y-axis ticks so the fixed axis matches the chart's auto scale
+  const dataMax = allValues.length > 0 ? Math.max(...allValues) : 100;
+  const niceMax = dataMax === 0 ? 1000 : Math.ceil(dataMax / 1000) * 1000;
+  const TICK_COUNT = 6;
+  const yStep = niceMax / TICK_COUNT;
+  const yTicks = [];
+  for (let i = TICK_COUNT; i >= 0; i--) yTicks.push(Math.round(i * yStep));
+
   // Chart configuration for sales overview
   const chartData = {
-    labels: dashboardData.chartLabels || ['June', 'July', 'August', 'September', 'October'],
+    labels: allLabels,
     datasets: [{
       label: 'Sales',
-      data: dashboardData.salesData,
+      data: allValues,
       borderWidth: 3,
-      borderColor: '#8B5CF6',
-      backgroundColor: 'rgba(139, 92, 246, 0.1)',
+      borderColor: '#FF9800',
+      backgroundColor: 'rgba(255, 152, 0, 0.12)',
       tension: 0.4,
       fill: true,
       pointRadius: 6,
-      pointBackgroundColor: '#8B5CF6',
+      pointBackgroundColor: '#FF9800',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointHoverRadius: 8,
-      pointHoverBackgroundColor: '#8B5CF6',
-      pointHoverBorderColor: '#fff',
-      pointHoverBorderWidth: 3
+      pointHoverBackgroundColor: '#FFE082',
+      pointHoverBorderColor: '#FF9800',
+      pointHoverBorderWidth: 2
     }]
   };
 
-  // Chart display options
+  // Chart display options — Y-axis hidden (rendered as fixed HTML column instead)
   const chartOptions = {
     plugins: {
-      legend: { display: false },  // Hide chart legend
+      legend: { display: false },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         padding: 12,
@@ -169,46 +211,29 @@ export default function DashboardHome() {
         bodyColor: '#fff',
         displayColors: false,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return '₹' + context.parsed.y.toLocaleString();
           }
         }
       }
     },
     scales: {
-      y: { 
+      y: {
         beginAtZero: true,
+        max: niceMax,
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
+          color: 'rgba(255, 152, 0, 0.08)',
           drawBorder: false
         },
-        ticks: {
-          color: '#6B7280',
-          font: {
-            size: 12
-          },
-          callback: function(value) {
-            return '₹' + value.toLocaleString();
-          }
-        }
+        ticks: { display: false },
+        border: { display: false }
       },
       x: {
-        grid: {
-          display: false,
-          drawBorder: false
-        },
-        ticks: {
-          color: '#6B7280',
-          font: {
-            size: 12
-          }
-        }
+        grid: { display: false, drawBorder: false },
+        ticks: { color: '#6B7280', font: { size: 12 } }
       }
     },
-    interaction: {
-      intersect: false,
-      mode: 'index'
-    }
+    interaction: { intersect: false, mode: 'index' }
   };
 
   return (
@@ -227,8 +252,8 @@ export default function DashboardHome() {
         />
       )}
 
-      {/* Main dashboard content */}
-      <main className="flex-1 p-4 lg:p-8">
+      {/* Main dashboard content — min-w-0 prevents flex child from overflowing page width */}
+      <main className="flex-1 min-w-0 overflow-x-hidden p-4 lg:p-8">
 
         {/* Page header */}
         <div className="flex items-center gap-4 mb-6">
@@ -251,7 +276,7 @@ export default function DashboardHome() {
         </div>
 
         {/* Key metrics cards grid */}
-       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 lg:mb-10">
 
           {/* Total sales metric */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
@@ -303,9 +328,9 @@ export default function DashboardHome() {
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
                 </svg>
               </div>
             </div>
@@ -324,7 +349,7 @@ export default function DashboardHome() {
             <h2 className="font-bold text-lg lg:text-xl">
               Active Orders
             </h2>
-            <button 
+            <button
               onClick={() => window.location.href = '/dashboard/orders'}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
@@ -360,15 +385,15 @@ export default function DashboardHome() {
                     const initials = customerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                     const colors = ['bg-blue-100 text-blue-600', 'bg-orange-100 text-orange-600', 'bg-green-100 text-green-600', 'bg-purple-100 text-purple-600'];
                     const colorClass = colors[index % colors.length];
-                    
+
                     const statusMap = {
                       'pending': { label: 'New', class: 'bg-blue-100 text-blue-600' },
-                      'confirmed': { label: 'Processing', class: 'bg-yellow-100 text-yellow-700' },
+                      'confirmed': { label: 'Processing', class: 'bg-orange-100 text-yellow-700' },
                       'processing': { label: 'Accepted', class: 'bg-green-100 text-green-700' },
                       'shipped': { label: 'Shipped', class: 'bg-purple-100 text-purple-700' },
                       'delivered': { label: 'Delivered', class: 'bg-green-100 text-green-700' }
                     };
-                    
+
                     const status = statusMap[order.status?.toLowerCase()] || { label: order.status || 'New', class: 'bg-gray-100 text-gray-600' };
 
                     return (
@@ -383,8 +408,8 @@ export default function DashboardHome() {
                           </div>
                         </td>
                         <td className="p-4 text-gray-600 text-sm">
-                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', { 
-                            month: 'short', 
+                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
                             day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit',
@@ -404,7 +429,7 @@ export default function DashboardHome() {
                                 <button
                                   onClick={() => handleAcceptOrder(order.id)}
                                   disabled={updatingOrder === order.id}
-                                  className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                                  className="px-4 py-2 bg-brand hover:bg-brand text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
                                 >
                                   Accept Order
                                 </button>
@@ -465,7 +490,7 @@ export default function DashboardHome() {
                 const customerName = order.customer_name || order.shipping_address?.name || 'Customer';
                 const statusMap = {
                   'pending': { label: 'New', class: 'bg-blue-100 text-blue-600' },
-                  'confirmed': { label: 'Processing', class: 'bg-yellow-100 text-yellow-700' },
+                  'confirmed': { label: 'Processing', class: 'bg-orange-100 text-yellow-700' },
                   'processing': { label: 'Accepted', class: 'bg-green-100 text-green-700' }
                 };
                 const status = statusMap[order.status?.toLowerCase()] || { label: order.status || 'New', class: 'bg-gray-100 text-gray-600' };
@@ -497,7 +522,7 @@ export default function DashboardHome() {
                           <button
                             onClick={() => handleAcceptOrder(order.id)}
                             disabled={updatingOrder === order.id}
-                            className="flex-1 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                            className="flex-1 px-3 py-2 bg-brand hover:bg-brand text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
                           >
                             Accept
                           </button>
@@ -539,7 +564,7 @@ export default function DashboardHome() {
           </p>
 
           {/* Sales chart container */}
-          <div className="bg-white rounded-2xl py-6 lg:py-8 px-6 lg:px-8 shadow-lg border border-gray-200">
+          <div className="bg-white rounded-2xl py-6 lg:py-8 px-6 lg:px-8 shadow-lg border border-gray-200 min-w-0">
 
             {/* Chart header information */}
             <div className="mb-6">
@@ -557,17 +582,63 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Line chart display area */}
-            <div className="h-64 lg:h-96 w-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 lg:p-6 flex items-center border border-blue-100">
-              <Line
-                data={chartData}
-                options={{
-                  ...chartOptions,
-                  maintainAspectRatio: false  // Allow chart to fill container
+            {/* Chart area: fixed Y-axis on left + scrollable data on right */}
+            <div style={{ display: 'flex', borderRadius: '12px', border: '1px solid #FFE082', background: 'linear-gradient(135deg, #fffdf5 0%, #fff8e1 100%)', overflow: 'hidden' }}>
+
+              {/* Fixed Y-axis labels — always visible */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                paddingTop: '12px',
+                paddingBottom: '34px',
+                paddingLeft: '12px',
+                paddingRight: '4px',
+                minWidth: '60px',
+                height: '300px',
+                flexShrink: 0,
+                borderRight: '1px solid #FFE082'
+              }}>
+                {yTicks.map((tick, i) => (
+                  <span key={i} style={{ fontSize: '12px', color: '#6B7280', textAlign: 'right', lineHeight: '1' }}>
+                    ₹{tick.toLocaleString()}
+                  </span>
+                ))}
+              </div>
+
+              {/* Scrollable chart data */}
+              <div
+                ref={chartScrollRef}
+                className="scrollbar-hide"
+                style={{
+                  flex: 1,
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth',
+                  minWidth: 0,
                 }}
-                height={300}  // Set chart height
-              />
+              >
+                <div style={{ width: `${chartInnerWidth}px`, height: '300px', position: 'relative' }}>
+                  <Line
+                    data={chartData}
+                    options={{
+                      ...chartOptions,
+                      maintainAspectRatio: false,
+                      responsive: true,
+                      animation: { duration: 400 },
+                      layout: { padding: { top: 12, bottom: 8, left: 0, right: 16 } }
+                    }}
+                  />
+                </div>
+              </div>
             </div>
+
+            {totalPoints > POINTS_PER_VIEW && (
+              <p style={{ textAlign: 'right', fontSize: '12px', color: '#9CA3AF', marginTop: '6px' }}>
+                ← Scroll to view older data
+              </p>
+            )}
 
           </div>
         </div>

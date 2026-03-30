@@ -15,10 +15,23 @@ export default function Earning() {
   const [error, setError] = useState(null);
   const [withdrawing, setWithdrawing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('weekly');
+  const [chartVisible, setChartVisible] = useState(true);
+  const [displayPeriod, setDisplayPeriod] = useState('weekly');
 
   useEffect(() => {
     fetchEarningsData();
   }, []);
+
+  // Grow animation: collapse bars → swap data → grow bars back up
+  useEffect(() => {
+    if (selectedPeriod === displayPeriod) return;
+    setChartVisible(false);
+    const timer = setTimeout(() => {
+      setDisplayPeriod(selectedPeriod);
+      requestAnimationFrame(() => setChartVisible(true));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [selectedPeriod, displayPeriod]);
 
   const fetchEarningsData = async () => {
     setLoading(true);
@@ -42,37 +55,66 @@ export default function Earning() {
         const summaryRes = await API.get('/users/sellers/earnings/summary', {
           params: { period: 'all' }
         });
-        setLifetimeEarnings((summaryRes.data.lifetime?.netAmount || 45280.50).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        setTotalOrders((summaryRes.data.lifetime?.orderCount || 1240).toLocaleString('en-IN'));
-        setTipsCollected((summaryRes.data.lifetime?.tips || 850).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        setLoyaltyBonus((summaryRes.data.lifetime?.bonus || 2100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        setAvailablePayout((summaryRes.data.summary?.pendingEarnings || 8420).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        const lifetime = summaryRes.data.lifetime || {};
+        const summary  = summaryRes.data.summary  || {};
+        const fmt = v => Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        setLifetimeEarnings(fmt(lifetime.netAmount));
+        setTotalOrders(Number(lifetime.orderCount || 0).toLocaleString('en-IN'));
+        setTipsCollected(fmt(lifetime.tips));
+        setLoyaltyBonus(fmt(lifetime.bonus));
+        setAvailablePayout(fmt(summary.pendingEarnings));
       } catch (summaryErr) {
         console.warn('Earnings summary fetch failed:', summaryErr);
-        setLifetimeEarnings('45,280.50');
-        setTotalOrders('1,240');
-        setTipsCollected('850.00');
-        setLoyaltyBonus('2,100.00');
-        setAvailablePayout('8,420.00');
+        // Zero out everything — don't show fake data
+        setLifetimeEarnings('0.00');
+        setTotalOrders('0');
+        setTipsCollected('0.00');
+        setLoyaltyBonus('0.00');
+        setAvailablePayout('0.00');
       }
 
-      const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-      const weekly = days.map((day, index) => ({
-        day,
-        amount: Math.floor(Math.random() * 800 + 200),
-        isHighlight: index === 3 || index === 4
-      }));
-      setWeeklyData(weekly);
+      // Chart: fetch real daily sales from dashboard stats
+      try {
+        const statsRes = await API.get('/orders/dashboard/stats');
+        const salesOverTime = statsRes.data.sales_over_time || [];
+
+        if (salesOverTime.length > 0) {
+          const chartData = salesOverTime.map(row => ({
+            day: new Date(row.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+            amount: parseFloat(row.daily_revenue || 0),
+            isHighlight: false,
+          }));
+          // Highlight the max bar
+          const maxIdx = chartData.reduce((mi, d, i, arr) => d.amount > arr[mi].amount ? i : mi, 0);
+          if (chartData[maxIdx]?.amount > 0) chartData[maxIdx].isHighlight = true;
+          setWeeklyData(chartData);
+        } else {
+          // No data — show last 7 days as empty
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            days.push({ day: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), amount: 0, isHighlight: false });
+          }
+          setWeeklyData(days);
+        }
+      } catch {
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          days.push({ day: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), amount: 0, isHighlight: false });
+        }
+        setWeeklyData(days);
+      }
 
     } catch (err) {
       console.error('Error fetching earnings:', err);
-      setRecentTransactions([
-        { id: '#ORD-94285', customer: 'Marcus Sterling', date: 'Oct 24, 2023', status: 'Completed', amount: '420.00' },
-        { id: '#ORD-94284', customer: 'Helena Vance', date: 'Oct 24, 2023', status: 'Pending', amount: '1,250.00' },
-        { id: '#ORD-94283', customer: 'Jordan Smith', date: 'Oct 23, 2023', status: 'Completed', amount: '85.50' },
-        { id: '#ORD-94282', customer: 'Julian Casablancas', date: 'Oct 23, 2023', status: 'Refunded', amount: '-210.00' }
-      ]);
-      setError('Failed to fetch earnings. Showing sample data.');
+      setRecentTransactions([]);
+      setLifetimeEarnings('0.00');
+      setTotalOrders('0');
+      setTipsCollected('0.00');
+      setLoyaltyBonus('0.00');
+      setAvailablePayout('0.00');
+      setWeeklyData(['MON','TUE','WED','THU','FRI','SAT','SUN'].map(day => ({ day, amount: 0, isHighlight: false })));
     } finally {
       setLoading(false);
     }
@@ -111,7 +153,16 @@ export default function Earning() {
     );
   }
 
-  const maxAmount = Math.max(...weeklyData.map(d => d.amount));
+  const maxAmount = Math.max(...weeklyData.map(d => d.amount), 1); // min 1 to avoid divide-by-zero
+
+  // Slice data based on selected period (use displayPeriod for animated swap)
+  const displayData = displayPeriod === 'weekly'
+    ? weeklyData.slice(-7)
+    : displayPeriod === 'monthly'
+    ? weeklyData.slice(-30)
+    : weeklyData; // yearly = all available
+
+  const displayMax = Math.max(...displayData.map(d => d.amount), 1);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -154,14 +205,11 @@ export default function Earning() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <p className="text-xs font-semibold text-yellow-600 uppercase tracking-wider mb-2">Lifetime Performance</p>
+                  <p className="text-xs font-semibold text-brand uppercase tracking-wider mb-2">Lifetime Performance</p>
                   <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">₹{lifetimeEarnings}</h2>
                 </div>
-                <div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                  </svg>
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center">
+                  <span className="text-3xl font-bold text-brand">₹</span>
                 </div>
               </div>
 
@@ -202,7 +250,7 @@ export default function Earning() {
                 disabled={withdrawing || parseFloat(availablePayout.replace(/,/g, '')) === 0}
                 className={`mt-6 w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center gap-2 ${withdrawing || parseFloat(availablePayout.replace(/,/g, '')) === 0
                     ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-yellow-500 hover:bg-yellow-600 shadow-sm'
+                    : 'bg-brand hover:bg-yellow-600 shadow-sm'
                   }`}
               >
                 {withdrawing ? (
@@ -233,53 +281,69 @@ export default function Earning() {
                 <p className="text-sm text-gray-500">Earnings performance for the current billing cycle.</p>
               </div>
 
-              <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
+              <div className="relative flex bg-gray-100 rounded-xl p-1" style={{ minWidth: '180px' }}>
+                {/* Sliding pill indicator */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '4px',
+                    bottom: '4px',
+                    left: selectedPeriod === 'weekly' ? '4px' : '50%',
+                    width: 'calc(50% - 4px)',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                />
                 <button
                   onClick={() => setSelectedPeriod('weekly')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedPeriod === 'weekly'
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                  className="relative z-10 flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  style={{ color: selectedPeriod === 'weekly' ? '#111827' : '#6B7280' }}
                 >
                   Weekly
                 </button>
                 <button
                   onClick={() => setSelectedPeriod('monthly')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedPeriod === 'monthly'
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                  className="relative z-10 flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  style={{ color: selectedPeriod === 'monthly' ? '#111827' : '#6B7280' }}
                 >
                   Monthly
-                </button>
-                <button
-                  onClick={() => setSelectedPeriod('yearly')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${selectedPeriod === 'yearly'
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                >
-                  Yearly
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto pb-2">
-              <div className="min-w-[600px] flex items-end justify-between gap-2 h-64">
-                {weeklyData.map((item, index) => {
-                  const heightPercent = (item.amount / maxAmount) * 100;
+            <div className="overflow-x-auto scrollbar-hide rounded-xl border border-gray-100">
+              <div className="flex items-end gap-1 px-2 pb-4 pt-2"
+                style={{ width: '100%', height: '260px', alignItems: 'flex-end' }}>
+                {displayData.map((item, idx) => {
+                  const heightPercent = displayMax > 1 ? Math.max((item.amount / displayMax) * 100, item.amount > 0 ? 4 : 2) : 2;
                   return (
-                    <div key={item.day} className="flex-1 flex flex-col items-center gap-3">
+                    <div key={`${displayPeriod}-${item.day}-${idx}`} className="flex flex-col items-center gap-1" style={{ flex: '1', minWidth: 0 }}>
                       <div className="w-full flex flex-col items-center justify-end" style={{ height: '200px' }}>
+                        {item.amount > 0 && (
+                          <span
+                            className="text-[8px] text-gray-500 mb-0.5 font-medium text-center leading-tight"
+                            style={{
+                              opacity: chartVisible ? 1 : 0,
+                              transition: `opacity 0.4s ease ${idx * 50 + 300}ms`,
+                            }}
+                          >
+                            ₹{Number(item.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          </span>
+                        )}
                         <div
-                          className={`w-full rounded-t-lg transition-all duration-300 hover:opacity-80 ${item.isHighlight
-                              ? 'bg-yellow-400'
-                              : 'bg-gray-200'
-                            }`}
-                          style={{ height: `${heightPercent}%` }}
+                          title={`${item.day}: ₹${Number(item.amount).toLocaleString('en-IN')}`}
+                          className={`w-full rounded-t-lg hover:opacity-80 ${item.isHighlight ? 'bg-brand' : 'bg-gray-200'}`}
+                          style={{
+                            height: chartVisible ? `${heightPercent}%` : '0%',
+                            transition: chartVisible
+                              ? `height 0.7s cubic-bezier(0.22, 1.2, 0.36, 1) ${idx * 50}ms`
+                              : 'height 0.3s cubic-bezier(0.4, 0, 1, 1)',
+                          }}
                         />
                       </div>
-                      <span className="text-xs font-medium text-gray-500 uppercase">{item.day}</span>
+                      <span className="text-[8px] font-medium text-gray-500 text-center leading-tight whitespace-nowrap">{item.day}</span>
                     </div>
                   );
                 })}
@@ -297,7 +361,7 @@ export default function Earning() {
 
               <button
                 onClick={fetchEarningsData}
-                className="flex items-center gap-2 text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
+                className="flex items-center gap-2 text-sm font-semibold text-brand hover:text-yellow-700 transition-colors"
               >
                 <span>SEE ALL TRANSACTIONS</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,7 +400,7 @@ export default function Earning() {
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.status === 'Completed'
                             ? 'bg-green-100 text-green-700'
                             : tx.status === 'Pending'
-                              ? 'bg-yellow-100 text-yellow-700'
+                              ? 'bg-orange-100 text-yellow-700'
                               : 'bg-gray-100 text-gray-700'
                           }`}>
                           {tx.status.toUpperCase()}
@@ -374,7 +438,7 @@ export default function Earning() {
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${tx.status === 'Completed'
                                 ? 'bg-green-100 text-green-700'
                                 : tx.status === 'Pending'
-                                  ? 'bg-yellow-100 text-yellow-700'
+                                  ? 'bg-orange-100 text-yellow-700'
                                   : 'bg-gray-100 text-gray-700'
                               }`}>
                               {tx.status.toUpperCase()}

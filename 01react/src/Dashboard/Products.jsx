@@ -307,7 +307,7 @@ export default function Products() {
                 localStorage.removeItem('editProduct');
                 navigate('/dashboard/add-product');
               }}
-              className="px-4 lg:px-6 py-2.5 font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg shadow-md text-sm lg:text-base transition-all duration-200"
+              className="px-4 lg:px-6 py-2.5 font-semibold bg-brand hover:opacity-90 text-gray-900 rounded-lg shadow-md text-sm lg:text-base transition-all duration-200"
             >
               + Add Product
             </button>
@@ -325,7 +325,7 @@ export default function Products() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg text-amber-900">{p.name}</h3>
                     <p className="text-sm text-amber-700">{p.category}</p>
-                    <p className="text-sm text-amber-600">ID: {p.displayId ? p.displayId.slice(-6) : 'N/A'}</p>
+                    <p className="text-sm text-brand">ID: {p.displayId ? p.displayId.slice(-6) : 'N/A'}</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusStyles[p.status] || 'bg-gray-100 text-gray-700'}`}>
                     {p.status}
@@ -333,25 +333,25 @@ export default function Products() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
-                    <span className="text-amber-600">Price:</span>
+                    <span className="text-brand">Price:</span>
                     <span className="font-semibold ml-2 text-amber-900">₹{p.price}</span>
                   </div>
                   <div>
-                    <span className="text-amber-600">Stock:</span>
+                    <span className="text-brand">Stock:</span>
                     <span className="ml-2 text-amber-800">{p.stock}</span>
                   </div>
                   <div>
-                    <span className="text-amber-600">Added:</span>
+                    <span className="text-brand">Added:</span>
                     <span className="ml-2 text-amber-800">{p.date}</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-amber-600 mr-2">Available:</span>
+                    <span className="text-brand mr-2">Available:</span>
                     <button
                       onClick={() => handleToggleStatus(p.id)}
                       disabled={togglingId === p.id}
                       title={togglingId === p.id ? 'Updating...' : (p.status === 'Active' ? 'Mark Out of Stock' : 'Mark Active')}
                       className={`w-12 h-6 rounded-full relative outline-none transition-colors
-                        ${p.status === 'Active' ? 'bg-amber-400' : 'bg-gray-300'}
+                        ${p.status === 'Active' ? 'bg-brand' : 'bg-gray-300'}
                         ${togglingId === p.id ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
                     >
                       <span
@@ -389,16 +389,16 @@ export default function Products() {
 
             {/* Table header */}
             <thead>
-              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <th className="p-4 text-gray-700 font-semibold text-sm">ID</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Name</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Category</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Price</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Stock</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Status</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Availability</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Added Date</th>
-                <th className="p-4 text-gray-700 font-semibold text-sm">Actions</th>
+              <tr className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100">
+                <th className="p-4 text-amber-900 font-semibold text-sm">ID</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Name</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Category</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Price</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Stock</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Status</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Availability</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Added Date</th>
+                <th className="p-4 text-amber-900 font-semibold text-sm">Actions</th>
               </tr>
             </thead>
 
@@ -409,7 +409,7 @@ export default function Products() {
                 </tr>
               ) : products.length > 0 ? (
                 products.map((p, index) => (
-                  <tr key={p.id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                  <tr key={p.id} className={`border-b border-amber-50 hover:bg-amber-50/60 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}`}>
                     <td className="p-4 text-gray-600 font-mono text-sm">{p.displayId ? p.displayId.slice(-6) : 'N/A'}</td>
                     <td className="p-4 font-medium text-gray-900">{p.name}</td>
                     <td className="p-4 text-gray-600">{p.category}</td>
@@ -451,7 +451,7 @@ export default function Products() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(p)}
-                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-xs transition-colors shadow-sm"
+                          className="px-4 py-2 bg-brand hover:opacity-90 text-gray-900 font-medium rounded-lg text-xs transition-colors shadow-sm"
                         >
                           Edit
                         </button>
@@ -478,7 +478,7 @@ export default function Products() {
         {/* Undo Delete Toast */}
         {showUndoToast && pendingDelete && (
           <div className="fixed bottom-6 right-6 z-50 animate-slideIn">
-            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-xl shadow-2xl p-4 min-w-[320px] max-w-md">
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-brand rounded-xl shadow-2xl p-4 min-w-[320px] max-w-md">
               
               {/* Toast content */}
               <div className="flex items-start gap-3">
@@ -507,7 +507,7 @@ export default function Products() {
                   {/* Undo button */}
                   <button
                     onClick={handleUndoDelete}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-900 font-bold rounded-lg hover:from-amber-500 hover:to-yellow-500 transition-all duration-200 shadow-md border border-amber-300"
+                    className="w-full px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-900 font-bold rounded-lg hover:from-amber-500 hover:to-yellow-500 transition-all duration-200 shadow-md border border-brand"
                   >
                     ↶ Undo Delete
                   </button>
@@ -535,7 +535,7 @@ export default function Products() {
             
             {/* Modal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-              <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 p-6 rounded-xl shadow-2xl min-w-[320px] max-w-md pointer-events-auto animate-modalFadeIn">
+              <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-brand p-6 rounded-xl shadow-2xl min-w-[320px] max-w-md pointer-events-auto animate-modalFadeIn">
 
                 {/* Icon */}
                 <div className="flex justify-center mb-4">
@@ -562,7 +562,7 @@ export default function Products() {
                   {/* Cancel button */}
                   <button
                     onClick={cancelDelete}
-                    className="flex-1 px-4 py-2 bg-white border-2 border-amber-300 text-amber-900 rounded-lg hover:bg-amber-50 font-semibold transition-colors"
+                    className="flex-1 px-4 py-2 bg-white border-2 border-brand text-amber-900 rounded-lg hover:bg-orange-50 font-semibold transition-colors"
                   >
                     Cancel
                   </button>
@@ -570,7 +570,7 @@ export default function Products() {
                   {/* Delete confirmation button */}
                   <button
                     onClick={confirmDeleteAction}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-900 rounded-lg hover:from-amber-500 hover:to-yellow-500 font-semibold shadow-md border border-amber-300 transition-all"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-900 rounded-lg hover:from-amber-500 hover:to-yellow-500 font-semibold shadow-md border border-brand transition-all"
                   >
                     Yes, Delete
                   </button>

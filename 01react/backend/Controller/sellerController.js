@@ -362,9 +362,11 @@ export const getSellerProfile = async (req, res) => {
 };
 
 
-// Get all customers for the seller
+// Get all customers for the seller — only those who ordered from this seller
 export const getCustomers = async (req, res) => {
   try {
+    const sellerId = req.user.id;
+
     const result = await pool.query(`
       SELECT
         u.id,
@@ -379,11 +381,11 @@ export const getCustomers = async (req, res) => {
         MAX(o.created_at)                         AS last_order_date,
         COALESCE(SUM(o.final_amount), 0)::numeric AS total_spent
       FROM users u
-      LEFT JOIN orders o ON o.user_id = u.id
+      INNER JOIN orders o ON o.user_id = u.id AND o.seller_id = $1
       WHERE u.user_role = 'customer'
       GROUP BY u.id
-      ORDER BY u.created_at DESC
-    `);
+      ORDER BY last_order_date DESC
+    `, [sellerId]);
 
     res.json({ success: true, data: result.rows, count: result.rows.length });
   } catch (error) {

@@ -96,7 +96,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-amber-300 p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-brand p-8">
         
         {/* Logo */}
         <div className="flex justify-center mb-6">
@@ -106,7 +106,7 @@ export default function AuthCallback() {
         {/* Status Icon */}
         <div className="flex justify-center mb-6">
           {status === 'processing' && (
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-500"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-brand"></div>
           )}
           
           {status === 'success' && (
@@ -147,7 +147,7 @@ export default function AuthCallback() {
           <div className="mt-6">
             <button
               onClick={() => navigate('/login')}
-              className="w-full p-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition duration-300"
+              className="w-full p-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand transition duration-300"
             >
               Back to Login
             </button>

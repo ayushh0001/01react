@@ -147,10 +147,10 @@ export const getOrderById = async (req, res) => {
         o.*,
         u.name as customer_name,
         u.email as customer_email,
-        u.phone as customer_phone,
+        u.mobile as customer_phone,
         s.name as seller_name,
         s.email as seller_email,
-        s.phone as seller_phone
+        s.mobile as seller_phone
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN users s ON o.seller_id = s.id
@@ -261,18 +261,26 @@ export const getSellerDashboardStats = async (req, res) => {
 
     const recentOrdersResult = await pool.query(recentOrdersQuery, [userId]);
 
-    // Get sales over time (last 30 days)
+    // Get sales over time (last 30 days) — fill every day even if no orders
     const salesOverTimeQuery = `
+      WITH date_series AS (
+        SELECT generate_series(
+          CURRENT_DATE - INTERVAL '29 days',
+          CURRENT_DATE,
+          INTERVAL '1 day'
+        )::date AS date
+      )
       SELECT 
-        DATE(created_at) as date,
-        COUNT(*) as order_count,
-        SUM(final_amount) as daily_revenue
-      FROM orders
-      WHERE seller_id = $1 
-        AND created_at >= NOW() - INTERVAL '30 days'
-        AND payment_status = 'paid'
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
+        ds.date,
+        COALESCE(COUNT(o.id), 0) as order_count,
+        COALESCE(SUM(o.final_amount), 0) as daily_revenue
+      FROM date_series ds
+      LEFT JOIN orders o 
+        ON DATE(o.created_at) = ds.date
+        AND o.seller_id = $1
+        AND o.payment_status = 'paid'
+      GROUP BY ds.date
+      ORDER BY ds.date ASC
     `;
 
     const salesOverTimeResult = await pool.query(salesOverTimeQuery, [userId]);

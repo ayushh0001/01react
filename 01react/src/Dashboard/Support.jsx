@@ -7,7 +7,7 @@ const helpTopics = [
   {
     icon: (
       // Bookmark icon for listing products
-      <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
@@ -151,7 +151,7 @@ export default function Support() {
               
               {/* Phone support option */}
               <div className="flex items-start lg:items-center text-gray-600">
-                <svg className="w-5 h-5 mr-2 text-yellow-600 flex-shrink-0 mt-0.5 lg:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mr-2 text-brand flex-shrink-0 mt-0.5 lg:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M22 16.92v.01M6.16 7.12l-.12-.12a2 2 0 1 1 2.83-2.83l.13.13" strokeWidth="2"/>
                   <path d="M17.657 2.657A9 9 0 1 1 5.636 14.634" strokeWidth="2"/>
                 </svg>

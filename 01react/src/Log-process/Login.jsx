@@ -207,7 +207,7 @@ export default function Login() {
       />
 
       {/* Main login container */}
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-amber-300 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-brand flex flex-col md:flex-row overflow-hidden min-h-[600px]">
 
         {/* Left side - Login form */}
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
@@ -235,7 +235,7 @@ export default function Login() {
               placeholder="Email or username"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-150"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand transition duration-150"
               required
             />
 
@@ -249,7 +249,7 @@ export default function Login() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-150"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand transition duration-150"
               required
             />
 
@@ -258,7 +258,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-gray-600 hover:text-amber-600 transition duration-150 underline"
+                className="text-gray-600 hover:text-brand transition duration-150 underline"
               >
                 Forgot password?
               </button>
@@ -299,7 +299,7 @@ export default function Login() {
             Don't have an account?{' '}
             <button
               onClick={() => navigate('/signup')}
-              className="text-amber-600 font-semibold hover:underline"
+              className="text-brand font-semibold hover:underline"
             >
               Sign up Zpin
             </button>
@@ -308,7 +308,7 @@ export default function Login() {
         </div>
 
         {/* Right side - Illustration (hidden on mobile) */}
-        <div className="hidden md:flex md:w-1/2 bg-amber-500/10 items-center justify-center p-8">
+        <div className="hidden md:flex md:w-1/2 bg-brand/10 items-center justify-center p-8">
           <img
             src="/palm-recognition.png"
             alt="Login Illustration"

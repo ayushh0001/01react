@@ -13,6 +13,7 @@ import orderRoutes from './Routes/orderRoutes.js';
 import productRoutes from './Routes/productRoutes.js';
 import categoryRoutes from './Routes/categoryRoutes.js';
 import passwordResetRoutes from './Routes/passwordResetRoutes.js';
+import notificationRoutes from './Routes/notificationRoutes.js';
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -109,6 +110,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/password-reset', passwordResetRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Make pool available to routes
 app.locals.pool = pool;

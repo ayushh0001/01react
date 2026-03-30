@@ -133,7 +133,7 @@ export default function VerifyResetOTP() {
             
             {/* Development mode - show OTP */}
             {devOtp && (
-              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mt-3 p-2 bg-orange-50 border border-yellow-200 rounded-lg">
                 <p className="text-xs text-yellow-800">
                   <span className="font-semibold">Dev Mode:</span> OTP is <span className="font-mono font-bold">{devOtp}</span>
                 </p>
@@ -182,7 +182,7 @@ export default function VerifyResetOTP() {
                 maxLength={6}
                 pattern="[0-9]{6}"
                 required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-amber-400 transition-colors"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand transition-colors"
               />
             </div>
 
@@ -221,7 +221,7 @@ export default function VerifyResetOTP() {
               className={`text-sm font-semibold ${
                 resending || timeLeft > 540
                   ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-amber-600 hover:text-amber-700'
+                  : 'text-brand hover:text-amber-700'
               }`}
             >
               {resending ? 'Resending...' : 'Resend OTP'}

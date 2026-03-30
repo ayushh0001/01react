@@ -27,48 +27,67 @@ const SectionCard = ({ icon, title, children }) => {
   );
 };
 
-// Reusable Row component - displays individual setting items with edit functionality
-const Row = ({ label, value, icon, showEdit }) => {
+// Reusable Row component - inline editable
+const Row = ({ label, value, icon, onSave, type = 'text', readOnly = false }) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setDraft(value); }, [value]);
+
+  const handleSave = async () => {
+    if (draft === value) { setEditing(false); return; }
+    setSaving(true);
+    try {
+      await onSave(draft);
+      setEditing(false);
+    } catch {
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="flex items-start sm:items-center justify-between px-1 py-[9px] rounded-lg mb-1 bg-gray-50">
-
-      {/* Left side - icon, label, and value */}
-      <div className="flex items-start gap-2">
-
-        {/* Setting icon */}
-        <div className="text-gray-500 mt-1">
-          {icon}
+    <div className="flex items-center justify-between px-1 py-[9px] rounded-lg mb-1 bg-gray-50 gap-2">
+      <div className="flex items-start gap-2 flex-1 min-w-0">
+        <div className="text-gray-500 mt-1 flex-shrink-0">{icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium text-gray-400 mb-0.5">{label}</div>
+          {editing ? (
+            <input autoFocus type={type} value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }}
+              className="w-full text-sm font-semibold text-gray-800 border-b-2 border-brand bg-transparent outline-none py-0.5"
+            />
+          ) : (
+            <div className="text-sm lg:text-base font-semibold text-gray-700 truncate">{value || '—'}</div>
+          )}
         </div>
-
-        {/* Label and value display */}
-        <div>
-          <div className="text-xs font-medium text-gray-400 mb-1px">
-            {label}
-          </div>
-          <div className="text-sm lg:text-base font-semibold text-gray-700 break-words">
-            {value}
-          </div>
-        </div>
-
       </div>
 
-      {/* Right side - edit button (conditional) */}
-      {showEdit && (
-        <button
-          title="Edit"
-          className="p-1 ml-2 text-gray-500 hover:text-blue-800 transition"
-        >
-          {/* Edit icon SVG */}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 3.487a2.13 2.13 0 1 1 3.015 3.014L7.935 18.443a1.999 1.999 0 0 1-.881.507l-4.004 1.13 1.13-4.004a2 2 0 0 1 .507-.881L16.862 3.487z"
-            />
-          </svg>
-        </button>
+      {!readOnly && (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {editing ? (
+            <>
+              <button onClick={handleSave} disabled={saving}
+                className="px-2 py-1 text-xs font-semibold bg-brand text-black rounded-lg disabled:opacity-50 transition">
+                {saving ? '...' : 'Save'}
+              </button>
+              <button onClick={() => { setEditing(false); setDraft(value); }}
+                className="px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-700 rounded-lg transition">
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setEditing(true)} title="Edit"
+              className="p-1 text-gray-400 hover:text-blue-700 transition">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.13 2.13 0 1 1 3.015 3.014L7.935 18.443a1.999 1.999 0 0 1-.881.507l-4.004 1.13 1.13-4.004a2 2 0 0 1 .507-.881L16.862 3.487z" />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
-
     </div>
   );
 };
@@ -82,7 +101,49 @@ export default function Settings() {
   const [payment, setPayment] = useState({ bank: "", account: "", ifsc: "" });
   const [loading, setLoading] = useState(true);
 
-  // Use shared API instance — sends cookies + Bearer token automatically via interceptor
+  // Save helpers — send full required payload since controllers do upsert
+  const saveBusinessField = async (field, value) => {
+    // saveBusinessDetails requires businessName + pincode at minimum — fetch current first
+    const res = await API.get('/users/seller/business-details').catch(() => ({ data: { data: {} } }));
+    const cur = res.data?.data || {};
+    await API.post('/users/seller/business-details', {
+      businessName: cur.business_name || shop.name,
+      businessDescription: cur.business_description || '',
+      businessType: cur.business_type || 'general',
+      gstNo: cur.gst_no || '',
+      panNo: cur.pan_no || '',
+      address: cur.address || shop.address,
+      city: cur.city || '',
+      state: cur.state || '',
+      pincode: cur.pincode || '000000',
+      [field]: value,
+    });
+    if (field === 'businessName') { setShop(prev => ({ ...prev, name: value })); setProfile(prev => ({ ...prev, company: value })); }
+    if (field === 'address') setShop(prev => ({ ...prev, address: value }));
+  };
+
+  const saveUserField = async (field, value) => {
+    await API.put('/users/seller/profile', { [field]: value });
+    if (field === 'name')   { setShop(prev => ({ ...prev, owner: value })); setProfile(prev => ({ ...prev, owner: value })); }
+    if (field === 'mobile') setContact(prev => ({ ...prev, phone: value }));
+    if (field === 'email')  setContact(prev => ({ ...prev, email: value }));
+  };
+
+  const saveBankField = async (field, value) => {
+    const res = await API.get('/users/seller/bank-details').catch(() => ({ data: { data: {} } }));
+    const cur = res.data?.data || {};
+    await API.post('/users/seller/bank-details', {
+      accountHolderName: cur.account_holder_name || '',
+      accountNumber: cur.account_no || payment.account.replace(/\*/g, ''),
+      ifscCode: cur.ifsc_code || payment.ifsc,
+      bankName: cur.bank_name || payment.bank,
+      accountType: cur.account_type || 'savings',
+      [field]: value,
+    });
+    if (field === 'bankName')      setPayment(prev => ({ ...prev, bank: value }));
+    if (field === 'accountNumber') setPayment(prev => ({ ...prev, account: `**** **** **** ${String(value).slice(-4)}` }));
+    if (field === 'ifscCode')      setPayment(prev => ({ ...prev, ifsc: value }));
+  };
 
   useEffect(() => {
     fetchUserProfile();
@@ -196,7 +257,7 @@ export default function Settings() {
           <div className="flex items-center mb-7 md:mb-0">
 
             {/* Profile avatar with user icon */}
-            <div className="bg-yellow-200 border-2 border-yellow-500 rounded-full w-10 h-10 flex items-center justify-center mr-2">
+            <div className="bg-yellow-200 border-2 border-brand rounded-full w-10 h-10 flex items-center justify-center mr-2">
               <svg fill="none" className="w-6 h-6 text-yellow-800" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" strokeWidth="2" />
                 <path strokeWidth="2" d="M4 20c0-3.2 6-5.5 8-5.5s8 2.3 8 5.5" />
@@ -226,43 +287,17 @@ export default function Settings() {
           }
           title="Shop Information"
         >
-          {/* Shop name row */}
-          <Row
-            label="Shop Name"
-            value={shop.name}
-            icon={
-              <svg fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M5 7v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" />
-                <rect x="7" y="11" width="10" height="4" rx="1" />
-              </svg>
-            }
-            showEdit
+          <Row label="Shop Name" value={shop.name}
+            onSave={v => saveBusinessField('businessName', v)}
+            icon={<svg fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M5 7v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" /><rect x="7" y="11" width="10" height="4" rx="1" /></svg>}
           />
-
-          {/* Shop owner name row */}
-          <Row
-            label="Shop Owner Name"
-            value={shop.owner}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M2 20c0-4 8-7 10-7s10 3 10 7" />
-              </svg>
-            }
-            showEdit
+          <Row label="Shop Owner Name" value={shop.owner}
+            onSave={v => saveUserField('name', v)}
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M2 20c0-4 8-7 10-7s10 3 10 7" /></svg>}
           />
-
-          {/* Shop address row */}
-          <Row
-            label="Shop Address"
-            value={shop.address}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C7.03 2 2 6.48 2 12c0 4.81 5.63 11.81 9.19 16.27a2.07 2.07 0 0 0 3.21 0C16.37 23.81 22 16.81 22 12c0-5.52-5.03-10-10-10z" />
-                <circle cx="12" cy="12" r="6" />
-              </svg>
-            }
-            showEdit
+          <Row label="Shop Address" value={shop.address}
+            onSave={v => saveBusinessField('address', v)}
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2C7.03 2 2 6.48 2 12c0 4.81 5.63 11.81 9.19 16.27a2.07 2.07 0 0 0 3.21 0C16.37 23.81 22 16.81 22 12c0-5.52-5.03-10-10-10z" /><circle cx="12" cy="12" r="6" /></svg>}
           />
         </SectionCard>
 
@@ -275,29 +310,15 @@ export default function Settings() {
           }
           title="Contact Information"
         >
-          {/* Phone number row */}
-          <Row
-            label="Contact Number"
-            value={contact.phone}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M22 16.92V17a2 2 0 0 1-2 2A18 18 0 0 1 4 5a2 2 0 0 1 2-2h.09" />
-              </svg>
-            }
-            showEdit
+          <Row label="Contact Number" value={contact.phone}
+            onSave={v => saveUserField('mobile', v)}
+            type="tel"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92V17a2 2 0 0 1-2 2A18 18 0 0 1 4 5a2 2 0 0 1 2-2h.09" /></svg>}
           />
-
-          {/* Email address row */}
-          <Row
-            label="Email Address"
-            value={contact.email}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M3 8l9 6 9-6" />
-                <path d="M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" />
-              </svg>
-            }
-            showEdit
+          <Row label="Email Address" value={contact.email}
+            onSave={v => saveUserField('email', v)}
+            type="email"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 8l9 6 9-6" /><path d="M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" /></svg>}
           />
         </SectionCard>
 
@@ -313,47 +334,14 @@ export default function Settings() {
           }
           title="Payment Details"
         >
-          {/* Bank name row */}
-          <Row
-            label="Bank Name"
-            value={payment.bank}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <rect width="20" height="14" x="2" y="5" rx="2" />
-                <path d="M2 10h20" />
-                <path d="M6 17v.01" />
-                <path d="M18 17v.01" />
-              </svg>
-            }
-            showEdit
+          <Row label="Bank Name" value={payment.bank} readOnly
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" /></svg>}
           />
-
-          {/* Account number row (masked for security) */}
-          <Row
-            label="Account Number"
-            value={payment.account}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <rect width="20" height="14" x="2" y="5" rx="2" />
-                <path d="M2 10h20" />
-              </svg>
-            }
-            showEdit
+          <Row label="Account Number" value={payment.account} readOnly
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" /></svg>}
           />
-
-          {/* IFSC code row */}
-          <Row
-            label="IFSC"
-            value={payment.ifsc}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <rect width="20" height="14" x="2" y="5" rx="2" />
-                <path d="M2 10h20" />
-                <path d="M6 17v.01" />
-                <path d="M18 17v.01" />
-              </svg>
-            }
-            showEdit
+          <Row label="IFSC" value={payment.ifsc} readOnly
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" /><path d="M6 17v.01" /><path d="M18 17v.01" /></svg>}
           />
         </SectionCard>
 

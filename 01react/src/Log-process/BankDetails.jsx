@@ -85,7 +85,7 @@ export default function BankDetails() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-lg border border-amber-300">
+      <div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-lg border border-brand">
 
         {/* Logo */}
         <div className="flex justify-center mb-5">
@@ -99,14 +99,14 @@ export default function BankDetails() {
               <div className="flex flex-col items-center">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
                   ${i === 4
-                    ? 'bg-amber-500 text-white ring-2 ring-amber-300'
+                    ? 'bg-brand text-white ring-2 ring-amber-300'
                     : i < 4
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-200 text-gray-500'
                   }`}>
                   {i < 4 ? '✓' : i + 1}
                 </div>
-                <span className={`text-[10px] mt-0.5 font-medium ${i === 4 ? 'text-amber-600' : i < 4 ? 'text-green-600' : 'text-gray-400'
+                <span className={`text-[10px] mt-0.5 font-medium ${i === 4 ? 'text-brand' : i < 4 ? 'text-green-600' : 'text-gray-400'
                   }`}>{step}</span>
               </div>
               {i < 4 && (
@@ -117,7 +117,7 @@ export default function BankDetails() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-1 text-amber-600">
+        <h1 className="text-2xl font-bold text-center mb-1 text-brand">
           Bank Account Details
         </h1>
         <p className="text-center text-gray-500 text-sm mb-5">
@@ -262,7 +262,7 @@ export default function BankDetails() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-3 font-semibold rounded-lg shadow-md transition duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'
+            className={`w-full py-3 font-semibold rounded-lg shadow-md transition duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-brand hover:bg-brand text-white'
               }`}
           >
             {isLoading ? (

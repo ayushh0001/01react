@@ -128,8 +128,8 @@ export default function NewOrderNotification() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-brand" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
               </svg>
             </div>
@@ -164,7 +164,7 @@ export default function NewOrderNotification() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Customer</span>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-gray-900">{initials}</span>
                 </div>
                 <span className="text-sm font-medium text-gray-900">{customerName}</span>
@@ -184,7 +184,7 @@ export default function NewOrderNotification() {
           <div className="space-y-3">
             <button
               onClick={handleAcceptOrder}
-              className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-xl transition-colors"
+              className="w-full py-3 bg-brand hover:bg-brand text-black font-semibold rounded-xl transition-colors"
             >
               Accept Order
             </button>

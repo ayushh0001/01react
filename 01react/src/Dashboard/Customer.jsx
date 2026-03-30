@@ -1,7 +1,17 @@
 // src/Customer.jsx
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import API from "../utils/api"; // shared axios instance — auth interceptor + withCredentials
+import API from "../utils/api";
+
+const statusColors = {
+  pending:    'bg-orange-100 text-orange-700',
+  confirmed:  'bg-blue-100 text-blue-700',
+  processing: 'bg-blue-100 text-blue-700',
+  shipped:    'bg-green-100 text-green-700',
+  delivered:  'bg-green-200 text-green-800',
+  cancelled:  'bg-red-100 text-red-600',
+  returned:   'bg-red-100 text-red-600',
+};
 
 const statusStyles = {
   Active: "bg-green-50 text-green-600",
@@ -9,18 +19,169 @@ const statusStyles = {
   Blocked: "bg-red-50 text-red-500",
 };
 
-// Derive a display status from the user object fields
-const deriveStatus = (user) => {
-  if (user.isBlocked || user.status === 'blocked') return 'Blocked';
-  if (user.isVerified || user.isActive) return 'Active';
-  return 'New';
-};
+// ── Customer Orders Modal ─────────────────────────────────────────────────────
+function OrderCard({ order, fmt }) {
+  const [expanded, setExpanded] = useState(false);
+  const [items, setItems] = useState(null);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  const addr = typeof order.shipping_address === 'string'
+    ? JSON.parse(order.shipping_address) : (order.shipping_address || {});
+
+  const toggle = async () => {
+    if (!expanded && items === null) {
+      setLoadingItems(true);
+      try {
+        const res = await API.get(`/orders/${order.id}`);
+        setItems(res.data.order?.items || []);
+      } catch { setItems([]); }
+      finally { setLoadingItems(false); }
+    }
+    setExpanded(v => !v);
+  };
+
+  return (
+    <div className="border border-gray-100 rounded-xl overflow-hidden transition hover:shadow-sm">
+      {/* Summary row — always visible, click to expand */}
+      <div className="p-4 cursor-pointer select-none" onClick={toggle}>
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <p className="font-semibold text-gray-900 text-sm">{order.order_number}</p>
+            <p className="text-xs text-gray-500">
+              {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[order.status?.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}>
+              {order.status}
+            </span>
+            <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
+          <div><span className="text-gray-400 block">Items</span><span className="font-medium text-gray-800">{order.item_count}</span></div>
+          <div><span className="text-gray-400 block">Total</span><span className="font-semibold text-gray-900">{fmt(order.final_amount || order.total_amount)}</span></div>
+          <div><span className="text-gray-400 block">Payment</span><span className="font-medium text-gray-800 capitalize">{order.payment_method || '—'}</span></div>
+        </div>
+
+        {(addr.city || addr.state) && (
+          <p className="text-xs text-gray-400 mt-2">
+            📍 {[addr.address, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
+          </p>
+        )}
+      </div>
+
+      {/* Expanded item details */}
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+          {loadingItems ? (
+            <p className="text-xs text-gray-400 text-center py-2">Loading items...</p>
+          ) : items && items.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items Ordered</p>
+              {items.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 bg-white rounded-lg p-2.5 border border-gray-100">
+                  {item.image && (
+                    <img src={item.image} alt={item.product_name}
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{item.product_name}</p>
+                    <p className="text-xs text-gray-500">Qty: {item.quantity} × {fmt(item.price)}</p>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900 flex-shrink-0">
+                    {fmt(Number(item.price) * Number(item.quantity))}
+                  </p>
+                </div>
+              ))}
+              {/* Price breakdown */}
+              <div className="pt-2 border-t border-gray-200 space-y-1">
+                {Number(order.shipping_amount) > 0 && (
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Shipping</span><span>{fmt(order.shipping_amount)}</span>
+                  </div>
+                )}
+                {Number(order.tax_amount) > 0 && (
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Tax</span><span>{fmt(order.tax_amount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-bold text-gray-900 pt-1">
+                  <span>Total</span><span>{fmt(order.final_amount || order.total_amount)}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 text-center py-2">No item details available</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CustomerModal({ customer, onClose }) {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    API.get(`/orders/customer/${customer.id}/orders`)
+      .then(res => setOrders(res.data.orders || []))
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [customer.id]);
+
+  const fmt = v => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">{customer.name}</h2>
+            <p className="text-sm text-gray-500">{customer.phone} · {customer.orders} orders · {customer.totalSpent} spent</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Orders list */}
+        <div className="p-5">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Order History</p>
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">Loading orders...</div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">No orders found</div>
+          ) : (
+            <div className="space-y-3">
+              {orders.map(order => (
+                <OrderCard key={order.id} order={order} fmt={fmt} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Customer() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -58,6 +219,7 @@ export default function Customer() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {selectedCustomer && <CustomerModal customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} />}
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-50 lg:z-auto`}>
         <Sidebar activeItem="customers" />
@@ -100,7 +262,7 @@ export default function Customer() {
             <button
               onClick={fetchCustomers}
               disabled={loading}
-              className="self-start sm:self-auto px-4 py-2 text-sm font-medium bg-amber-400 hover:bg-amber-500 text-black rounded-lg border border-amber-300 disabled:opacity-50 disabled:cursor-wait transition"
+              className="self-start sm:self-auto px-4 py-2 text-sm font-medium bg-brand hover:bg-brand text-black rounded-lg border border-brand disabled:opacity-50 disabled:cursor-wait transition"
             >
               {loading ? 'Loading...' : '↻ Refresh'}
             </button>
@@ -121,7 +283,7 @@ export default function Customer() {
               </div>
             ) : customers.length > 0 ? (
               customers.map((c) => (
-                <div key={c.id} className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+                <div key={c.id} className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition" onClick={() => setSelectedCustomer(c)}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="font-semibold text-gray-900">{c.name}</h3>
@@ -182,7 +344,8 @@ export default function Customer() {
                 customers.map((c) => (
                   <div
                     key={c.id}
-                    className="grid grid-cols-7 px-6 py-4 text-sm items-center border-b border-amber-100 last:border-b-0 hover:bg-amber-50/60"
+                    className="grid grid-cols-7 px-6 py-4 text-sm items-center border-b border-amber-100 last:border-b-0 hover:bg-orange-50/60 cursor-pointer"
+                    onClick={() => setSelectedCustomer(c)}
                   >
                     <span className="text-gray-600 font-mono text-xs">{String(c.id).slice(-6)}</span>
                     <span className="text-blue-600 font-semibold">{c.name}</span>

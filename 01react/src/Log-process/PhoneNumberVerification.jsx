@@ -54,8 +54,8 @@ function OtpInput({ value, onChange }) {
           onKeyDown={(e) => handleKeyDown(e, idx)}
           onFocus={(e) => e.target.select()}
           className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 outline-none transition-all duration-150 shadow-sm
-            ${digit ? 'border-amber-500 bg-amber-50 text-amber-900' : 'border-gray-300 bg-white text-gray-800'}
-            focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:bg-amber-50`}
+            ${digit ? 'border-brand bg-orange-50 text-amber-900' : 'border-gray-300 bg-white text-gray-800'}
+            focus:border-brand focus:ring-2 focus:ring-amber-200 focus:bg-orange-50`}
         />
       ))}
     </div>
@@ -179,7 +179,7 @@ export default function PhoneNumberVerification() {
       {/* Invisible reCAPTCHA container — required by Firebase */}
       <div id="recaptcha-container" />
 
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-amber-300">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-brand">
 
         {/* Logo */}
         <div className="flex justify-center mb-5">
@@ -192,10 +192,10 @@ export default function PhoneNumberVerification() {
             <React.Fragment key={step}>
               <div className="flex flex-col items-center">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-                  ${i === 0 ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-gray-200 text-gray-500'}`}>
+                  ${i === 0 ? 'bg-brand text-white ring-2 ring-amber-300' : 'bg-gray-200 text-gray-500'}`}>
                   {i + 1}
                 </div>
-                <span className={`text-[10px] mt-0.5 font-medium ${i === 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+                <span className={`text-[10px] mt-0.5 font-medium ${i === 0 ? 'text-brand' : 'text-gray-400'}`}>
                   {step}
                 </span>
               </div>
@@ -226,7 +226,7 @@ export default function PhoneNumberVerification() {
           <form onSubmit={handleSendOtp} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-400 focus-within:border-amber-400">
+              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand">
                 <span className="px-3 py-3 bg-gray-50 text-gray-500 text-sm font-medium border-r border-gray-300 select-none">
                   +91
                 </span>
@@ -245,7 +245,7 @@ export default function PhoneNumberVerification() {
             <button
               type="submit"
               disabled={loading || phone.length !== 10}
-              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-brand text-white font-semibold rounded-lg shadow-md hover:bg-brand transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send OTP'}
             </button>
@@ -269,28 +269,28 @@ export default function PhoneNumberVerification() {
             <div className="flex gap-1.5 justify-center">
               {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                 <span key={i} className={`h-1.5 rounded-full transition-all duration-200
-                  ${i < otp.length ? 'w-6 bg-amber-500' : 'w-1.5 bg-gray-200'}`} />
+                  ${i < otp.length ? 'w-6 bg-brand' : 'w-1.5 bg-gray-200'}`} />
               ))}
             </div>
 
             <button
               type="submit"
               disabled={loading || otp.length < OTP_LENGTH}
-              className="w-full py-3 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-brand text-white font-semibold rounded-lg shadow-md hover:bg-brand transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Verifying...' : 'Verify OTP'}
             </button>
 
             <div className="flex items-center justify-between text-sm text-gray-500">
               <button type="button" onClick={() => { setOtpSent(false); setOtp(''); showMsg(''); }}
-                className="hover:text-amber-600 underline underline-offset-2 transition">
+                className="hover:text-brand underline underline-offset-2 transition">
                 Change number
               </button>
               {resendCd > 0 ? (
-                <span>Resend in <span className="font-semibold text-amber-600">{resendCd}s</span></span>
+                <span>Resend in <span className="font-semibold text-brand">{resendCd}s</span></span>
               ) : (
                 <button type="button" onClick={handleResendOtp}
-                  className="hover:text-amber-600 font-medium underline underline-offset-2 transition">
+                  className="hover:text-brand font-medium underline underline-offset-2 transition">
                   Resend OTP
                 </button>
               )}

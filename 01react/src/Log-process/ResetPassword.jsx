@@ -128,7 +128,7 @@ export default function ResetPassword() {
                   placeholder="Enter new password"
                   minLength={6}
                   required
-                  className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-colors"
                 />
                 <button
                   type="button"
@@ -165,7 +165,7 @@ export default function ResetPassword() {
                   placeholder="Re-enter new password"
                   minLength={6}
                   required
-                  className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-colors"
                 />
                 <button
                   type="button"

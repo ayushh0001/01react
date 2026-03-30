@@ -1,5 +1,35 @@
 @import "tailwindcss";
 
+/* ── Brand gradient (matches zpin-website) ── */
+:root {
+  --brand-from: #FFE082;
+  --brand-to:   #FF9800;
+}
+
+@utility bg-brand {
+  background: linear-gradient(50deg, var(--brand-from), var(--brand-to));
+}
+
+@utility text-brand {
+  color: #FF9800;
+}
+
+@utility border-brand {
+  border-color: #FF9800;
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility ring-brand {
+  --tw-ring-color: rgba(255, 152, 0, 0.3);
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

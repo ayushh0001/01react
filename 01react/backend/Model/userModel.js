@@ -11,11 +11,9 @@ export const findUserByEmail = async (email) => {
 // Find user by ID
 export const getUserById = async (id) => {
   const query = `
-    SELECT u.*, 
-           cp.profile_image as customer_profile_image,
+    SELECT u.*,
            sp.profile_image as seller_profile_image
     FROM users u
-    LEFT JOIN customer_profiles cp ON u.id = cp.user_id
     LEFT JOIN seller_profiles sp ON u.id = sp.user_id
     WHERE u.id = $1
   `;
@@ -96,11 +94,12 @@ export const findOrCreateGoogleUser = async (googleData) => {
     isVerified: emailVerified || true
   });
 
-  // Create customer profile with Google profile image
+  // Store profile image in seller_profiles if provided
   if (profileImage) {
     const profileQuery = `
-      INSERT INTO customer_profiles (user_id, profile_image)
+      INSERT INTO seller_profiles (user_id, profile_image)
       VALUES ($1, $2)
+      ON CONFLICT (user_id) DO UPDATE SET profile_image = $2
     `;
     await pool.query(profileQuery, [newUser.id, profileImage]);
   }
@@ -158,16 +157,11 @@ export const getUserWithProfile = async (userId) => {
   const query = `
     SELECT 
       u.id, u.user_name, u.name, u.mobile, u.email, u.user_role, u.is_verified, u.created_at,
-      CASE 
-        WHEN u.user_role = 'customer' THEN row_to_json(cp.*)
-        WHEN u.user_role = 'seller' THEN row_to_json(sp.*)
-      END as profile
+      row_to_json(sp.*) as profile
     FROM users u
-    LEFT JOIN customer_profiles cp ON u.id = cp.user_id AND u.user_role = 'customer'
-    LEFT JOIN seller_profiles sp ON u.id = sp.user_id AND u.user_role = 'seller'
+    LEFT JOIN seller_profiles sp ON u.id = sp.user_id
     WHERE u.id = $1
   `;
-  
   const result = await pool.query(query, [userId]);
   return result.rows[0];
 };

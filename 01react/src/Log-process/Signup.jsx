@@ -152,7 +152,7 @@ export default function Signup() {
       />
 
       {/* Main signup container */}
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-amber-300 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-brand flex flex-col md:flex-row overflow-hidden min-h-[600px]">
 
         {/* Left side - Signup form */}
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
@@ -182,7 +182,7 @@ export default function Signup() {
               placeholder="Email or username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-150"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand transition duration-150"
               required
             />
 
@@ -221,7 +221,7 @@ export default function Signup() {
             Already have an account?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-amber-600 font-semibold hover:underline"
+              className="text-brand font-semibold hover:underline"
             >
               Log in Zpin
             </button>
@@ -235,7 +235,7 @@ export default function Signup() {
         </div>
 
         {/* Right side - Illustration (hidden on mobile) */}
-        <div className="hidden md:flex md:w-1/2 bg-amber-500/10 items-center justify-center p-8">
+        <div className="hidden md:flex md:w-1/2 bg-brand/10 items-center justify-center p-8">
           <img
             src="./sign-up-form.png"
             alt="Signup Illustration"
@@ -245,7 +245,7 @@ export default function Signup() {
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="hidden flex-col items-center justify-center text-amber-600">
+          <div className="hidden flex-col items-center justify-center text-brand">
             <svg className="w-32 h-32 mb-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm1 0v12h12V4H4z" clipRule="evenodd" />
               <path d="M6 8a2 2 0 114 0 2 2 0 01-4 0zM8 12a3 3 0 00-3 3h6a3 3 0 00-3-3z" />

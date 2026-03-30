@@ -1,11 +1,10 @@
-// Import necessary React hooks and components
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import API from '../utils/api';
+import Invoice from './Invoice';
 
-// Status color mapping - defines styling for different order statuses
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending: 'bg-orange-100 text-yellow-800',
   confirmed: 'bg-blue-100 text-blue-800',
   processing: 'bg-blue-100 text-blue-800',
   shipped: 'bg-green-100 text-green-800',
@@ -14,8 +13,136 @@ const statusColors = {
   returned: 'bg-red-100 text-red-800'
 };
 
-// Available status filters - includes 'All' option
 const statuses = ['All', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+
+// ── Order Detail Modal ────────────────────────────────────────────────────────
+function OrderModal({ order, onClose }) {
+  const [detail, setDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showInvoice, setShowInvoice] = useState(false);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      try {
+        const res = await API.get(`/orders/${order.id}`);
+        setDetail(res.data.order);
+      } catch {
+        setDetail(order); // fallback to list data
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [order.id]);
+
+  const addr = detail?.shipping_address || order.shipping_address || {};
+  const items = detail?.items || [];
+  const fmt = v => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
+      {showInvoice && <Invoice order={order} detail={detail} onClose={() => setShowInvoice(false)} />}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
+            <p className="text-sm text-gray-500">{order.number}</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-gray-400">Loading...</div>
+        ) : (
+          <div className="p-5 space-y-5">
+            {/* Status + Date */}
+            <div className="flex items-center justify-between">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[detail?.status?.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}>
+                {detail?.status || order.status}
+              </span>
+              <span className="text-sm text-gray-500">{order.dateTime || order.date}</span>
+            </div>
+
+            {/* Customer */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customer</p>
+              <p className="font-semibold text-gray-900">{order.customer}</p>
+              {addr.phone && <p className="text-sm text-gray-600">{addr.phone}</p>}
+              {(addr.address || addr.street) && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {[addr.address || addr.street, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
+                </p>
+              )}
+            </div>
+
+            {/* Items */}
+            {items.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items</p>
+                <div className="space-y-2">
+                  {items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                      {item.image && (
+                        <img src={item.image} alt={item.product_name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 text-sm truncate">{item.product_name}</p>
+                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="font-semibold text-gray-900 text-sm">{fmt(item.price * item.quantity)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Price breakdown */}
+            <div className="border-t border-gray-100 pt-4 space-y-2">
+              {detail?.shipping_amount > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Shipping</span><span>{fmt(detail.shipping_amount)}</span>
+                </div>
+              )}
+              {detail?.tax_amount > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Tax</span><span>{fmt(detail.tax_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 text-base pt-1 border-t border-gray-100">
+                <span>Total</span>
+                <span>{fmt(detail?.final_amount || order.total)}</span>
+              </div>
+            </div>
+
+            {/* Payment */}
+            {detail?.payment_method && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Payment</span>
+                <span className="font-medium capitalize text-gray-800">{detail.payment_method}</span>
+              </div>
+            )}
+
+            {/* Invoice Button */}
+            <button
+              onClick={() => setShowInvoice(true)}
+              className="w-full mt-2 py-2.5 bg-brand text-black font-semibold text-sm rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              View Invoice
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Main Orders component - displays and manages order list
 export default function Orders() {
@@ -25,6 +152,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [updatingOrder, setUpdatingOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const ordersPerPage = 9;
 
   useEffect(() => {
@@ -133,6 +261,7 @@ export default function Orders() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
+      {selectedOrder && <OrderModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />}
 
       {/* Sidebar navigation */}
       <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-50 lg:z-auto`}>
@@ -199,14 +328,14 @@ export default function Orders() {
                     
                     const statusMap = {
                       'pending': { label: 'New', class: 'bg-blue-100 text-blue-600' },
-                      'confirmed': { label: 'Processing', class: 'bg-yellow-100 text-yellow-700' },
+                      'confirmed': { label: 'Processing', class: 'bg-orange-100 text-yellow-700' },
                       'processing': { label: 'Accepted', class: 'bg-green-100 text-green-700' }
                     };
                     
                     const status = statusMap[order.status?.toLowerCase()] || { label: order.status || 'New', class: 'bg-gray-100 text-gray-600' };
 
                     return (
-                      <tr key={order.id || index} className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr key={order.id || index} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <td className="p-4 font-medium text-gray-900">#{order.number?.slice(-4) || order.id?.slice(-4)}</td>
                         <td className="p-4">
                           <div className="flex items-center gap-3">
@@ -230,7 +359,7 @@ export default function Orders() {
                                 <button
                                   onClick={() => handleAcceptOrder(order.id)}
                                   disabled={updatingOrder === order.id}
-                                  className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                                  className="px-4 py-2 bg-brand hover:bg-brand text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
                                 >
                                   Accept Order
                                 </button>
@@ -291,13 +420,13 @@ export default function Orders() {
                 const customerName = order.customer;
                 const statusMap = {
                   'pending': { label: 'New', class: 'bg-blue-100 text-blue-600' },
-                  'confirmed': { label: 'Processing', class: 'bg-yellow-100 text-yellow-700' },
+                  'confirmed': { label: 'Processing', class: 'bg-orange-100 text-yellow-700' },
                   'processing': { label: 'Accepted', class: 'bg-green-100 text-green-700' }
                 };
                 const status = statusMap[order.status?.toLowerCase()] || { label: order.status || 'New', class: 'bg-gray-100 text-gray-600' };
 
                 return (
-                  <div key={order.id || index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                  <div key={order.id || index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition" onClick={() => setSelectedOrder(order)}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-semibold text-gray-900">#{order.number?.slice(-4)}</h3>
@@ -323,7 +452,7 @@ export default function Orders() {
                           <button
                             onClick={() => handleAcceptOrder(order.id)}
                             disabled={updatingOrder === order.id}
-                            className="flex-1 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                            className="flex-1 px-3 py-2 bg-brand hover:bg-brand text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
                           >
                             Accept
                           </button>
@@ -367,7 +496,7 @@ export default function Orders() {
                 onClick={() => setFilter(status)}
                 className={`px-4 py-2 rounded-lg transition text-sm font-medium capitalize ${
                   filter === status
-                    ? 'bg-yellow-400 text-black'
+                    ? 'bg-brand text-black'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -398,7 +527,7 @@ export default function Orders() {
                   </tr>
                 ) : historyOrders.length > 0 ? (
                   historyOrders.map((order, index) => (
-                    <tr key={order.number || index} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={order.number || index} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedOrder(order)}>
                       <td className="p-4 text-gray-900">{order.number}</td>
                       <td className="p-4 text-gray-600">{order.date}</td>
                       <td className="p-4 text-gray-900">{order.customer}</td>
@@ -457,7 +586,7 @@ export default function Orders() {
                 <div className="bg-white rounded-xl p-4 text-center">Loading orders...</div>
               ) : historyOrders.length > 0 ? (
                 historyOrders.map((order, index) => (
-                  <div key={order.number || index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                  <div key={order.number || index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition" onClick={() => setSelectedOrder(order)}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-semibold">{order.number}</h3>

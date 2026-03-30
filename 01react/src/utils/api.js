@@ -88,8 +88,8 @@ API.interceptors.response.use(
       const status = error.response.status;
       const url = error.config?.url || '';
       
-      // Don't redirect to error page for orders/dashboard/categories endpoints - let component handle it
-      const skipErrorPageRedirect = url.includes('/orders') || url.includes('/dashboard') || url.includes('/categories');
+      // Don't redirect to error page on 500s — let each component handle errors gracefully
+      const skipErrorPageRedirect = true;
       
       // Server errors (500+) - redirect to error page (except for orders/dashboard)
       if (status >= 500 && !skipErrorPageRedirect) {

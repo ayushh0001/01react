@@ -73,7 +73,7 @@ export default function Details() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-amber-300">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-brand">
 
         {/* Logo */}
         <div className="flex justify-center mb-5">
@@ -87,12 +87,12 @@ export default function Details() {
               <div className="flex flex-col items-center">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
                   ${i === 2
-                    ? 'bg-amber-500 text-white ring-2 ring-amber-300'
+                    ? 'bg-brand text-white ring-2 ring-amber-300'
                     : i < 2 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
                   }`}>
                   {i < 2 ? '✓' : i + 1}
                 </div>
-                <span className={`text-[10px] mt-0.5 font-medium ${i === 2 ? 'text-amber-600' : i < 2 ? 'text-green-600' : 'text-gray-400'
+                <span className={`text-[10px] mt-0.5 font-medium ${i === 2 ? 'text-brand' : i < 2 ? 'text-green-600' : 'text-gray-400'
                   }`}>{step}</span>
               </div>
               {i < 4 && (
@@ -103,7 +103,7 @@ export default function Details() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-1 text-amber-600">
+        <h1 className="text-2xl font-bold text-center mb-1 text-brand">
           Business Details
         </h1>
         <p className="text-center text-gray-500 text-sm mb-5">
@@ -144,7 +144,7 @@ export default function Details() {
               id="displayName" name="displayName" type="text"
               value={formData.displayName} onChange={handleChange}
               placeholder="Enter your store / business name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand outline-none text-sm"
             />
           </div>
 
@@ -160,7 +160,7 @@ export default function Details() {
                 setFormData({ ...formData, pickupPincode: e.target.value.replace(/\D/g, '') })
               }
               placeholder="6-digit pincode"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand outline-none text-sm"
             />
           </div>
 
@@ -173,7 +173,7 @@ export default function Details() {
               value={formData.businessDescription} onChange={handleChange}
               rows={4}
               placeholder="What do you sell? Describe your products or services..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none resize-none text-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand outline-none resize-none text-sm"
             />
           </div>
 
@@ -182,7 +182,7 @@ export default function Details() {
             disabled={isLoading}
             className={`w-full py-3 font-semibold rounded-lg shadow-md transition duration-200 ${isLoading
                 ? 'bg-gray-400 cursor-not-allowed text-white'
-                : 'bg-amber-500 hover:bg-amber-600 text-white'
+                : 'bg-brand hover:bg-brand text-white'
               }`}
           >
             {isLoading ? (

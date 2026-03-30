@@ -1,6 +1,7 @@
 // Import necessary React router components
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useOrderNotifications } from '../hooks/useOrderNotifications';
 
 // Custom Modal Component for Logout Confirmation
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
@@ -36,6 +37,185 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
     </div>
   );
 };
+
+// ── Notification Bell + Incoming Order Modal ──────────────────────────────
+function NotificationBell() {
+  const { notifications, unreadCount, markAllRead, clearAll, incomingOrder, dismissIncoming } = useOrderNotifications();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const toggle = () => { setOpen(o => !o); if (!open) markAllRead(); };
+
+  const fmt = (amount) => '₹' + parseFloat(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0 });
+  const timeAgo = (ts) => {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    return `${Math.floor(s / 3600)}h ago`;
+  };
+  const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+  return (
+    <>
+      {/* ── Bell icon with badge ── */}
+      <div ref={ref} style={{ position: 'relative' }}>
+        <button
+          onClick={toggle}
+          title="Order Notifications"
+          style={{
+            position: 'relative', background: 'none', border: 'none',
+            cursor: 'pointer', padding: '6px', borderRadius: '10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#6B7280',
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {unreadCount > 0 && (
+            <span style={{
+              position: 'absolute', top: '2px', right: '2px',
+              background: '#FF9800', color: '#fff', borderRadius: '50%',
+              width: '16px', height: '16px', fontSize: '10px', fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
+        {/* Dropdown history list */}
+        {open && (
+          <div style={{
+            position: 'absolute', left: '110%', top: 0, zIndex: 100,
+            width: '300px', background: '#fff', borderRadius: '14px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)', border: '1px solid #FFE082',
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #FFF3E0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg,#fffdf5,#fff8e1)' }}>
+              <span style={{ fontWeight: 700, fontSize: '14px', color: '#92400e' }}>Order Notifications</span>
+              {notifications.length > 0 && (
+                <button onClick={clearAll} style={{ fontSize: '11px', color: '#FF9800', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Clear all</button>
+              )}
+            </div>
+            <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+              {notifications.length === 0 ? (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#9CA3AF', fontSize: '13px' }}>No notifications yet</div>
+              ) : notifications.map(n => (
+                <div key={n.id} style={{ padding: '10px 16px', borderBottom: '1px solid #FFF8E1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                    <span style={{ fontWeight: 700, fontSize: '12px', color: '#92400e' }}>🛍 #{n.orderNumber?.slice(-6)}</span>
+                    <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{timeAgo(n.timestamp)}</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6B7280' }}>{n.customerName}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#FF9800' }}>{fmt(n.totalAmount)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Incoming Order Modal (full-screen overlay) ── */}
+      {incomingOrder && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '16px',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '20px',
+            width: '100%', maxWidth: '420px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
+            overflow: 'hidden',
+            animation: 'modalPop 0.25s ease-out',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #f3f4f6' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FFF3E0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF9800" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </div>
+                <span style={{ fontWeight: 700, fontSize: '12px', letterSpacing: '1px', color: '#6B7280', textTransform: 'uppercase' }}>Incoming Alert</span>
+              </div>
+              <button onClick={dismissIncoming} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: '20px', lineHeight: 1, padding: '4px' }}>×</button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px 24px 20px' }}>
+              <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#111827', marginBottom: '24px' }}>New Order Received!</h2>
+
+              {/* Order detail row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6', marginBottom: '16px' }}>
+                <span style={{ color: '#6B7280', fontSize: '14px' }}>Order detail</span>
+                <span style={{ fontWeight: 700, fontSize: '14px', color: '#111827' }}>#{incomingOrder.orderNumber?.slice(-6)}</span>
+              </div>
+
+              {/* Customer row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6', marginBottom: '16px' }}>
+                <span style={{ color: '#6B7280', fontSize: '14px' }}>Customer</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#FF9800', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
+                    {initials(incomingOrder.customerName)}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: '14px', color: '#111827' }}>{incomingOrder.customerName}</span>
+                </div>
+              </div>
+
+              {/* Amount row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+                <span style={{ color: '#6B7280', fontSize: '14px' }}>Order Amount</span>
+                <span style={{ fontWeight: 800, fontSize: '22px', color: '#111827' }}>{fmt(incomingOrder.totalAmount)}</span>
+              </div>
+
+              {/* Items preview */}
+              {incomingOrder.items?.length > 0 && (
+                <div style={{ background: '#FFF8E1', borderRadius: '10px', padding: '10px 14px', marginBottom: '20px', fontSize: '12px', color: '#92400e' }}>
+                  {incomingOrder.items.slice(0, 3).join(' · ')}{incomingOrder.items.length > 3 ? ` +${incomingOrder.items.length - 3} more` : ''}
+                </div>
+              )}
+
+              {/* Buttons */}
+              <button
+                onClick={dismissIncoming}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                  background: 'linear-gradient(90deg, #FFE082, #FF9800)',
+                  color: '#7c3a00', fontWeight: 800, fontSize: '15px', cursor: 'pointer',
+                  marginBottom: '10px',
+                }}
+              >
+                Accept Order
+              </button>
+              <button
+                onClick={dismissIncoming}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                  background: '#F3F4F6', color: '#374151', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
+                }}
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <style>{`@keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}</style>
+        </div>
+      )}
+    </>
+  );
+}
 
 // Sidebar navigation links configuration
 const sidebarLinks = [
@@ -165,7 +345,6 @@ const sidebarLinks = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
@@ -189,6 +368,9 @@ export default function Sidebar() {
         <div className="text-gray-500 text-xs font-medium tracking-wide">
           Manage your Business
         </div>
+        <div className="mt-3">
+          <NotificationBell />
+        </div>
       </div>
       
       {/* Navigation menu */}
@@ -200,21 +382,16 @@ export default function Sidebar() {
               {/* Navigation link with active state styling */}
               <NavLink
                 to={link.to}
-                end={link.to === '/dashboard'}  // Exact match for dashboard home
+                end={link.to === '/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-md transform scale-105' 
-                      : 'text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 hover:translate-x-1'
+                    isActive
+                      ? 'bg-brand text-white shadow-md scale-105'
+                      : 'text-gray-700 hover:bg-orange-50 hover:text-brand hover:translate-x-1'
                   }`
                 }
               >
-                {/* Link icon and label */}
-                <span className={({ isActive }) => 
-                  isActive ? 'text-white' : 'text-gray-600 group-hover:text-yellow-600'
-                }>
-                  {link.icon}
-                </span>
+                <span>{link.icon}</span>
                 <span className="flex-1">{link.label}</span>
               </NavLink>
               

@@ -659,7 +659,7 @@ export default function AddProduct() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter product name"
-                className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
 
@@ -676,7 +676,7 @@ export default function AddProduct() {
                   value={form.price}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
               <div className="flex-1">
@@ -695,7 +695,7 @@ export default function AddProduct() {
                   onChange={handleChange}
                   placeholder="0"
                   readOnly={currentSizeChart !== null}
-                  className={`w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 ${
+                  className={`w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand ${
                     currentSizeChart ? 'bg-gray-100 cursor-not-allowed' : ''
                   }`}
                 />
@@ -721,8 +721,8 @@ export default function AddProduct() {
 
             {/* Loading spinner while fetching root categories */}
             {catLoading && categoryLevels.length === 0 && (
-              <div className="mb-5 flex items-center gap-3 text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm">
-                <svg className="animate-spin h-5 w-5 text-yellow-500 shrink-0" fill="none" viewBox="0 0 24 24">
+              <div className="mb-5 flex items-center gap-3 text-yellow-700 bg-orange-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm">
+                <svg className="animate-spin h-5 w-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
@@ -742,7 +742,7 @@ export default function AddProduct() {
                   disabled={catLoading && index === 0}
                   value={level.selected?._id ?? ''}
                   onChange={(e) => handleLevelChange(index, e.target.value)}
-                  className="w-full border rounded-xl px-3 py-2 pr-7 focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:bg-gray-100"
+                  className="w-full border rounded-xl px-3 py-2 pr-7 focus:outline-none focus:ring-2 focus:ring-brand disabled:bg-gray-100"
                 >
                   <option value="">
                     {catLoading && index === 0
@@ -760,7 +760,7 @@ export default function AddProduct() {
             {categoryPathLabel && (
               <div className="mb-5">
                 <span className="block font-bold text-gray-600 mb-2">Selected Path:</span>
-                <span className="flex items-center gap-1 flex-wrap text-gray-800 bg-yellow-50 px-3 py-2 rounded border text-sm">
+                <span className="flex items-center gap-1 flex-wrap text-gray-800 bg-orange-50 px-3 py-2 rounded border text-sm">
                   {categoryLevels
                     .filter(l => l.selected)
                     .map((l, i, arr) => (
@@ -786,7 +786,7 @@ export default function AddProduct() {
                 value={form.description}
                 onChange={handleChange}
                 placeholder="Describe your product in detail..."
-                className="w-full border rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full border rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
 
@@ -822,7 +822,7 @@ export default function AddProduct() {
                             }));
                           }}
                           placeholder="0"
-                          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                         <span className="text-xs text-gray-500 w-8">qty</span>
                       </div>
@@ -926,7 +926,7 @@ export default function AddProduct() {
               disabled={loading}
               className={`w-full py-3 font-bold rounded-lg text-lg tracking-wide transition ${loading
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                : 'bg-brand hover:bg-brand text-black'
                 }`}
             >
               {loading ? 'Processing...' : 'Preview Product'}

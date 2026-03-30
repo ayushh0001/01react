@@ -16,10 +16,11 @@ dotenv.config({ path: join(__dirname, '../.env') });
 const poolConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
+      ssl: { rejectUnauthorized: false },
+      max: 5,                      // fewer connections — free tier limit
+      idleTimeoutMillis: 10000,    // release idle connections quickly
+      connectionTimeoutMillis: 15000,
+      allowExitOnIdle: false,
     }
   : {
       host: process.env.DB_HOST || 'localhost',
@@ -40,8 +41,8 @@ pool.on('connect', () => {
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Unexpected error on idle client', err);
-  process.exit(-1);
+  // Don't crash on connection drops — Render free DB goes idle
+  console.warn('⚠️  DB pool error (will reconnect):', err.message);
 });
 
 // Helper function to execute queries

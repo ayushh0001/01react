@@ -111,7 +111,7 @@ export default function ForgotPassword() {
                   maxLength={10}
                   pattern="[0-9]{10}"
                   required
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-colors"
                 />
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function ForgotPassword() {
             Remember your password?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-amber-600 hover:text-amber-700 font-semibold"
+              className="text-brand hover:text-amber-700 font-semibold"
             >
               Login here
             </button>

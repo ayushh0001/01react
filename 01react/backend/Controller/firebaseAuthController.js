@@ -2,13 +2,27 @@ import admin from 'firebase-admin';
 
 // Initialize Firebase Admin once
 if (!admin.apps.length) {
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !rawKey) {
+    console.error('❌ Firebase env vars missing:', {
+      FIREBASE_PROJECT_ID: !!projectId,
+      FIREBASE_CLIENT_EMAIL: !!clientEmail,
+      FIREBASE_PRIVATE_KEY: !!rawKey,
+    });
+    throw new Error('Firebase Admin SDK requires FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY env vars.');
+  }
+
+  // Render dashboard strips surrounding quotes and may or may not escape \n
+  // Handle both: literal \\n and actual newlines
+  const privateKey = rawKey
+    .replace(/^"|"$/g, '')       // strip surrounding quotes if any
+    .replace(/\\n/g, '\n');      // convert escaped newlines
+
   admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // Replace \n in the private key (env vars flatten newlines)
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
   });
 }
 

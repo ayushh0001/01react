@@ -23,8 +23,8 @@ export default function ErrorPage() {
 
         {/* 404 Circle */}
         <div className="flex justify-center mb-8">
-          <div className="w-64 h-64 rounded-full border-8 border-amber-500 flex items-center justify-center">
-            <span className="text-8xl font-bold text-amber-500">
+          <div className="w-64 h-64 rounded-full border-8 border-brand flex items-center justify-center">
+            <span className="text-8xl font-bold text-brand">
               {errorCode}
             </span>
           </div>
@@ -50,7 +50,7 @@ export default function ErrorPage() {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="px-8 py-3 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-200"
+            className="px-8 py-3 bg-brand text-white font-semibold rounded-lg hover:bg-brand transition duration-200"
           >
             Go to Home
           </button>

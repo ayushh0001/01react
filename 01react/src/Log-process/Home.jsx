@@ -89,7 +89,7 @@ const ZipinLogo = ({ className = "h-16 w-auto" }) => {
 // Feature icon wrapper - provides consistent styling for feature icons
 const FeatureIcon = ({ Icon: Component }) => {
   return (
-    <div className="p-4 rounded-full bg-amber-500/10 text-amber-600 mb-4">
+    <div className="p-4 rounded-full bg-brand/10 text-brand mb-4">
       <Component className="w-8 h-8" />
     </div>
   );
@@ -130,16 +130,16 @@ export default function Home() {
         
         {/* Navigation menu - hidden on mobile */}
         <nav className="hidden md:flex space-x-6">
-          <a href="#hero" className="text-gray-700 hover:text-amber-500 font-medium transition duration-150">
+          <a href="#hero" className="text-gray-700 hover:text-brand font-medium transition duration-150">
             Home
           </a>
-          <a href="#features" className="text-gray-700 hover:text-amber-500 font-medium transition duration-150">
+          <a href="#features" className="text-gray-700 hover:text-brand font-medium transition duration-150">
             Sell online
           </a>
-          <a href="#how-it-works" className="text-gray-700 hover:text-amber-500 font-medium transition duration-150">
+          <a href="#how-it-works" className="text-gray-700 hover:text-brand font-medium transition duration-150">
             How it works
           </a>
-          <a href="#contact" className="text-gray-700 hover:text-amber-500 font-medium transition duration-150">
+          <a href="#contact" className="text-gray-700 hover:text-brand font-medium transition duration-150">
             Contact
           </a>
         </nav>
@@ -172,14 +172,14 @@ export default function Home() {
       <main className="flex-grow">
         
         {/* Hero section - main landing area with call-to-action */}
-        <section id="hero" className="flex flex-col lg:flex-row items-center justify-between p-8 md:p-16 bg-amber-50/50">
+        <section id="hero" className="flex flex-col lg:flex-row items-center justify-between p-8 md:p-16 bg-orange-50/50">
           
           {/* Left side - Hero text and buttons */}
           <div className="lg:w-1/2 mb-8 lg:mb-0 lg:pr-12">
             
             {/* Main headline */}
             <h2 className="text-5xl md:text-6xl font-extrabold mb-4 text-gray-900 leading-tight">
-              Shop Smart, <span className="text-amber-600">Shop Local.</span> Lightning Fast.
+              Shop Smart, <span className="text-brand">Shop Local.</span> Lightning Fast.
             </h2>
             
             {/* Subtitle */}
@@ -191,11 +191,11 @@ export default function Home() {
             <div className="flex space-x-4">
               <button 
                 onClick={() => navigate('/signup')} 
-                className="start-selling px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl shadow-lg hover:bg-amber-600 transition duration-300"
+                className="start-selling px-6 py-3 bg-brand text-white font-semibold rounded-xl shadow-lg hover:bg-brand transition duration-300"
               >
                 Start Selling Now
               </button>
-              <button className="px-6 py-3 border border-amber-500 text-amber-600 font-semibold rounded-xl hover:bg-amber-50 transition duration-300">
+              <button className="px-6 py-3 border border-brand text-brand font-semibold rounded-xl hover:bg-orange-50 transition duration-300">
                 Explore Deals
               </button>
             </div>
@@ -269,7 +269,7 @@ export default function Home() {
             
             {/* Step 1: Sign up */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-full text-xl font-bold mb-3">
+              <div className="w-12 h-12 flex items-center justify-center bg-brand rounded-full text-xl font-bold mb-3">
                 1
               </div>
               <h3 className="text-xl font-semibold mb-2">
@@ -282,7 +282,7 @@ export default function Home() {
             
             {/* Step 2: List products */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-full text-xl font-bold mb-3">
+              <div className="w-12 h-12 flex items-center justify-center bg-brand rounded-full text-xl font-bold mb-3">
                 2
               </div>
               <h3 className="text-xl font-semibold mb-2">
@@ -295,7 +295,7 @@ export default function Home() {
             
             {/* Step 3: Sell and ship */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-amber-500 rounded-full text-xl font-bold mb-3">
+              <div className="w-12 h-12 flex items-center justify-center bg-brand rounded-full text-xl font-bold mb-3">
                 3
               </div>
               <h3 className="text-xl font-semibold mb-2">
@@ -312,7 +312,7 @@ export default function Home() {
           <div className="text-center mt-10">
             <button 
               onClick={() => navigate('/signup')} 
-              className="start-selling px-8 py-3 bg-amber-500 text-white font-semibold rounded-xl shadow-lg hover:bg-amber-600 transition duration-300"
+              className="start-selling px-8 py-3 bg-brand text-white font-semibold rounded-xl shadow-lg hover:bg-brand transition duration-300"
             >
               Join ZPIN Today
             </button>
@@ -343,7 +343,7 @@ export default function Home() {
               <input 
                 type="text" 
                 placeholder="Your Name" 
-                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-amber-500" 
+                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-brand" 
                 required 
               />
               
@@ -351,7 +351,7 @@ export default function Home() {
               <input 
                 type="email" 
                 placeholder="Your Email" 
-                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-amber-500" 
+                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-brand" 
                 required 
               />
               
@@ -359,14 +359,14 @@ export default function Home() {
               <textarea 
                 rows="4" 
                 placeholder="Your Message" 
-                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-amber-500" 
+                className="w-full p-3 border rounded-lg focus:ring-amber-500 focus:border-brand" 
                 required
               ></textarea>
               
               {/* Submit button */}
               <button 
                 type="submit" 
-                className="px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition duration-300"
+                className="px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand transition duration-300"
               >
                 Send Message
               </button>
@@ -395,7 +395,7 @@ export default function Home() {
           
           {/* Company branding */}
           <div>
-            <h4 className="text-xl font-bold mb-3 text-amber-500">
+            <h4 className="text-xl font-bold mb-3 text-brand">
               ZPIN
             </h4>
             <p className="text-gray-400 text-sm">
@@ -410,22 +410,22 @@ export default function Home() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#hero" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#hero" className="text-gray-400 hover:text-brand transition duration-150">
                   Home
                 </a>
               </li>
               <li>
-                <a href="#features" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#features" className="text-gray-400 hover:text-brand transition duration-150">
                   Sell online
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#" className="text-gray-400 hover:text-brand transition duration-150">
                   Top Deals
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#" className="text-gray-400 hover:text-brand transition duration-150">
                   About Us
                 </a>
               </li>
@@ -439,22 +439,22 @@ export default function Home() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#" className="text-gray-400 hover:text-brand transition duration-150">
                   Supplier FAQs
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#contact" className="text-gray-400 hover:text-brand transition duration-150">
                   Contact Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#" className="text-gray-400 hover:text-brand transition duration-150">
                   Returns & Refunds
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-amber-500 transition duration-150">
+                <a href="#" className="text-gray-400 hover:text-brand transition duration-150">
                   Shipping Info
                 </a>
               </li>
