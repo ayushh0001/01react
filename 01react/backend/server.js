@@ -14,6 +14,7 @@ import productRoutes from './Routes/productRoutes.js';
 import categoryRoutes from './Routes/categoryRoutes.js';
 import passwordResetRoutes from './Routes/passwordResetRoutes.js';
 import notificationRoutes from './Routes/notificationRoutes.js';
+import { runMigrations } from './Scripts/run_migrations.js';
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -168,6 +169,9 @@ const startServer = async () => {
     console.log('🔍 Testing database connection...');
     const dbResult = await pool.query('SELECT NOW()');
     console.log('✅ Database connected:', dbResult.rows[0].now);
+
+    // Run schema migrations
+    await runMigrations();
 
     // Initialize MinIO bucket (non-fatal — skip if not configured)
     if (process.env.MINIO_ENDPOINT && process.env.MINIO_ENDPOINT !== 'localhost') {
