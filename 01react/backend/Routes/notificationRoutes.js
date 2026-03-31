@@ -30,21 +30,38 @@ router.post('/new-order', async (req, res) => {
     return res.status(403).json({ success: false, error: 'Forbidden' });
   }
 
-  const { id, orderNumber, customerName, totalAmount, itemCount, items } = req.body;
+  const { id, orderNumber, customerName, totalAmount, itemCount, items, productIds } = req.body;
   if (!orderNumber) {
     return res.status(400).json({ success: false, error: 'Invalid order payload' });
   }
 
   try {
-    // ── Find the seller — use the verified seller account ────────────────
-    const sellerResult = await pool.query(
-      `SELECT id FROM users WHERE user_role = 'seller' AND email = 'ayushkumarsingh8595@gmail.com' LIMIT 1`
-    );
-    // Fallback to any seller if email not found
-    const fallback = sellerResult.rows.length === 0
-      ? await pool.query(`SELECT id FROM users WHERE user_role = 'seller' ORDER BY created_at DESC LIMIT 1`)
-      : sellerResult;
-    const sellerId = fallback.rows[0]?.id;
+    // ── Resolve seller from ordered product IDs ───────────────────────────
+    // Look up which seller owns the products in this order
+    let sellerId = null;
+
+    if (productIds && productIds.length > 0) {
+      const sellerLookup = await pool.query(
+        `SELECT user_id FROM products WHERE id = ANY($1::uuid[]) LIMIT 1`,
+        [productIds]
+      );
+      sellerId = sellerLookup.rows[0]?.user_id;
+    }
+
+    // Fallback: use the verified seller account
+    if (!sellerId) {
+      const fallback = await pool.query(
+        `SELECT id FROM users WHERE user_role = 'seller' AND email = 'ayushkumarsingh8595@gmail.com' LIMIT 1`
+      );
+      sellerId = fallback.rows[0]?.id;
+    }
+
+    if (!sellerId) {
+      const anySellerResult = await pool.query(
+        `SELECT id FROM users WHERE user_role = 'seller' ORDER BY created_at DESC LIMIT 1`
+      );
+      sellerId = anySellerResult.rows[0]?.id;
+    }
 
     if (sellerId) {
       const shippingAddress = JSON.stringify({ name: customerName });
@@ -53,10 +70,10 @@ router.post('/new-order', async (req, res) => {
           (order_number, user_id, seller_id, status, payment_status,
            total_amount, shipping_amount, tax_amount, final_amount,
            shipping_address, payment_method)
-         VALUES ($1,$2,$2,'pending','pending',$3,0,0,$3,$4,'cod')
+         VALUES ($1, $2, $3, 'pending', 'pending', $4, 0, 0, $4, $5, 'cod')
          ON CONFLICT (order_number) DO NOTHING
          RETURNING id`,
-        [orderNumber, sellerId, totalAmount, shippingAddress]
+        [orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
       );
 
       if (orderResult.rows.length > 0) {
