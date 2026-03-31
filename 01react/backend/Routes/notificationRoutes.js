@@ -36,11 +36,15 @@ router.post('/new-order', async (req, res) => {
   }
 
   try {
-    // ── Find the seller to associate the order with ───────────────────────
+    // ── Find the seller — use the verified seller account ────────────────
     const sellerResult = await pool.query(
-      `SELECT id FROM users WHERE user_role = 'seller' LIMIT 1`
+      `SELECT id FROM users WHERE user_role = 'seller' AND email = 'ayushkumarsingh8595@gmail.com' LIMIT 1`
     );
-    const sellerId = sellerResult.rows[0]?.id;
+    // Fallback to any seller if email not found
+    const fallback = sellerResult.rows.length === 0
+      ? await pool.query(`SELECT id FROM users WHERE user_role = 'seller' ORDER BY created_at DESC LIMIT 1`)
+      : sellerResult;
+    const sellerId = fallback.rows[0]?.id;
 
     if (sellerId) {
       const shippingAddress = JSON.stringify({ name: customerName });
