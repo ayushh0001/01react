@@ -50,7 +50,7 @@ export default function CreateAccount() {
         userName: signupUsername || email.split('@')[0],
         email,
         name,
-        mobile: verifiedPhone || '',
+        mobile: verifiedPhone || null,
         userRole: userRole,
         password,
       });
@@ -204,19 +204,6 @@ export default function CreateAccount() {
               placeholder="Re-enter password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand outline-none text-sm"
             />
-          </div>
-
-          <div>
-            <label htmlFor="userRole" className="block text-sm font-medium text-gray-700 mb-1">I want to</label>
-            <select
-              id="userRole" name="userRole"
-              value={formData.userRole} onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-brand outline-none text-sm bg-white"
-            >
-              <option value="customer">Buy Products (Customer)</option>
-              <option value="seller">Sell Products (Seller)</option>
-              <option value="delivery_partner">Deliver Orders (Delivery Partner)</option>
-            </select>
           </div>
 
           <button
