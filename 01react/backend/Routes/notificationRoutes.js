@@ -36,58 +36,37 @@ router.post('/new-order', async (req, res) => {
   }
 
   try {
-    // ── Find or create a customer user in the vendor DB ───────────────────
-    let userId = null;
-    const existingUser = await pool.query(
-      `SELECT id FROM users WHERE name = $1 LIMIT 1`,
-      [customerName]
-    );
-    if (existingUser.rows.length > 0) {
-      userId = existingUser.rows[0].id;
-    } else {
-      const safeName = orderNumber.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const newUser = await pool.query(
-        `INSERT INTO users (user_name, name, email, user_role, is_verified)
-         VALUES ($1, $2, $3, 'customer', true) RETURNING id`,
-        [safeName, customerName, `${safeName}@customer.zpin`]
-      );
-      userId = newUser.rows[0].id;
-    }
-
-    // ── Find the seller ───────────────────────────────────────────────────
+    // ── Find the seller to associate the order with ───────────────────────
     const sellerResult = await pool.query(
       `SELECT id FROM users WHERE user_role = 'seller' LIMIT 1`
     );
-    const sellerId = sellerResult.rows[0]?.id || userId;
+    const sellerId = sellerResult.rows[0]?.id;
 
-    // ── Insert order ──────────────────────────────────────────────────────
-    const shippingAddress = JSON.stringify({ name: customerName });
-    const orderResult = await pool.query(
-      `INSERT INTO orders
-        (order_number, user_id, seller_id, status, payment_status,
-         total_amount, shipping_amount, tax_amount, final_amount,
-         shipping_address, payment_method)
-       VALUES ($1,$2,$3,'pending','pending',$4,0,0,$4,$5,'cod')
-       ON CONFLICT (order_number) DO NOTHING
-       RETURNING id`,
-      [orderNumber, userId, sellerId, totalAmount, shippingAddress]
-    );
+    if (sellerId) {
+      const shippingAddress = JSON.stringify({ name: customerName });
+      const orderResult = await pool.query(
+        `INSERT INTO orders
+          (order_number, user_id, seller_id, status, payment_status,
+           total_amount, shipping_amount, tax_amount, final_amount,
+           shipping_address, payment_method)
+         VALUES ($1,$2,$2,'pending','pending',$3,0,0,$3,$4,'cod')
+         ON CONFLICT (order_number) DO NOTHING
+         RETURNING id`,
+        [orderNumber, sellerId, totalAmount, shippingAddress]
+      );
 
-    if (orderResult.rows.length > 0) {
-      const orderId = orderResult.rows[0].id;
-      const perItem = (totalAmount / (items?.length || 1)).toFixed(2);
-
-      for (const productName of (items || [])) {
-        await pool.query(
-          `INSERT INTO order_items (order_id, product_name, quantity, price)
-           VALUES ($1, $2, 1, $3)`,
-          [orderId, productName, perItem]
-        );
+      if (orderResult.rows.length > 0) {
+        const orderId = orderResult.rows[0].id;
+        const perItem = (totalAmount / (items?.length || 1)).toFixed(2);
+        for (const productName of (items || [])) {
+          await pool.query(
+            `INSERT INTO order_items (order_id, product_name, quantity, price)
+             VALUES ($1, $2, 1, $3)`,
+            [orderId, productName, perItem]
+          );
+        }
+        console.log(`[Notify] Order ${orderNumber} inserted into vendor DB`);
       }
-
-      console.log(`[Notify] Order ${orderNumber} inserted into vendor DB (id: ${orderId})`);
-    } else {
-      console.log(`[Notify] Order ${orderNumber} already exists in vendor DB`);
     }
   } catch (err) {
     console.error('[Notify] DB insert error:', err.message);

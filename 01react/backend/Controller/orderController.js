@@ -351,10 +351,10 @@ export const updateOrderStatus = async (req, res) => {
 
     const updateResult = await pool.query(updateQuery, [status, orderId]);
 
-    // Add to status history
+    // Add to status history — cast order_id to match uuid column
     const historyQuery = `
       INSERT INTO order_status_history (order_id, status, note)
-      VALUES ($1, $2, $3)
+      VALUES ($1::uuid, $2, $3)
     `;
 
     await pool.query(historyQuery, [orderId, status, note || null]);

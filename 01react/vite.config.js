@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000', // ← LOCAL BACKEND with PostgreSQL
+        target: 'https://zpin-backend.onrender.com', // Render backend
         changeOrigin: true,
         secure: false,
         // Cookie configuration for local development

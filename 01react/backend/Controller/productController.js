@@ -646,7 +646,7 @@ export const getPublicProductById = async (req, res) => {
       SELECT 
         p.*,
         c.name as category_name,
-        u.full_name as seller_name,
+        u.name as seller_name,
         COALESCE(
           json_agg(
             pi.image_url ORDER BY pi.display_order, pi.created_at
@@ -658,7 +658,7 @@ export const getPublicProductById = async (req, res) => {
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN product_images pi ON p.id = pi.product_id
       WHERE p.id = $1 AND p.is_approved = true AND p.in_stock = true
-      GROUP BY p.id, c.name, u.full_name
+      GROUP BY p.id, c.name, u.name
     `;
 
     const result = await pool.query(query, [productId]);
