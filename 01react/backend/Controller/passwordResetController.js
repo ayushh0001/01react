@@ -102,43 +102,40 @@ export const verifyResetOTP = async (req, res) => {
   }
 };
 
-/** POST /password-reset/reset — set new password */
+/** POST /password-reset/reset — set new password using Firebase idToken */
 export const resetPassword = async (req, res) => {
   try {
-    await ensureTable();
-    const { mobile, resetToken, newPassword } = req.body;
-    if (!mobile || !resetToken || !newPassword) {
-      return res.status(400).json({ success: false, error: 'mobile, resetToken and newPassword are required' });
+    const { mobile, idToken, newPassword } = req.body;
+    if (!mobile || !idToken || !newPassword) {
+      return res.status(400).json({ success: false, error: 'mobile, idToken and newPassword are required' });
     }
     if (newPassword.length < 6) {
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
     }
 
-    const { rows: users } = await pool.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
-    if (!users.length) return res.status(404).json({ success: false, error: 'User not found' });
-    const userId = users[0].id;
-
-    // Validate reset token — must be used (OTP verified) and not expired
-    const { rows: tokens } = await pool.query(
-      `SELECT id FROM password_reset_tokens
-       WHERE user_id = $1 AND reset_token = $2 AND is_used = TRUE
-         AND expires_at > NOW() - INTERVAL '30 minutes'`,
-      [userId, resetToken]
-    );
-    if (!tokens.length) {
-      return res.status(400).json({ success: false, error: 'Invalid or expired reset token. Please start over.' });
+    // Verify Firebase ID token via Admin SDK
+    const admin = await import('firebase-admin').then(m => m.default);
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch {
+      return res.status(401).json({ success: false, error: 'Invalid or expired verification token. Please try again.' });
     }
 
-    const hash = await bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10);
+    // Confirm the phone number in the token matches
+    const expectedPhone = `+91${mobile}`;
+    if (decoded.phone_number !== expectedPhone) {
+      return res.status(400).json({ success: false, error: 'Phone number mismatch.' });
+    }
 
-    // Update password_hash (correct column name)
+    const { rows: users } = await pool.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
+    if (!users.length) return res.status(404).json({ success: false, error: 'No account found with this mobile number' });
+
+    const hash = await bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10);
     await pool.query(
       'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [hash, userId]
+      [hash, users[0].id]
     );
-
-    // Clean up all reset tokens for this user
-    await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [userId]);
 
     res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
   } catch (err) {

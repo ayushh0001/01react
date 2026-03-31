@@ -14,13 +14,13 @@ export default function ResetPassword() {
   const location = useLocation();
 
   const mobile = location.state?.mobile;
-  const resetToken = location.state?.resetToken;
+  const idToken = location.state?.idToken;
 
   useEffect(() => {
-    if (!mobile || !resetToken) {
+    if (!mobile || !idToken) {
       navigate('/forgot-password');
     }
-  }, [mobile, resetToken, navigate]);
+  }, [mobile, idToken, navigate]);
 
   const validatePassword = (password) => {
     if (password.length < 6) {
@@ -52,7 +52,7 @@ export default function ResetPassword() {
     try {
       const response = await API.post('/password-reset/reset', {
         mobile,
-        resetToken,
+        idToken,
         newPassword
       });
 

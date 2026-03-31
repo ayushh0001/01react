@@ -1,45 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../utils/api';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 export default function ForgotPassword() {
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const recaptchaRef = useRef(null);
+
+  // Set up invisible reCAPTCHA once on mount
+  useEffect(() => {
+    if (!recaptchaRef.current) {
+      recaptchaRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {},
+      });
+    }
+    return () => {
+      try { recaptchaRef.current?.clear(); } catch {}
+      recaptchaRef.current = null;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
 
-    // Validate mobile number
     if (!mobile || mobile.length < 10) {
       setError('Please enter a valid 10-digit mobile number');
       return;
     }
 
     setLoading(true);
-
     try {
-      const response = await API.post('/password-reset/request', { mobile });
-      
-      if (response.data.success) {
-        setMessage(response.data.message);
-        setTimeout(() => {
-          navigate('/verify-reset-otp', {
-            state: {
-              mobile,
-              expiresIn: response.data.expiresIn,
-              otp: response.data.otp // shown in dev mode
-            }
-          });
-        }, response.data.otp ? 0 : 1000); // skip delay in dev so OTP is visible
-      }
+      const phoneNumber = `+91${mobile}`;
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        recaptchaRef.current
+      );
+
+      // Store confirmation result in sessionStorage (serializable reference via window)
+      window._firebaseConfirmationResult = confirmationResult;
+
+      navigate('/verify-reset-otp', { state: { mobile } });
     } catch (err) {
-      console.error('Error requesting password reset:', err);
-      setError(err.response?.data?.error || 'Failed to send OTP. Please try again.');
+      console.error('Firebase OTP error:', err);
+      setError(err.message || 'Failed to send OTP. Please try again.');
+      // Reset reCAPTCHA on error
+      try { recaptchaRef.current?.clear(); recaptchaRef.current = null; } catch {}
     } finally {
       setLoading(false);
     }
@@ -48,22 +59,16 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        
-        {/* Back to Login */}
-        <button
-          onClick={() => navigate('/login')}
-          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
+
+        <button onClick={() => navigate('/login')}
+          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           <span>Back to Login</span>
         </button>
 
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl border-2 border-amber-200 p-8">
-          
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,32 +76,16 @@ export default function ForgotPassword() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
-            <p className="text-gray-600 text-sm">
-              Enter your mobile number and we'll send you an OTP to reset your password
-            </p>
+            <p className="text-gray-600 text-sm">Enter your registered mobile number to receive an OTP</p>
           </div>
 
-          {/* Messages */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-          
-          {message && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {message}
-            </div>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Mobile Number */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mobile Number
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Mobile Number</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,47 +95,29 @@ export default function ForgotPassword() {
                 <input
                   type="tel"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   placeholder="Enter 10-digit mobile number"
                   maxLength={10}
-                  pattern="[0-9]{10}"
                   required
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-colors"
                 />
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 rounded-xl font-bold text-white transition-all duration-200 ${
-                loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 shadow-lg hover:shadow-xl transform hover:scale-105'
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Sending OTP...
-                </span>
-              ) : (
-                'Send OTP'
-              )}
+            {/* Invisible reCAPTCHA container */}
+            <div id="recaptcha-container" />
+
+            <button type="submit" disabled={loading}
+              className={`w-full py-3 rounded-xl font-bold text-gray-900 transition-all duration-200 ${
+                loading ? 'bg-gray-300 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 shadow-lg'
+              }`}>
+              {loading ? 'Sending OTP...' : 'Send OTP'}
             </button>
           </form>
 
-          {/* Footer */}
           <div className="mt-6 text-center text-sm text-gray-600">
             Remember your password?{' '}
-            <button
-              onClick={() => navigate('/login')}
-              className="text-brand hover:text-amber-700 font-semibold"
-            >
+            <button onClick={() => navigate('/login')} className="text-brand font-semibold hover:text-amber-700">
               Login here
             </button>
           </div>
