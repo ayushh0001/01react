@@ -55,8 +55,8 @@ router.get('/customer/:customerId/orders', async (req, res) => {
     const result = await pool.query(`
       SELECT 
         o.id, o.order_number, o.status, o.payment_status,
-        o.total_amount, o.final_amount, o.shipping_address,
-        o.payment_method, o.created_at,
+        o.total_amount, o.shipping_amount, o.tax_amount, o.final_amount,
+        o.shipping_address, o.payment_method, o.created_at,
         COUNT(oi.id) as item_count
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id

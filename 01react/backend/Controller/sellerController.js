@@ -362,28 +362,34 @@ export const getSellerProfile = async (req, res) => {
 };
 
 
-// Get all customers for the seller — only those who ordered from this seller
+// Get all customers for the seller — derived from orders placed with this seller
 export const getCustomers = async (req, res) => {
   try {
     const sellerId = req.user.id;
 
+    // Extract unique customers from orders using shipping_address JSON
+    // since website customers don't have accounts in the vendor DB
     const result = await pool.query(`
       SELECT
-        u.id,
-        u.user_name,
-        u.name,
-        u.mobile,
-        u.email,
-        u.is_verified,
-        u.is_active,
-        u.created_at,
-        COUNT(o.id)::int                          AS total_orders,
-        MAX(o.created_at)                         AS last_order_date,
-        COALESCE(SUM(o.final_amount), 0)::numeric AS total_spent
-      FROM users u
-      INNER JOIN orders o ON o.user_id = u.id AND o.seller_id = $1
-      WHERE u.user_role = 'customer'
-      GROUP BY u.id
+        o.user_id                                         AS id,
+        COALESCE(
+          o.shipping_address->>'name',
+          u.name,
+          'Unknown Customer'
+        )                                                 AS name,
+        COALESCE(u.mobile, o.shipping_address->>'phone')  AS mobile,
+        COALESCE(u.email, '')                             AS email,
+        COALESCE(u.is_verified, false)                    AS is_verified,
+        COALESCE(u.is_active, true)                       AS is_active,
+        COUNT(o.id)::int                                  AS total_orders,
+        MAX(o.created_at)                                 AS last_order_date,
+        COALESCE(SUM(o.final_amount), 0)::numeric         AS total_spent
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+      WHERE o.seller_id = $1
+        AND o.user_id != $1
+      GROUP BY o.user_id, o.shipping_address->>'name', o.shipping_address->>'phone',
+               u.name, u.mobile, u.email, u.is_verified, u.is_active
       ORDER BY last_order_date DESC
     `, [sellerId]);
 
