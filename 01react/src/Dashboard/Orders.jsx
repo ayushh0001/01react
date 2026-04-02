@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import API from '../utils/api';
 import Invoice from './Invoice';
+import { onNewOrder } from '../hooks/notificationStore.js';
 
 const statusColors = {
   pending: 'bg-orange-100 text-yellow-800',
@@ -157,6 +158,9 @@ export default function Orders() {
 
   useEffect(() => {
     fetchOrders();
+    // Auto-refresh when a new order arrives via SSE
+    const unsub = onNewOrder(() => fetchOrders());
+    return unsub;
   }, []);
 
   const fetchOrders = async () => {

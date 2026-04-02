@@ -1,75 +1,27 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import * as store from './notificationStore.js';
 
-// In dev use relative URL so Vite proxy handles it (avoids CORS + buffering issues with SSE)
-// In prod same origin serves the API
-const VENDOR_BACKEND = '';
-
+/**
+ * All instances of this hook share the same singleton SSE connection and state.
+ * Setting incomingOrder in one place (the SSE event) triggers re-renders everywhere.
+ */
 export function useOrderNotifications() {
-  const [notifications, setNotifications] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('orderNotifications') || '[]');
-    } catch {
-      return [];
-    }
-  });
-  const [unreadCount, setUnreadCount] = useState(0);
-  // The latest incoming order — shown in the popup modal
-  const [incomingOrder, setIncomingOrder] = useState(null);
-  const esRef = useRef(null);
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem('orderNotifications', JSON.stringify(notifications.slice(0, 50)));
-    const stored = parseInt(localStorage.getItem('notificationsReadAt') || '0', 10);
-    setUnreadCount(notifications.filter(n => n.timestamp > stored).length);
-  }, [notifications]);
-
-  const connect = useCallback(() => {
-    if (esRef.current) esRef.current.close();
-    const url = `${VENDOR_BACKEND}/api/v1/notifications/stream`;
-    console.log('[SSE] Connecting to', url);
-    const es = new EventSource(url);
-    esRef.current = es;
-
-    es.addEventListener('new_order', (e) => {
-      try {
-        const order = JSON.parse(e.data);
-        const notification = {
-          id: order.id || Date.now(),
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          totalAmount: order.totalAmount,
-          itemCount: order.itemCount,
-          items: order.items || [],
-          timestamp: Date.now(),
-        };
-        setNotifications(prev => [notification, ...prev].slice(0, 50));
-        // Trigger the popup modal
-        setIncomingOrder(notification);
-      } catch (err) {
-        console.error('[SSE] Failed to parse order event', err);
-      }
-    });
-
-    es.onerror = () => { es.close(); setTimeout(connect, 5000); };
+    // Subscribe to store changes — any update re-renders this component
+    const unsub = store.subscribe(() => forceUpdate(n => n + 1));
+    return unsub;
   }, []);
 
-  useEffect(() => {
-    connect();
-    return () => esRef.current?.close();
-  }, [connect]);
+  const { notifications, incomingOrder, unreadCount } = store.getSnapshot();
 
-  const markAllRead = useCallback(() => {
-    localStorage.setItem('notificationsReadAt', Date.now().toString());
-    setUnreadCount(0);
-  }, []);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-    localStorage.removeItem('orderNotifications');
-    setUnreadCount(0);
-  }, []);
-
-  const dismissIncoming = useCallback(() => setIncomingOrder(null), []);
-
-  return { notifications, unreadCount, markAllRead, clearAll, incomingOrder, dismissIncoming };
+  return {
+    notifications,
+    incomingOrder,
+    unreadCount,
+    dismissIncoming: useCallback(() => store.dismissIncoming(), []),
+    markAllRead:     useCallback(() => store.markAllRead(), []),
+    clearAll:        useCallback(() => store.clearAll(), []),
+  };
 }

@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import { Line } from 'react-chartjs-2';
 import { Chart, LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js';
 import API from '../utils/api';
+import { onNewOrder } from '../hooks/notificationStore.js';
 
 // Register Chart.js components for line chart functionality
 Chart.register(LineElement, PointElement, LineController, CategoryScale, LinearScale, Tooltip, Filler);
@@ -39,6 +40,12 @@ export default function DashboardHome() {
     fetchDashboardData();
     fetchSellerProfile();
     fetchAllOrders();
+    // Auto-refresh when a new order arrives via SSE — no page reload needed
+    const unsub = onNewOrder(() => {
+      fetchDashboardData();
+      fetchAllOrders();
+    });
+    return unsub;
   }, []);
 
   // Auto-scroll chart to the right end so latest 7 days are visible on load
