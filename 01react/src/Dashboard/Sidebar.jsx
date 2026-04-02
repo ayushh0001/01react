@@ -39,7 +39,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
 };
 
 // ── Notification Bell + Incoming Order Modal ──────────────────────────────
-function NotificationBell() {
+export function NotificationBell() {
   const { notifications, unreadCount, markAllRead, clearAll, incomingOrder, dismissIncoming } = useOrderNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -122,97 +122,6 @@ function NotificationBell() {
           </div>
         )}
       </div>
-
-      {/* ── Incoming Order Modal (full-screen overlay) ── */}
-      {incomingOrder && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '16px',
-        }}>
-          <div style={{
-            background: '#fff', borderRadius: '20px',
-            width: '100%', maxWidth: '420px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
-            overflow: 'hidden',
-            animation: 'modalPop 0.25s ease-out',
-          }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #f3f4f6' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FFF3E0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF9800" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                  </svg>
-                </div>
-                <span style={{ fontWeight: 700, fontSize: '12px', letterSpacing: '1px', color: '#6B7280', textTransform: 'uppercase' }}>Incoming Alert</span>
-              </div>
-              <button onClick={dismissIncoming} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: '20px', lineHeight: 1, padding: '4px' }}>×</button>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '24px 24px 20px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#111827', marginBottom: '24px' }}>New Order Received!</h2>
-
-              {/* Order detail row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6', marginBottom: '16px' }}>
-                <span style={{ color: '#6B7280', fontSize: '14px' }}>Order detail</span>
-                <span style={{ fontWeight: 700, fontSize: '14px', color: '#111827' }}>#{incomingOrder.orderNumber?.slice(-6)}</span>
-              </div>
-
-              {/* Customer row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6', marginBottom: '16px' }}>
-                <span style={{ color: '#6B7280', fontSize: '14px' }}>Customer</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#FF9800', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
-                    {initials(incomingOrder.customerName)}
-                  </div>
-                  <span style={{ fontWeight: 600, fontSize: '14px', color: '#111827' }}>{incomingOrder.customerName}</span>
-                </div>
-              </div>
-
-              {/* Amount row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-                <span style={{ color: '#6B7280', fontSize: '14px' }}>Order Amount</span>
-                <span style={{ fontWeight: 800, fontSize: '22px', color: '#111827' }}>{fmt(incomingOrder.totalAmount)}</span>
-              </div>
-
-              {/* Items preview */}
-              {incomingOrder.items?.length > 0 && (
-                <div style={{ background: '#FFF8E1', borderRadius: '10px', padding: '10px 14px', marginBottom: '20px', fontSize: '12px', color: '#92400e' }}>
-                  {incomingOrder.items.slice(0, 3).join(' · ')}{incomingOrder.items.length > 3 ? ` +${incomingOrder.items.length - 3} more` : ''}
-                </div>
-              )}
-
-              {/* Buttons */}
-              <button
-                onClick={dismissIncoming}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
-                  background: 'linear-gradient(90deg, #FFE082, #FF9800)',
-                  color: '#7c3a00', fontWeight: 800, fontSize: '15px', cursor: 'pointer',
-                  marginBottom: '10px',
-                }}
-              >
-                Accept Order
-              </button>
-              <button
-                onClick={dismissIncoming}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
-                  background: '#F3F4F6', color: '#374151', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
-                }}
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-
-          <style>{`@keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}</style>
-        </div>
-      )}
     </>
   );
 }

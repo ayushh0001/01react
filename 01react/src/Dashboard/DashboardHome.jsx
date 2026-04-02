@@ -280,7 +280,7 @@ export default function DashboardHome() {
 
           {/* Add Product button */}
           <button
-            onClick={() => navigate('/add-product')}
+            onClick={() => navigate('/dashboard/add-product')}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
             style={{ background: '#FF9800', color: '#fff', whiteSpace: 'nowrap' }}
           >

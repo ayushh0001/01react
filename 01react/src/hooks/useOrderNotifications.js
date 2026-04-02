@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// In dev the Vite proxy forwards /api → localhost:5000
-// In prod the same origin serves the API
-const VENDOR_BACKEND = import.meta.env.DEV ? 'http://localhost:5000' : '';
+// In dev use relative URL so Vite proxy handles it (avoids CORS + buffering issues with SSE)
+// In prod same origin serves the API
+const VENDOR_BACKEND = '';
 
 export function useOrderNotifications() {
   const [notifications, setNotifications] = useState(() => {

@@ -187,7 +187,7 @@ const startServer = async () => {
     }
 
     // Start server
-    app.listen(PORT, () => {
+    app.listen(PORT, '127.0.0.1', () => {
       console.log('\n🚀 Server is running!');
       console.log(`📍 Local: http://localhost:${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
