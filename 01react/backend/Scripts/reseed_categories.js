@@ -49,7 +49,7 @@ async function reseedCategories() {
     // 1. Clear existing data
     console.log('🗑️  Clearing existing categories…');
     await client.query('UPDATE products SET category_id = NULL WHERE category_id IS NOT NULL');
-    await client.query('DELETE FROM categories WHERE parent_id IS NULL');
+    await client.query('DELETE FROM categories');
     console.log('✅ Cleared.');
 
     // 2. Create a temp table to hold (key, name, parent_key) → then resolve UUIDs in SQL

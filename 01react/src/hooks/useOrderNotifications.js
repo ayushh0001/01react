@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// Use same backend as the rest of the app — in prod this is the Render URL
-const VENDOR_BACKEND = import.meta.env.PROD
-  ? 'https://zpin-backend.onrender.com'
-  : 'http://localhost:5000';
+// In dev the Vite proxy forwards /api → localhost:5000
+// In prod the same origin serves the API
+const VENDOR_BACKEND = import.meta.env.DEV ? 'http://localhost:5000' : '';
 
 export function useOrderNotifications() {
   const [notifications, setNotifications] = useState(() => {

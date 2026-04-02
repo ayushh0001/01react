@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://zpin-backend.onrender.com', // Render backend
+        target: 'http://localhost:5000', // local vendor backend in dev
         changeOrigin: true,
         secure: false,
         // Cookie configuration for local development
