@@ -55,18 +55,19 @@ export default function OrderNotificationPopup() {
   const customerName = incomingOrder.customerName || 'Customer';
 
   const handleAccept = async () => {
-    if (!incomingOrder.id || accepting) return;
+    if (accepting) return;
     setAccepting(true);
     try {
-      await API.patch(`/orders/${incomingOrder.id}/status`, { status: 'confirmed' });
+      if (incomingOrder.id) {
+        await API.patch(`/orders/${incomingOrder.id}/status`, { status: 'confirmed' });
+      }
       playConfirmSound();
-      dismissIncoming();
-      navigate('/dashboard/orders');
     } catch {
-      alert('Failed to accept order. Please accept from the Orders page.');
-      dismissIncoming();
+      // Accept failed silently — seller can accept from the Orders page
     } finally {
       setAccepting(false);
+      dismissIncoming();
+      navigate('/dashboard/orders');
     }
   };
 
