@@ -192,7 +192,14 @@ export default function Orders() {
         status: order.status || 'pending',
         shipping_address: order.shipping_address,
         created_at: order.created_at,
-      })).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      })).sort((a, b) => {
+        // Compare raw strings first (ISO format sorts lexicographically correctly)
+        // Fall back to Date parse if needed
+        if (a.created_at && b.created_at) {
+          return a.created_at > b.created_at ? -1 : a.created_at < b.created_at ? 1 : 0;
+        }
+        return 0;
+      });
 
       console.log('Transformed Orders:', transformedOrders);
       setOrders(transformedOrders);
