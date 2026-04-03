@@ -65,8 +65,10 @@ router.post('/new-order', async (req, res) => {
         `INSERT INTO orders
           (order_number, user_id, seller_id, status, payment_status,
            total_amount, shipping_amount, tax_amount, final_amount,
-           shipping_address, payment_method)
-         VALUES ($1, $2, $3, 'pending', 'pending', $4, 0, 0, $4, $5, 'cod')
+           shipping_address, payment_method, created_at, updated_at)
+         VALUES ($1, $2, $3, 'pending', 'pending', $4, 0, 0, $4, $5, 'cod',
+           NOW() AT TIME ZONE 'Asia/Kolkata',
+           NOW() AT TIME ZONE 'Asia/Kolkata')
          ON CONFLICT (order_number) DO NOTHING
          RETURNING id`,
         [orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
@@ -77,7 +79,8 @@ router.post('/new-order', async (req, res) => {
         const perItem = (totalAmount / (items?.length || 1)).toFixed(2);
         for (const productName of (items || [])) {
           await pool.query(
-            `INSERT INTO order_items (order_id, product_name, quantity, price) VALUES ($1, $2, 1, $3)`,
+            `INSERT INTO order_items (order_id, product_name, quantity, price, created_at)
+             VALUES ($1, $2, 1, $3, NOW() AT TIME ZONE 'Asia/Kolkata')`,
             [vendorOrderId, productName, perItem]
           );
         }

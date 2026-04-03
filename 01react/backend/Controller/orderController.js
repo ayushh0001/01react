@@ -29,7 +29,7 @@ export const getSellerOrders = async (req, res) => {
         o.final_amount,
         o.shipping_address,
         o.payment_method,
-        o.estimated_delivery,
+        (o.estimated_delivery AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS estimated_delivery,
         (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS created_at,
         (o.updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS updated_at,
         COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
@@ -344,7 +344,7 @@ export const updateOrderStatus = async (req, res) => {
     // Update order status
     const updateQuery = `
       UPDATE orders 
-      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      SET status = $1, updated_at = NOW() AT TIME ZONE 'Asia/Kolkata'
       WHERE id = $2
       RETURNING *
     `;
@@ -354,7 +354,8 @@ export const updateOrderStatus = async (req, res) => {
     // Add to status history — best-effort, skip if order_id is not a valid UUID
     try {
       await pool.query(
-        `INSERT INTO order_status_history (order_id, status, note) VALUES ($1::uuid, $2, $3)`,
+        `INSERT INTO order_status_history (order_id, status, note, created_at)
+         VALUES ($1::uuid, $2, $3, NOW() AT TIME ZONE 'Asia/Kolkata')`,
         [orderId, status, note || null]
       );
     } catch (historyErr) {
