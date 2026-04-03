@@ -1,4 +1,5 @@
 import { pool } from '../config/database.js';
+import { generateId } from '../utils/generateId.js';
 
 /**
  * Get all orders for a seller
@@ -141,43 +142,43 @@ export const getOrderById = async (req, res) => {
     const { orderId } = req.params;
     const userId = req.user.id;
 
-    // Get order details
-    const orderQuery = `
-      SELECT 
-        o.*,
-        COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
-        u.email as customer_email,
-        u.mobile as customer_phone,
-        s.name as seller_name,
-        s.email as seller_email,
-        s.mobile as seller_phone
-      FROM orders o
-      LEFT JOIN users u ON o.user_id = u.id
-      LEFT JOIN users s ON o.seller_id = s.id
-      WHERE o.id = $1 AND (o.user_id = $2 OR o.seller_id = $2)
-    `;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(orderId);
+
+    // Support lookup by UUID id or order_number
+    const orderQuery = isUuid
+      ? `SELECT o.*,
+           COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+           u.email as customer_email, u.mobile as customer_phone,
+           s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
+         FROM orders o
+         LEFT JOIN users u ON o.user_id = u.id
+         LEFT JOIN users s ON o.seller_id = s.id
+         WHERE o.id = $1 AND (o.user_id = $2 OR o.seller_id = $2)`
+      : `SELECT o.*,
+           COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+           u.email as customer_email, u.mobile as customer_phone,
+           s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
+         FROM orders o
+         LEFT JOIN users u ON o.user_id = u.id
+         LEFT JOIN users s ON o.seller_id = s.id
+         WHERE o.order_number = $1 AND (o.user_id = $2 OR o.seller_id = $2)`;
 
     const orderResult = await pool.query(orderQuery, [orderId, userId]);
 
     if (orderResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Order not found'
-      });
+      return res.status(404).json({ success: false, error: 'Order not found' });
     }
 
-    // Get order items
-    const itemsQuery = `
-      SELECT 
-        oi.*,
-        p.product_name as current_product_name,
-        p.price as current_price
-      FROM order_items oi
-      LEFT JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = $1
-    `;
+    const realId = orderResult.rows[0].id;
 
-    const itemsResult = await pool.query(itemsQuery, [orderId]);
+    const itemsResult = await pool.query(
+      `SELECT oi.*, p.product_name as current_product_name, p.price as current_price
+       FROM order_items oi
+       LEFT JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1`,
+      [realId]
+    );
 
     const order = {
       ...orderResult.rows[0],
@@ -187,10 +188,7 @@ export const getOrderById = async (req, res) => {
       items: itemsResult.rows
     };
 
-    res.json({
-      success: true,
-      order
-    });
+    res.json({ success: true, order });
 
   } catch (error) {
     console.error('Error fetching order details:', error);
@@ -330,8 +328,15 @@ export const updateOrderStatus = async (req, res) => {
     const { status, note } = req.body;
     const userId = req.user.id;
 
-    // Verify order belongs to seller
-    const verifyQuery = 'SELECT id FROM orders WHERE id = $1 AND seller_id = $2';
+    // orderId may be a UUID (id) or an order_number string — handle both
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(orderId);
+
+    // Verify order belongs to seller — look up by id (UUID) or order_number
+    const verifyQuery = isUuid
+      ? 'SELECT id FROM orders WHERE id = $1 AND seller_id = $2'
+      : 'SELECT id FROM orders WHERE order_number = $1 AND seller_id = $2';
+
     const verifyResult = await pool.query(verifyQuery, [orderId, userId]);
 
     if (verifyResult.rows.length === 0) {
@@ -341,25 +346,27 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Always use the real UUID id for subsequent queries
+    const realId = verifyResult.rows[0].id;
+
     // Update order status
-    const updateQuery = `
-      UPDATE orders 
-      SET status = $1, updated_at = NOW() AT TIME ZONE 'Asia/Kolkata'
-      WHERE id = $2
-      RETURNING *
-    `;
+    const updateResult = await pool.query(
+      `UPDATE orders 
+       SET status = $1, updated_at = NOW() AT TIME ZONE 'Asia/Kolkata'
+       WHERE id = $2
+       RETURNING *`,
+      [status, realId]
+    );
 
-    const updateResult = await pool.query(updateQuery, [status, orderId]);
-
-    // Add to status history — best-effort, skip if order_id is not a valid UUID
+    // Add to status history
     try {
       await pool.query(
-        `INSERT INTO order_status_history (order_id, status, note, created_at)
-         VALUES ($1::uuid, $2, $3, NOW() AT TIME ZONE 'Asia/Kolkata')`,
-        [orderId, status, note || null]
+        `INSERT INTO order_status_history (id, order_id, status, note, created_at)
+         VALUES ($1, $2, $3, $4, NOW() AT TIME ZONE 'Asia/Kolkata')`,
+        [generateId(), realId, status, note || null]
       );
     } catch (historyErr) {
-      console.warn('[Orders] Could not insert status history (non-UUID order id):', historyErr.message);
+      console.warn('[Orders] Could not insert status history:', historyErr.message);
     }
 
     res.json({

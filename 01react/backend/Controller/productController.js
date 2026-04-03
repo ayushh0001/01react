@@ -1,6 +1,7 @@
 import { pool } from '../config/database.js';
 import { minioClient, bucketName } from '../config/minio.js';
 import { extractKeywords, generateSearchTags } from '../utils/keywordExtractor.js';
+import { generateId } from '../utils/generateId.js';
 
 /**
  * Add new product with image upload to MinIO
@@ -63,6 +64,7 @@ export const addProduct = async (req, res) => {
       // Try with size_quantities and search columns
       insertQuery = `
         INSERT INTO products (
+          id,
           user_id,
           product_name,
           description,
@@ -75,11 +77,12 @@ export const addProduct = async (req, res) => {
           size_quantities,
           search_tags,
           extracted_attributes
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `;
 
       values = [
+        generateId(),
         userId,
         productName,
         description || null,
@@ -98,6 +101,7 @@ export const addProduct = async (req, res) => {
       console.warn('[Products] size_quantities column may not exist, using fallback');
       insertQuery = `
         INSERT INTO products (
+          id,
           user_id,
           product_name,
           description,
@@ -107,11 +111,12 @@ export const addProduct = async (req, res) => {
           price,
           quantity,
           in_stock
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
       `;
 
       values = [
+        generateId(),
         userId,
         productName,
         description || null,

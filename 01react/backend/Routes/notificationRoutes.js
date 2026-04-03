@@ -1,6 +1,7 @@
 import express from 'express';
 import { addClient, removeClient, broadcastNewOrder } from '../utils/sseManager.js';
 import { pool } from '../config/database.js';
+import { generateId } from '../utils/generateId.js';
 
 const router = express.Router();
 const INTERNAL_SECRET = process.env.INTERNAL_NOTIFY_SECRET || 'zpin-internal-secret';
@@ -63,15 +64,15 @@ router.post('/new-order', async (req, res) => {
       const shippingAddress = JSON.stringify({ name: customerName });
       const orderResult = await pool.query(
         `INSERT INTO orders
-          (order_number, user_id, seller_id, status, payment_status,
+          (id, order_number, user_id, seller_id, status, payment_status,
            total_amount, shipping_amount, tax_amount, final_amount,
            shipping_address, payment_method, created_at, updated_at)
-         VALUES ($1, $2, $3, 'pending', 'pending', $4, 0, 0, $4, $5, 'cod',
+         VALUES ($1, $2, $3, $4, 'pending', 'pending', $5, 0, 0, $5, $6, 'cod',
            NOW() AT TIME ZONE 'Asia/Kolkata',
            NOW() AT TIME ZONE 'Asia/Kolkata')
          ON CONFLICT (order_number) DO NOTHING
          RETURNING id`,
-        [orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
+        [generateId(), orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
       );
 
       if (orderResult.rows.length > 0) {
@@ -79,9 +80,9 @@ router.post('/new-order', async (req, res) => {
         const perItem = (totalAmount / (items?.length || 1)).toFixed(2);
         for (const productName of (items || [])) {
           await pool.query(
-            `INSERT INTO order_items (order_id, product_name, quantity, price, created_at)
-             VALUES ($1, $2, 1, $3, NOW() AT TIME ZONE 'Asia/Kolkata')`,
-            [vendorOrderId, productName, perItem]
+            `INSERT INTO order_items (id, order_id, product_name, quantity, price, created_at)
+             VALUES ($1, $2, $3, 1, $4, NOW() AT TIME ZONE 'Asia/Kolkata')`,
+            [generateId(), vendorOrderId, productName, perItem]
           );
         }
         console.log(`[Notify] Order ${orderNumber} inserted, vendor id: ${vendorOrderId}`);

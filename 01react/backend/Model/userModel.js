@@ -1,5 +1,6 @@
 import { pool } from '../config/database.js';
 import bcrypt from 'bcryptjs';
+import { generateId } from '../utils/generateId.js';
 
 // Find user by email
 export const findUserByEmail = async (email) => {
@@ -49,12 +50,12 @@ export const createUser = async (userData) => {
   }
 
   const query = `
-    INSERT INTO users (user_name, name, mobile, email, password_hash, user_role, google_id, is_verified)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO users (id, user_name, name, mobile, email, password_hash, user_role, google_id, is_verified)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING id, user_name, name, mobile, email, user_role, is_verified, created_at
   `;
 
-  const values = [userName, name, mobile, email, passwordHash, userRole, googleId, isVerified];
+  const values = [generateId(), userName, name, mobile, email, passwordHash, userRole, googleId, isVerified];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
