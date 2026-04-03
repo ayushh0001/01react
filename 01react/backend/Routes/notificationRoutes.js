@@ -35,10 +35,14 @@ router.post('/new-order', async (req, res) => {
   try {
     let sellerId = null;
 
-    if (productIds && productIds.length > 0) {
+    // Only try UUID cast if productIds look like UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const validUuidProductIds = (productIds || []).filter(pid => uuidRegex.test(pid));
+
+    if (validUuidProductIds.length > 0) {
       const r = await pool.query(
         `SELECT user_id FROM products WHERE id = ANY($1::uuid[]) LIMIT 1`,
-        [productIds]
+        [validUuidProductIds]
       );
       sellerId = r.rows[0]?.user_id;
     }
@@ -90,8 +94,14 @@ router.post('/new-order', async (req, res) => {
     console.error('[Notify] DB insert error:', err.message);
   }
 
+  // Only broadcast if we have a valid vendor UUID — otherwise the Accept button will 500
+  if (!vendorOrderId) {
+    console.warn(`[Notify] Could not resolve vendor UUID for order ${orderNumber}, skipping broadcast`);
+    return res.json({ success: false, error: 'Could not create vendor order record' });
+  }
+
   // Broadcast with vendorOrderId so Accept Order button patches the right row
-  broadcastNewOrder({ id: vendorOrderId || id, orderNumber, customerName, totalAmount, itemCount, items });
+  broadcastNewOrder({ id: vendorOrderId, orderNumber, customerName, totalAmount, itemCount, items });
   res.json({ success: true });
 });
 

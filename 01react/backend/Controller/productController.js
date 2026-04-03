@@ -151,12 +151,17 @@ export const addProduct = async (req, res) => {
           );
 
           const imageUrl = `${process.env.MINIO_PUBLIC_URL || 'http://localhost:9000'}/${bucketName}/${fileName}`;
-          imageUrls.push(imageUrl);
+          // Rewrite localhost MinIO URLs to go through the backend proxy (avoids mixed-content in production)
+          const proxyBase = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+          const finalImageUrl = imageUrl.includes('localhost')
+            ? `${proxyBase}/api/v1/images/${bucketName}/${fileName}`
+            : imageUrl;
+          imageUrls.push(finalImageUrl);
 
           // Insert image record
           await pool.query(
             'INSERT INTO product_images (product_id, image_url, display_order) VALUES ($1, $2, $3)',
-            [product.id, imageUrl, i]
+            [product.id, finalImageUrl, i]
           );
 
           console.log(`[Products] Uploaded image ${i + 1}: ${fileName}`);

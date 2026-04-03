@@ -113,6 +113,26 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/password-reset', passwordResetRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 
+// ── Image proxy — serves MinIO objects through the backend so localhost URLs
+//    stored in the DB work in production (avoids mixed-content / CORS errors)
+app.get('/api/v1/images/*', async (req, res) => {
+  try {
+    const { minioClient, bucketName } = await import('./config/minio.js');
+    // Strip /api/v1/images/<bucketName>/ prefix to get the object key
+    const fullPath = req.params[0]; // everything after /api/v1/images/
+    const prefix = `${bucketName}/`;
+    const objectKey = fullPath.startsWith(prefix) ? fullPath.slice(prefix.length) : fullPath;
+
+    const stat = await minioClient.statObject(bucketName, objectKey);
+    res.setHeader('Content-Type', stat.metaData?.['content-type'] || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    const stream = await minioClient.getObject(bucketName, objectKey);
+    stream.pipe(res);
+  } catch (err) {
+    res.status(404).json({ error: 'Image not found' });
+  }
+});
+
 // Make pool available to routes
 app.locals.pool = pool;
 

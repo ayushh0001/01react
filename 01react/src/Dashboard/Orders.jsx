@@ -189,8 +189,9 @@ export default function Orders() {
         items: parseInt(order.item_count) || 0,
         total: parseFloat(order.final_amount || order.total_amount || 0),
         status: order.status || 'pending',
-        shipping_address: order.shipping_address
-      }));
+        shipping_address: order.shipping_address,
+        created_at: order.created_at,
+      })).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
       console.log('Transformed Orders:', transformedOrders);
       setOrders(transformedOrders);
