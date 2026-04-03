@@ -68,8 +68,8 @@ router.post('/new-order', async (req, res) => {
            total_amount, shipping_amount, tax_amount, final_amount,
            shipping_address, payment_method, created_at, updated_at)
          VALUES ($1, $2, $3, $4, 'pending', 'pending', $5, 0, 0, $5, $6, 'cod',
-           NOW() AT TIME ZONE 'Asia/Kolkata',
-           NOW() AT TIME ZONE 'Asia/Kolkata')
+           NOW(),
+           NOW())
          ON CONFLICT (order_number) DO NOTHING
          RETURNING id`,
         [generateId(), orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
@@ -81,7 +81,7 @@ router.post('/new-order', async (req, res) => {
         for (const productName of (items || [])) {
           await pool.query(
             `INSERT INTO order_items (id, order_id, product_name, quantity, price, created_at)
-             VALUES ($1, $2, $3, 1, $4, NOW() AT TIME ZONE 'Asia/Kolkata')`,
+             VALUES ($1, $2, $3, 1, $4, NOW())`,
             [generateId(), vendorOrderId, productName, perItem]
           );
         }
