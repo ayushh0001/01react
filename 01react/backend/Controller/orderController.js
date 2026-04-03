@@ -328,16 +328,24 @@ export const updateOrderStatus = async (req, res) => {
     const { status, note } = req.body;
     const userId = req.user.id;
 
-    // orderId may be a UUID (id) or an order_number string — handle both
+    // orderId may be a UUID, a 7-char alphanumeric id, or an order_number string
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const isUuid = uuidRegex.test(orderId);
 
-    // Verify order belongs to seller — look up by id (UUID) or order_number
-    const verifyQuery = isUuid
-      ? 'SELECT id FROM orders WHERE id = $1 AND seller_id = $2'
-      : 'SELECT id FROM orders WHERE order_number = $1 AND seller_id = $2';
-
-    const verifyResult = await pool.query(verifyQuery, [orderId, userId]);
+    // Try id (UUID or varchar), then fall back to order_number
+    let verifyResult;
+    if (isUuid) {
+      verifyResult = await pool.query(
+        'SELECT id FROM orders WHERE id = $1 AND seller_id = $2',
+        [orderId, userId]
+      );
+    } else {
+      // Try matching the raw id column first (7-char alphanumeric), then order_number
+      verifyResult = await pool.query(
+        'SELECT id FROM orders WHERE (id = $1 OR order_number = $1) AND seller_id = $2',
+        [orderId, userId]
+      );
+    }
 
     if (verifyResult.rows.length === 0) {
       return res.status(404).json({
@@ -352,7 +360,7 @@ export const updateOrderStatus = async (req, res) => {
     // Update order status
     const updateResult = await pool.query(
       `UPDATE orders 
-       SET status = $1, updated_at = NOW() AT TIME ZONE 'Asia/Kolkata'
+       SET status = $1, updated_at = NOW()
        WHERE id = $2
        RETURNING *`,
       [status, realId]
@@ -362,7 +370,7 @@ export const updateOrderStatus = async (req, res) => {
     try {
       await pool.query(
         `INSERT INTO order_status_history (id, order_id, status, note, created_at)
-         VALUES ($1, $2, $3, $4, NOW() AT TIME ZONE 'Asia/Kolkata')`,
+         VALUES ($1, $2, $3, $4, NOW())`,
         [generateId(), realId, status, note || null]
       );
     } catch (historyErr) {
