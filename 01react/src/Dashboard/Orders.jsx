@@ -177,14 +177,15 @@ export default function Orders() {
       const transformedOrders = ordersData.map(order => ({
         id: order.id,
         number: order.order_number,
-        date: order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A',
-        dateTime: order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }).replace(',', ', ') : 'N/A',
+        date: order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit', month: 'short', year: 'numeric'
+        }) : 'N/A',
+        dateTime: order.created_at ? new Date(order.created_at).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: true
+        }) : 'N/A',
         customer: order.customer_name || order.shipping_address?.name || 'N/A',
         items: parseInt(order.item_count) || 0,
         total: parseFloat(order.final_amount || order.total_amount || 0),

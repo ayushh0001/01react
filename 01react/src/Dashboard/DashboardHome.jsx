@@ -431,13 +431,11 @@ export default function DashboardHome() {
                           </div>
                         </td>
                         <td className="p-4 text-gray-600 text-sm">
-                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          }).replace(',', ', ') : 'N/A'}
+                          {order.created_at ? new Date(order.created_at).toLocaleString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            day: '2-digit', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', hour12: true
+                          }) : 'N/A'}
                         </td>
                         <td className="p-4 font-semibold text-gray-900">₹ {order.total_amount?.toLocaleString('en-IN') || 0}</td>
                         <td className="p-4">
@@ -532,7 +530,7 @@ export default function DashboardHome() {
                     <div className="space-y-2 text-sm mb-3">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Date:</span>
-                        <span>{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}</span>
+                        <span>{order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Amount:</span>

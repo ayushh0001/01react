@@ -30,8 +30,8 @@ export const getSellerOrders = async (req, res) => {
         o.shipping_address,
         o.payment_method,
         o.estimated_delivery,
-        o.created_at,
-        o.updated_at,
+        (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS created_at,
+        (o.updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS updated_at,
         COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
         u.email as customer_email,
         u.mobile as customer_phone,
@@ -247,7 +247,7 @@ export const getSellerDashboardStats = async (req, res) => {
         o.status,
         o.final_amount as total_amount,
         o.shipping_address,
-        o.created_at,
+        (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS created_at,
         COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
         COUNT(oi.id) as item_count
       FROM orders o
