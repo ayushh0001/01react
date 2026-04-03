@@ -452,7 +452,7 @@ export default function Orders() {
                     <div className="space-y-2 text-sm mb-3">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Date:</span>
-                        <span>{order.date}</span>
+                        <span>{order.dateTime}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Amount:</span>
@@ -542,7 +542,7 @@ export default function Orders() {
                   historyOrders.map((order, index) => (
                     <tr key={order.number || index} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedOrder(order)}>
                       <td className="p-4 text-gray-900">{order.number}</td>
-                      <td className="p-4 text-gray-600">{order.date}</td>
+                      <td className="p-4 text-gray-600">{order.dateTime}</td>
                       <td className="p-4 text-gray-900">{order.customer}</td>
                       <td className="p-4 text-gray-600">{order.items}</td>
                       <td className="p-4 text-gray-900 font-semibold">₹{order.total?.toLocaleString('en-IN')}</td>
@@ -612,7 +612,7 @@ export default function Orders() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Date:</span>
-                        <span>{order.date}</span>
+                        <span>{order.dateTime}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Items:</span>
