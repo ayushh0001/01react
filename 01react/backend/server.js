@@ -115,11 +115,11 @@ app.use('/api/v1/notifications', notificationRoutes);
 
 // ── Image proxy — serves MinIO objects through the backend so localhost URLs
 //    stored in the DB work in production (avoids mixed-content / CORS errors)
-app.get('/api/v1/images/*', async (req, res) => {
+app.get('/api/v1/images/*path', async (req, res) => {
   try {
     const { minioClient, bucketName } = await import('./config/minio.js');
     // Strip /api/v1/images/<bucketName>/ prefix to get the object key
-    const fullPath = req.params[0]; // everything after /api/v1/images/
+    const fullPath = req.params.path; // everything after /api/v1/images/
     const prefix = `${bucketName}/`;
     const objectKey = fullPath.startsWith(prefix) ? fullPath.slice(prefix.length) : fullPath;
 
