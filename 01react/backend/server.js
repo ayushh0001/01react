@@ -186,8 +186,9 @@ const startServer = async () => {
       console.warn('⚠️  MinIO not configured, skipping storage init');
     }
 
-    // Start server
-    app.listen(PORT, '127.0.0.1', () => {
+    // Bind to 0.0.0.0 in production (required by Render), 127.0.0.1 locally
+    const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+    app.listen(PORT, host, () => {
       console.log('\n🚀 Server is running!');
       console.log(`📍 Local: http://localhost:${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
