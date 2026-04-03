@@ -154,7 +154,38 @@ export default function Orders() {
   const [updatingOrder, setUpdatingOrder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [sortKey, setSortKey] = useState('created_at_ts');
+  const [sortDir, setSortDir] = useState('desc');
   const ordersPerPage = 9;
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+    setCurrentPage(1);
+  };
+
+  const SortIcon = ({ col }) => {
+    if (sortKey !== col) return <span className="ml-1 text-gray-300">↕</span>;
+    return <span className="ml-1 text-gray-700">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  };
+
+  const sortOrders = (list) => [...list].sort((a, b) => {
+    let av, bv;
+    switch (sortKey) {
+      case 'created_at_ts': av = a.created_at_ts; bv = b.created_at_ts; break;
+      case 'total':         av = a.total;          bv = b.total;          break;
+      case 'status':        av = a.status;         bv = b.status;         break;
+      case 'customer':      av = a.customer;       bv = b.customer;       break;
+      default:              av = a.created_at_ts;  bv = b.created_at_ts;
+    }
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   useEffect(() => {
     fetchOrders();
@@ -237,14 +268,14 @@ export default function Orders() {
   };
 
   // Separate active orders (pending, confirmed, processing) from history
-  const activeOrders = orders.filter(order => 
+  const activeOrders = sortOrders(orders.filter(order => 
     ['pending', 'confirmed', 'processing'].includes(order.status?.toLowerCase())
-  );
+  ));
 
   // Filter orders for history based on selected filter
-  const filteredHistoryOrders = filter === 'all'
+  const filteredHistoryOrders = sortOrders(filter === 'all'
     ? orders
-    : orders.filter(order => order.status?.toLowerCase() === filter.toLowerCase());
+    : orders.filter(order => order.status?.toLowerCase() === filter.toLowerCase()));
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredHistoryOrders.length / ordersPerPage);
@@ -317,10 +348,10 @@ export default function Orders() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="p-4 text-gray-700 font-semibold text-sm">Order ID</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Customer</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Date</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Amount</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Status</th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('customer')}>Customer <SortIcon col="customer" /></th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('created_at_ts')}>Date <SortIcon col="created_at_ts" /></th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('total')}>Amount <SortIcon col="total" /></th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('status')}>Status <SortIcon col="status" /></th>
                   <th className="p-4 text-gray-700 font-semibold text-sm">Actions</th>
                 </tr>
               </thead>
@@ -521,11 +552,11 @@ export default function Orders() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="p-4 text-gray-700 font-semibold text-sm">Order Number</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Date</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Customer</th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('created_at_ts')}>Date <SortIcon col="created_at_ts" /></th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('customer')}>Customer <SortIcon col="customer" /></th>
                   <th className="p-4 text-gray-700 font-semibold text-sm">Items</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Total</th>
-                  <th className="p-4 text-gray-700 font-semibold text-sm">Status</th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('total')}>Total <SortIcon col="total" /></th>
+                  <th className="p-4 text-gray-700 font-semibold text-sm cursor-pointer select-none hover:text-gray-900" onClick={() => handleSort('status')}>Status <SortIcon col="status" /></th>
                 </tr>
               </thead>
               <tbody>
