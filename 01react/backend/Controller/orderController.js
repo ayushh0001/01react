@@ -351,13 +351,15 @@ export const updateOrderStatus = async (req, res) => {
 
     const updateResult = await pool.query(updateQuery, [status, orderId]);
 
-    // Add to status history — cast order_id to match uuid column
-    const historyQuery = `
-      INSERT INTO order_status_history (order_id, status, note)
-      VALUES ($1::uuid, $2, $3)
-    `;
-
-    await pool.query(historyQuery, [orderId, status, note || null]);
+    // Add to status history — best-effort, skip if order_id is not a valid UUID
+    try {
+      await pool.query(
+        `INSERT INTO order_status_history (order_id, status, note) VALUES ($1::uuid, $2, $3)`,
+        [orderId, status, note || null]
+      );
+    } catch (historyErr) {
+      console.warn('[Orders] Could not insert status history (non-UUID order id):', historyErr.message);
+    }
 
     res.json({
       success: true,
