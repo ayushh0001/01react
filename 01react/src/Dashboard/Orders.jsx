@@ -174,32 +174,29 @@ export default function Orders() {
       
       const ordersData = response.data.orders || [];
 
-      const transformedOrders = ordersData.map(order => ({
-        id: order.id,
-        number: order.order_number,
-        date: order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', {
-          timeZone: 'Asia/Kolkata',
-          day: '2-digit', month: 'short', year: 'numeric'
-        }) : 'N/A',
-        dateTime: order.created_at ? new Date(order.created_at).toLocaleString('en-IN', {
-          timeZone: 'Asia/Kolkata',
-          day: '2-digit', month: 'short', year: 'numeric',
-          hour: '2-digit', minute: '2-digit', hour12: true
-        }) : 'N/A',
-        customer: order.customer_name || order.shipping_address?.name || 'N/A',
-        items: parseInt(order.item_count) || 0,
-        total: parseFloat(order.final_amount || order.total_amount || 0),
-        status: order.status || 'pending',
-        shipping_address: order.shipping_address,
-        created_at: order.created_at,
-      })).sort((a, b) => {
-        // Compare raw strings first (ISO format sorts lexicographically correctly)
-        // Fall back to Date parse if needed
-        if (a.created_at && b.created_at) {
-          return a.created_at > b.created_at ? -1 : a.created_at < b.created_at ? 1 : 0;
-        }
-        return 0;
-      });
+      const transformedOrders = ordersData.map(order => {
+        const createdAt = order.created_at ? new Date(order.created_at) : null;
+        return {
+          id: order.id,
+          number: order.order_number,
+          date: createdAt ? createdAt.toLocaleDateString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            day: '2-digit', month: 'short', year: 'numeric'
+          }) : 'N/A',
+          dateTime: createdAt ? createdAt.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+          }) : 'N/A',
+          customer: order.customer_name || order.shipping_address?.name || 'N/A',
+          items: parseInt(order.item_count) || 0,
+          total: parseFloat(order.final_amount || order.total_amount || 0),
+          status: order.status || 'pending',
+          shipping_address: order.shipping_address,
+          created_at: createdAt,
+          created_at_ts: createdAt ? createdAt.getTime() : 0,
+        };
+      }).sort((a, b) => b.created_at_ts - a.created_at_ts); // descending: newest first
 
       console.log('Transformed Orders:', transformedOrders);
       setOrders(transformedOrders);

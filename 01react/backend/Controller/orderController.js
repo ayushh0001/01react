@@ -31,7 +31,7 @@ export const getSellerOrders = async (req, res) => {
         o.shipping_address,
         o.payment_method,
         (o.estimated_delivery AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS estimated_delivery,
-        o.created_at,
+        o.created_at::timestamptz AS created_at,
         (o.updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS updated_at,
         COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
         u.email as customer_email,
