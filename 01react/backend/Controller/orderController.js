@@ -145,24 +145,17 @@ export const getOrderById = async (req, res) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const isUuid = uuidRegex.test(orderId);
 
-    // Support lookup by UUID id or order_number
-    const orderQuery = isUuid
-      ? `SELECT o.*,
-           COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
-           u.email as customer_email, u.mobile as customer_phone,
-           s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
-         FROM orders o
-         LEFT JOIN users u ON o.user_id = u.id
-         LEFT JOIN users s ON o.seller_id = s.id
-         WHERE o.id = $1 AND (o.user_id = $2 OR o.seller_id = $2)`
-      : `SELECT o.*,
-           COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
-           u.email as customer_email, u.mobile as customer_phone,
-           s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
-         FROM orders o
-         LEFT JOIN users u ON o.user_id = u.id
-         LEFT JOIN users s ON o.seller_id = s.id
-         WHERE o.order_number = $1 AND (o.user_id = $2 OR o.seller_id = $2)`;
+    // Support lookup by UUID id, 7-char varchar id, or order_number
+    const orderQuery = `
+      SELECT o.*,
+        COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+        u.email as customer_email, u.mobile as customer_phone,
+        s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      LEFT JOIN users s ON o.seller_id = s.id
+      WHERE (o.id = $1 OR o.order_number = $1)
+        AND (o.user_id = $2 OR o.seller_id = $2)`;
 
     const orderResult = await pool.query(orderQuery, [orderId, userId]);
 
@@ -173,10 +166,9 @@ export const getOrderById = async (req, res) => {
     const realId = orderResult.rows[0].id;
 
     const itemsResult = await pool.query(
-      `SELECT oi.*, p.product_name as current_product_name, p.price as current_price
-       FROM order_items oi
-       LEFT JOIN products p ON oi.product_id = p.id
-       WHERE oi.order_id = $1`,
+      `SELECT id, order_id, product_id, product_name, quantity, price, image, variant, created_at
+       FROM order_items
+       WHERE order_id = $1`,
       [realId]
     );
 

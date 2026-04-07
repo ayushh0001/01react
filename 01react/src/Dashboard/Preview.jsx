@@ -22,25 +22,18 @@ export default function Preview() {
       // Get draft product from localStorage (not published yet)
       const draftProduct = JSON.parse(localStorage.getItem('draftProduct') || 'null');
       
-      console.log('[Preview] Draft product from localStorage:', draftProduct);
-      
       if (draftProduct) {
         // Create preview URLs from base64 data OR existing MinIO URLs
         let imageUrls = [];
         
         // Priority 1: Use existing images (MinIO URLs) if available
         if (draftProduct.existingImages && draftProduct.existingImages.length > 0) {
-          console.log('[Preview] Using existing MinIO images:', draftProduct.existingImages);
           imageUrls = draftProduct.existingImages;
         }
         // Priority 2: Use base64 imageData if available
         else if (draftProduct.imageData && draftProduct.imageData.length > 0) {
-          console.log('[Preview] Using base64 image data');
           imageUrls = draftProduct.imageData.map(img => img.dataUrl);
         }
-
-        console.log('[Preview] Final image URLs:', imageUrls);
-        console.log('[Preview] Number of images:', imageUrls.length);
 
         setProduct({
           name: draftProduct.name,
@@ -57,7 +50,6 @@ export default function Preview() {
           sizeQuantities: draftProduct.sizeQuantities || {}
         });
       } else {
-        console.log('[Preview] No draft product found in localStorage');
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -85,13 +77,10 @@ export default function Preview() {
         return;
       }
 
-      console.log('[Preview] Publishing product:', draftProduct);
-
       const isEdit = draftProduct.isEdit && draftProduct._id;
 
       if (isEdit) {
         // ── UPDATE EXISTING PRODUCT ──
-        console.log('[Preview] Updating existing product:', draftProduct._id);
 
         const payload = {
           productName: draftProduct.name,
@@ -106,13 +95,9 @@ export default function Preview() {
         };
 
         await API.put(`/products/${draftProduct._id}`, payload);
-        console.log('[Preview] Product updated successfully');
 
       } else {
         // ── CREATE NEW PRODUCT ──
-        console.log('[Preview] Creating new product');
-        console.log('[Preview] Draft product imageData:', draftProduct.imageData);
-        console.log('[Preview] Draft product existingImages:', draftProduct.existingImages);
 
         // Create FormData for multipart upload
         const formData = new FormData();
@@ -127,18 +112,14 @@ export default function Preview() {
 
         // Convert base64 images back to File objects
         if (draftProduct.imageData && draftProduct.imageData.length > 0) {
-          console.log('[Preview] Converting', draftProduct.imageData.length, 'base64 images to files');
           
           for (let i = 0; i < draftProduct.imageData.length; i++) {
             const imgData = draftProduct.imageData[i];
             try {
-              console.log('[Preview] Processing image:', imgData.name, 'Type:', imgData.type);
               
               // Convert base64 to Blob
               const response = await fetch(imgData.dataUrl);
               const blob = await response.blob();
-              
-              console.log('[Preview] Blob created:', blob.size, 'bytes, type:', blob.type);
               
               // Create File from Blob with correct type
               const file = new File([blob], imgData.name, { 
@@ -146,7 +127,6 @@ export default function Preview() {
               });
               
               formData.append("images", file);
-              console.log('[Preview] Added image to FormData:', file.name, 'Size:', file.size, 'Type:', file.type);
             } catch (err) {
               console.error('[Preview] Failed to convert image:', imgData.name, err);
             }
@@ -156,23 +136,18 @@ export default function Preview() {
         }
 
         // Log FormData contents
-        console.log('[Preview] FormData entries:');
         for (let pair of formData.entries()) {
           if (pair[1] instanceof File) {
-            console.log(`  ${pair[0]}: File(${pair[1].name}, ${pair[1].size} bytes, ${pair[1].type})`);
           } else {
-            console.log(`  ${pair[0]}: ${pair[1]}`);
           }
         }
 
         // POST to create product - Let browser set Content-Type with boundary
-        console.log('[Preview] Sending POST request to /products/addProduct');
         const response = await API.post('/products/addProduct', formData, {
           headers: {
             'Content-Type': undefined // Let browser set multipart/form-data with boundary
           }
         });
-        console.log('[Preview] Product created successfully:', response.data);
       }
 
       // Clear draft from localStorage

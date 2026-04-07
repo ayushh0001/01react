@@ -25,7 +25,7 @@ router.post('/new-order', async (req, res) => {
     return res.status(403).json({ success: false, error: 'Forbidden' });
   }
 
-  const { id, orderNumber, customerName, totalAmount, itemCount, items, productIds } = req.body;
+  const { id, orderNumber, customerName, totalAmount, itemCount, items, productIds, shippingAddress, paymentMethod, itemDetails } = req.body;
   if (!orderNumber) {
     return res.status(400).json({ success: false, error: 'Invalid order payload' });
   }
@@ -61,28 +61,33 @@ router.post('/new-order', async (req, res) => {
     }
 
     if (sellerId) {
-      const shippingAddress = JSON.stringify({ name: customerName });
+      // Use full shipping address if provided, otherwise just store the name
+      const addrToStore = shippingAddress
+        ? JSON.stringify(shippingAddress)
+        : JSON.stringify({ name: customerName });
+      const paymentToStore = paymentMethod || 'cod';
+
       const orderResult = await pool.query(
         `INSERT INTO orders
           (id, order_number, user_id, seller_id, status, payment_status,
            total_amount, shipping_amount, tax_amount, final_amount,
            shipping_address, payment_method, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, 'pending', 'pending', $5, 0, 0, $5, $6, 'cod',
-           NOW(),
-           NOW())
+         VALUES ($1, $2, $3, $4, 'pending', 'pending', $5, 0, 0, $5, $6, $7,
+           NOW(), NOW())
          ON CONFLICT (order_number) DO NOTHING
          RETURNING id`,
-        [generateId(), orderNumber, sellerId, sellerId, totalAmount, shippingAddress]
+        [generateId(), orderNumber, sellerId, sellerId, totalAmount, addrToStore, paymentToStore]
       );
 
       if (orderResult.rows.length > 0) {
         vendorOrderId = orderResult.rows[0].id;
-        const perItem = (totalAmount / (items?.length || 1)).toFixed(2);
-        for (const productName of (items || [])) {
+        // Use detailed item info if available, otherwise fall back to name strings
+        const itemsToInsert = itemDetails?.length > 0 ? itemDetails : (items || []).map(name => ({ productName: name, quantity: 1, price: (totalAmount / (items.length || 1)).toFixed(2), image: null, variant: null }));
+        for (const item of itemsToInsert) {
           await pool.query(
-            `INSERT INTO order_items (id, order_id, product_name, quantity, price, created_at)
-             VALUES ($1, $2, $3, 1, $4, NOW())`,
-            [generateId(), vendorOrderId, productName, perItem]
+            `INSERT INTO order_items (id, order_id, product_name, quantity, price, image, variant, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+            [generateId(), vendorOrderId, item.productName, item.quantity, item.price, item.image || null, item.variant || null]
           );
         }
         console.log(`[Notify] Order ${orderNumber} inserted, vendor id: ${vendorOrderId}`);

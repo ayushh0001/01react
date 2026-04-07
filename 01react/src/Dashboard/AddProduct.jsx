@@ -71,7 +71,6 @@ export default function AddProduct() {
         localStorage.removeItem('editProduct');
         sessionStorage.removeItem('draftImageMetadata');
         sessionStorage.removeItem('draftImagePreviews');
-        console.log('[AddProduct] Cleared stale draft data (user not authenticated)');
         return true;
       }
       return false;
@@ -87,11 +86,8 @@ export default function AddProduct() {
         const path = typeof categoryPath === 'string' ? JSON.parse(categoryPath) : categoryPath;
         
         if (!Array.isArray(path) || path.length === 0) {
-          console.log('[AddProduct] No category path to restore');
           return;
         }
-
-        console.log('[AddProduct] Restoring category path:', path);
 
         // Fetch root categories first
         const rootRes = await API.get('/categories/root', { timeout: 35000 });
@@ -178,8 +174,6 @@ export default function AddProduct() {
             }
           }
         }
-
-        console.log('[AddProduct] Restored category levels:', levels);
         setCategoryLevels(levels);
         
       } catch (err) {
@@ -190,7 +184,6 @@ export default function AddProduct() {
     // Check for draft product first (coming back from preview)
     const draftProduct = JSON.parse(localStorage.getItem('draftProduct') || 'null');
     if (draftProduct) {
-      console.log('[AddProduct] Restoring draft from preview:', draftProduct);
       setForm({
         name: draftProduct.name || '',
         price: String(draftProduct.price || ''),
@@ -223,10 +216,6 @@ export default function AddProduct() {
     // Check for edit product (coming from Products page)
     const editProduct = JSON.parse(localStorage.getItem('editProduct') || 'null');
     if (editProduct) {
-      console.log('[AddProduct] Loading product for editing:', editProduct);
-      console.log('[AddProduct] Edit product images:', editProduct.images);
-      console.log('[AddProduct] Images type:', typeof editProduct.images);
-      console.log('[AddProduct] Is array?:', Array.isArray(editProduct.images));
       
       setForm({
         name: editProduct.productName || editProduct.name || '',
@@ -241,7 +230,6 @@ export default function AddProduct() {
         if (typeof editProduct.images === 'string') {
           try {
             imagesToSet = JSON.parse(editProduct.images);
-            console.log('[AddProduct] Parsed images from string:', imagesToSet);
           } catch (e) {
             console.error('[AddProduct] Failed to parse images string:', e);
           }
@@ -251,13 +239,8 @@ export default function AddProduct() {
       }
       
       if (Array.isArray(imagesToSet) && imagesToSet.length > 0) {
-        console.log('[AddProduct] Setting existing images:', imagesToSet);
-        console.log('[AddProduct] Number of images:', imagesToSet.length);
-        console.log('[AddProduct] First image URL:', imagesToSet[0]);
         setExistingImages(imagesToSet);
       } else {
-        console.log('[AddProduct] No images found in edit product');
-        console.log('[AddProduct] editProduct.images value:', editProduct.images);
       }
       
       // Restore size quantities for edit
@@ -286,7 +269,6 @@ export default function AddProduct() {
         localStorage.removeItem('editProduct');
         sessionStorage.removeItem('draftImageMetadata');
         sessionStorage.removeItem('draftImagePreviews');
-        console.log('[AddProduct] Cleared draft data on page unload (user not authenticated)');
       }
     };
 
@@ -303,9 +285,7 @@ export default function AddProduct() {
     setCatError('');
     setCatLoadMsg('Loading categories…');
     try {
-      console.log('[Categories] Fetching root categories from /categories/root');
       const res = await API.get('/categories/root', { timeout: 35000 });
-      console.log('[Categories] Root response:', res.data);
 
       let options = Array.isArray(res.data) ? res.data : 
                     Array.isArray(res.data?.data) ? res.data.data :
@@ -323,8 +303,6 @@ export default function AddProduct() {
         setCategoryLevels([]);
         return;
       }
-
-      console.log(`[Categories] Loaded ${options.length} root categories:`, options);
       setCategoryLevels([{ options, selected: null }]);
       setCatLoadMsg('');
     } catch (err) {
@@ -369,8 +347,6 @@ export default function AddProduct() {
     const level = categoryLevels[levelIndex];
     const chosen = level.options.find(o => o._id === value) ?? null;
 
-    console.log(`[Categories] Level ${levelIndex} changed to:`, chosen);
-
     // Slice off everything AFTER this level
     const newLevels = categoryLevels.slice(0, levelIndex + 1).map((l, i) =>
       i === levelIndex ? { ...l, selected: chosen } : l
@@ -379,9 +355,7 @@ export default function AddProduct() {
     // Try to fetch children
     if (chosen) {
       try {
-        console.log(`[Categories] Fetching children for "${chosen.name}" (${chosen._id})`);
         const res = await API.get(`/categories/${chosen._id}/children`, { timeout: 35000 });
-        console.log('[Categories] Children response:', res.data);
 
         let children = Array.isArray(res.data) ? res.data :
                        Array.isArray(res.data?.data) ? res.data.data :
@@ -396,10 +370,8 @@ export default function AddProduct() {
         }));
 
         if (children.length > 0) {
-          console.log(`[Categories] Found ${children.length} children:`, children);
           newLevels.push({ options: children, selected: null });
         } else {
-          console.log(`[Categories] No children for "${chosen.name}" — leaf node`);
         }
       } catch (err) {
         console.error(`[Categories] Failed to fetch children:`, err);
@@ -574,10 +546,6 @@ export default function AddProduct() {
         sizeQuantities: currentSizeChart ? sizeQuantities : {}, // Size-specific quantities
         sizeChartType: currentSizeChart?.type || null // Size chart type for reference
       };
-
-      console.log('[AddProduct] Saving draft product:', draftProduct);
-      console.log('[AddProduct] Existing images:', existingImages);
-      console.log('[AddProduct] New image data:', imageData);
 
       localStorage.setItem('draftProduct', JSON.stringify(draftProduct));
       setMessage("Redirecting to preview...");

@@ -2,6 +2,132 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useOrderNotifications } from '../hooks/useOrderNotifications';
+import API from '../utils/api';
+import Invoice from './Invoice';
+
+// ── Minimal order detail modal used by the notification bell ─────────────
+function NotifOrderModal({ order, onClose }) {
+  const [detail, setDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showInvoice, setShowInvoice] = useState(false);
+
+  useEffect(() => {
+    API.get(`/orders/${order.id}`)
+      .then(res => setDetail(res.data.order))
+      .catch(() => setDetail(order))
+      .finally(() => setLoading(false));
+  }, [order.id]);
+
+  const addr = detail?.shipping_address || order.shipping_address || {};
+  const items = detail?.items || [];
+  const fmt = v => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+  const statusColors = {
+    pending: 'bg-orange-100 text-yellow-800',
+    confirmed: 'bg-blue-100 text-blue-800',
+    processing: 'bg-blue-100 text-blue-800',
+    shipped: 'bg-green-100 text-green-800',
+    delivered: 'bg-green-200 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
+      {showInvoice && <Invoice order={order} detail={detail} onClose={() => setShowInvoice(false)} />}      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
+            <p className="text-sm text-gray-500">{order.number}</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-gray-400">Loading...</div>
+        ) : (
+          <div className="p-5 space-y-5">
+            <div className="flex items-center justify-between">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[detail?.status?.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}>
+                {detail?.status || order.status}
+              </span>
+              <span className="text-sm text-gray-500">{order.dateTime}</span>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customer</p>
+              <p className="font-semibold text-gray-900">{order.customer}</p>
+              {addr.phone && <p className="text-sm text-gray-600">{addr.phone}</p>}
+              {(addr.address || addr.street) && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {[addr.address || addr.street, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
+                </p>
+              )}
+            </div>
+
+            {items.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items</p>
+                <div className="space-y-2">
+                  {items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                      {item.image && <img src={item.image} alt={item.product_name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 text-sm truncate">{item.product_name}</p>
+                        <p className="text-xs text-gray-500">
+                          Qty: {item.quantity}
+                          {item.variant ? ` · Size: ${item.variant}` : ''}
+                        </p>
+                      </div>
+                      <p className="font-semibold text-gray-900 text-sm">{fmt(item.price * item.quantity)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-gray-100 pt-4 space-y-2">
+              {detail?.shipping_amount > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Shipping</span><span>{fmt(detail.shipping_amount)}</span>
+                </div>
+              )}
+              {detail?.tax_amount > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Tax</span><span>{fmt(detail.tax_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 text-base pt-1 border-t border-gray-100">
+                <span>Total</span>
+                <span>{fmt(detail?.final_amount || order.total)}</span>
+              </div>
+            </div>
+
+            {detail?.payment_method && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Payment</span>
+                <span className="font-medium capitalize text-gray-800">{detail.payment_method}</span>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowInvoice(true)}
+              className="w-full mt-2 py-2.5 bg-brand text-black font-semibold text-sm rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              View Invoice
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Custom Modal Component for Logout Confirmation
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
@@ -42,6 +168,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
 export function NotificationBell() {
   const { notifications, unreadCount, markAllRead, clearAll, incomingOrder, dismissIncoming } = useOrderNotifications();
   const [open, setOpen] = useState(false);
+  const [selectedNotif, setSelectedNotif] = useState(null);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -59,10 +186,30 @@ export function NotificationBell() {
     if (s < 3600) return `${Math.floor(s / 60)}m ago`;
     return `${Math.floor(s / 3600)}h ago`;
   };
-  const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+  const handleNotifClick = (n) => {
+    setOpen(false);
+    // Build a minimal order object compatible with OrderModal
+    setSelectedNotif({
+      id: n.id,
+      number: n.orderNumber,
+      customer: n.customerName,
+      total: n.totalAmount,
+      status: 'pending',
+      shipping_address: {},
+      dateTime: new Date(n.timestamp).toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      }),
+    });
+  };
 
   return (
     <>
+      {/* Order detail modal triggered from notification */}
+      {selectedNotif && <NotifOrderModal order={selectedNotif} onClose={() => setSelectedNotif(null)} />}
+
       {/* ── Bell icon with badge ── */}
       <div ref={ref} style={{ position: 'relative' }}>
         <button
@@ -109,13 +256,25 @@ export function NotificationBell() {
               {notifications.length === 0 ? (
                 <div style={{ padding: '24px', textAlign: 'center', color: '#9CA3AF', fontSize: '13px' }}>No notifications yet</div>
               ) : notifications.map(n => (
-                <div key={n.id} style={{ padding: '10px 16px', borderBottom: '1px solid #FFF8E1' }}>
+                <div
+                  key={n.id}
+                  onClick={() => handleNotifClick(n)}
+                  style={{
+                    padding: '10px 16px', borderBottom: '1px solid #FFF8E1',
+                    cursor: 'pointer', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#FFFBF0'}
+                  onMouseLeave={e => e.currentTarget.style.background = ''}
+                >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                     <span style={{ fontWeight: 700, fontSize: '12px', color: '#92400e' }}>🛍 #{n.orderNumber?.slice(-6)}</span>
                     <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{timeAgo(n.timestamp)}</span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#6B7280' }}>{n.customerName}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#FF9800' }}>{fmt(n.totalAmount)}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#FF9800' }}>{fmt(n.totalAmount)}</span>
+                    <span style={{ fontSize: '10px', color: '#FF9800', fontWeight: 600 }}>View →</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -241,9 +400,9 @@ const sidebarLinks = [
   <path d="M19.9 12.66a1 1 0 0 1 0-1.32l1.28-1.44a1 1 0 0 0 .12-1.17l-2-3.46a1 1 0 0 0-1.07-.48l-1.88.38a1 1 0 0 1-1.15-.66l-.61-1.83a1 1 0 0 0-.95-.68h-4a1 1 0 0 0-1 .68l-.56 1.83a1 1 0 0 1-1.15.66L5 4.79a1 1 0 0 0-1 .48L2 8.73a1 1 0 0 0 .1 1.17l1.27 1.44a1 1 0 0 1 0 1.32L2.1 14.1a1 1 0 0 0-.1 1.17l2 3.46a1 1 0 0 0 1.07.48l1.88-.38a1 1 0 0 1 1.15.66l.61 1.83a1 1 0 0 0 1 .68h4a1 1 0 0 0 .95-.68l.61-1.83a1 1 0 0 1 1.15-.66l1.88.38a1 1 0 0 0 1.07-.48l2-3.46a1 1 0 0 0-.12-1.17ZM18.41 14l.8.9-1.28 2.22-1.18-.24a3 3 0 0 0-3.45 2L12.92 20h-2.56L10 18.86a3 3 0 0 0-3.45-2l-1.18.24-1.3-2.21.8-.9a3 3 0 0 0 0-4l-.8-.9 1.28-2.2 1.18.24a3 3 0 0 0 3.45-2L10.36 4h2.56l.38 1.14a3 3 0 0 0 3.45 2l1.18-.24 1.28 2.22-.8.9a3 3 0 0 0 0 3.98Zm-6.77-6a4 4 0 1 0 4 4 4 4 0 0 0-4-4Zm0 6a2 2 0 1 1 2-2 2 2 0 0 1-2 2Z"></path>
 </svg>)
   },
-  { 
-    to: "/dashboard/support", 
-    label: "Help and Support", 
+  {
+    to: "/dashboard/support",
+    label: "Help and Support",
     icon: (<svg className="w-7 h-7" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="chat-support">
   <path d="M6.29,10.3a1,1,0,0,0,1.09,1.63,1.19,1.19,0,0,0,.33-.22,1,1,0,0,0,.21-.32A.85.85,0,0,0,8,11a1,1,0,0,0-.29-.7A1,1,0,0,0,6.29,10.3ZM7,5A1,1,0,0,1,7,7,1,1,0,0,0,7,9,3,3,0,1,0,4.4,4.5a1,1,0,0,0,.37,1.37A1,1,0,0,0,6.13,5.5,1,1,0,0,1,7,5ZM19,6H13a1,1,0,0,0,0,2h6a1,1,0,0,1,1,1v9.72l-1.57-1.45a1,1,0,0,0-.68-.27H9a1,1,0,0,1-1-1V15a1,1,0,0,0-2,0v1a3,3,0,0,0,3,3h8.36l3,2.73A1,1,0,0,0,21,22a1.1,1.1,0,0,0,.4-.08A1,1,0,0,0,22,21V9A3,3,0,0,0,19,6Z"></path>
 </svg>)

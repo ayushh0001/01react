@@ -38,6 +38,7 @@ function OrderModal({ order, onClose }) {
 
   const addr = detail?.shipping_address || order.shipping_address || {};
   const items = detail?.items || [];
+  const paymentMethod = detail?.payment_method || order.payment_method;
   const fmt = v => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
   return (
@@ -72,19 +73,24 @@ function OrderModal({ order, onClose }) {
             {/* Customer */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customer</p>
-              <p className="font-semibold text-gray-900">{order.customer}</p>
-              {addr.phone && <p className="text-sm text-gray-600">{addr.phone}</p>}
+              <p className="font-semibold text-gray-900">{detail?.customer_name || order.customer}</p>
+              {(addr.phone || detail?.customer_phone) && (
+                <p className="text-sm text-gray-600">{addr.phone || detail?.customer_phone}</p>
+              )}
               {(addr.address || addr.street) && (
                 <p className="text-sm text-gray-600 mt-1">
                   {[addr.address || addr.street, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
                 </p>
               )}
+              {detail?.customer_email && (
+                <p className="text-sm text-gray-500 mt-1">{detail.customer_email}</p>
+              )}
             </div>
 
             {/* Items */}
-            {items.length > 0 && (
+            {items.length > 0 ? (
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items ({items.length})</p>
                 <div className="space-y-2">
                   {items.map((item, i) => (
                     <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
@@ -93,12 +99,20 @@ function OrderModal({ order, onClose }) {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 text-sm truncate">{item.product_name}</p>
-                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                        <p className="text-xs text-gray-500">
+                          Qty: {item.quantity}
+                          {item.variant ? ` · Size: ${item.variant}` : ''}
+                        </p>
                       </div>
                       <p className="font-semibold text-gray-900 text-sm">{fmt(item.price * item.quantity)}</p>
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : order.items > 0 && (
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Items</p>
+                <p className="text-sm text-gray-600">{order.items} item{order.items !== 1 ? 's' : ''}</p>
               </div>
             )}
 
@@ -121,10 +135,10 @@ function OrderModal({ order, onClose }) {
             </div>
 
             {/* Payment */}
-            {detail?.payment_method && (
+            {paymentMethod && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Payment</span>
-                <span className="font-medium capitalize text-gray-800">{detail.payment_method}</span>
+                <span className="font-medium capitalize text-gray-800">{paymentMethod}</span>
               </div>
             )}
 
@@ -201,8 +215,6 @@ export default function Orders() {
       // Direct call to seller orders endpoint
       const response = await API.get('/orders/seller/orders');
       
-      console.log('Orders API Response:', response.data);
-      
       const ordersData = response.data.orders || [];
 
       const transformedOrders = ordersData.map(order => {
@@ -224,12 +236,12 @@ export default function Orders() {
           total: parseFloat(order.final_amount || order.total_amount || 0),
           status: order.status || 'pending',
           shipping_address: order.shipping_address,
+          payment_method: order.payment_method,
           created_at: createdAt,
           created_at_ts: createdAt ? createdAt.getTime() : 0,
         };
       }).sort((a, b) => b.created_at_ts - a.created_at_ts); // descending: newest first
 
-      console.log('Transformed Orders:', transformedOrders);
       setOrders(transformedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);

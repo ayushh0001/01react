@@ -265,37 +265,34 @@ export default function DashboardHome() {
       <main className="flex-1 min-w-0 overflow-x-hidden p-4 lg:p-8">
 
         {/* Page header */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg bg-white shadow-sm border"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Welcome back, {sellerName || 'Seller'}
-              </h1>
-              <p className="text-gray-600">
-                Here&apos;s a summary of your business performance today.
-              </p>
-            </div>
-          </div>
-
-          {/* Add Product button */}
+        <div className="flex items-start gap-4 mb-6">
           <button
-            onClick={() => navigate('/dashboard/add-product')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-            style={{ background: '#FF9800', color: '#fff', whiteSpace: 'nowrap' }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 rounded-lg bg-white shadow-sm border mt-1 shrink-0"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            Add Product
           </button>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+              Welcome back, {sellerName || 'Seller'}
+            </h1>
+            <p className="text-gray-600 mb-4">
+              Here&apos;s a summary of your business performance today.
+            </p>
+            {/* Add Product button */}
+            <button
+              onClick={() => navigate('/dashboard/add-product')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+              style={{ background: '#FF9800', color: '#fff' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Product
+            </button>
+          </div>
         </div>
 
         {/* Key metrics cards grid */}

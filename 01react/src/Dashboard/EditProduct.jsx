@@ -44,10 +44,6 @@ export default function EditProduct() {
       const response = await API.get(`/products/${productId}`);
       const productData = response.data.product;
       
-      console.log('[EditProduct] Loaded product:', productData);
-      console.log('[EditProduct] Product images:', productData.images);
-      console.log('[EditProduct] Size quantities:', productData.size_quantities);
-      
       setProduct(productData);
       setForm({
         name: productData.product_name || '',
@@ -70,8 +66,6 @@ export default function EditProduct() {
         }
       }
       
-      console.log('[EditProduct] Setting images:', images);
-      
       // Create image objects with IDs for tracking
       const imageObjects = images.map((url, index) => ({
         id: `existing-${index}`,
@@ -87,7 +81,6 @@ export default function EditProduct() {
           ? JSON.parse(productData.size_quantities)
           : productData.size_quantities;
         setSizeQuantities(sizes);
-        console.log('[EditProduct] Loaded size quantities:', sizes);
       }
       
       // Determine size chart from category
@@ -95,7 +88,6 @@ export default function EditProduct() {
       if (categoryName) {
         const sizeChart = getSizeChartForCategory(categoryName);
         setCurrentSizeChart(sizeChart);
-        console.log('[EditProduct] Size chart for category:', categoryName, sizeChart);
       }
       
     } catch (error) {
@@ -142,7 +134,6 @@ export default function EditProduct() {
     setSaving(true);
     
     try {
-      console.log('[EditProduct] Starting update...');
       
       // Step 1: Update product details
       const updatePayload = {
@@ -159,15 +150,10 @@ export default function EditProduct() {
         sizeQuantities: currentSizeChart ? sizeQuantities : {}
       };
       
-      console.log('[EditProduct] Update payload:', updatePayload);
-      
       await API.put(`/products/${productId}`, updatePayload);
-      
-      console.log('[EditProduct] Product details updated');
 
       // Step 2: Delete removed images from database
       if (imagesToDelete.length > 0) {
-        console.log('[EditProduct] Deleting images:', imagesToDelete);
         
         // Get all product images to find their IDs
         const response = await API.get(`/products/${productId}`);
@@ -189,12 +175,10 @@ export default function EditProduct() {
         // Find image IDs from product_images table
         // Note: We need to query the database to get image IDs
         // For now, we'll skip this step as we need the image ID from the database
-        console.log('[EditProduct] Image deletion requires image IDs from database');
       }
 
       // Step 3: Upload new images
       if (newImages.length > 0) {
-        console.log('[EditProduct] Uploading new images:', newImages.length);
         
         const formData = new FormData();
         newImages.forEach((file) => {
@@ -206,8 +190,6 @@ export default function EditProduct() {
             'Content-Type': 'multipart/form-data'
           }
         });
-        
-        console.log('[EditProduct] New images uploaded');
       }
 
       alert('Product updated successfully!');
