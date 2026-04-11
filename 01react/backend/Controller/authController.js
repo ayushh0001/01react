@@ -167,39 +167,40 @@ export const login = async (req, res) => {
   }
 };
 
+// Production frontend URL — hardcoded so Google OAuth callback always works
+// even if FRONTEND_URL env var is misconfigured on the hosting platform
+const PRODUCTION_FRONTEND_URL = 'https://www.zpinshop.com';
+
+const getFrontendUrl = () => {
+  const env = process.env.FRONTEND_URL || '';
+  // Never redirect to localhost in any environment
+  if (!env || env.includes('localhost') || env.includes('127.0.0.1')) {
+    return PRODUCTION_FRONTEND_URL;
+  }
+  return env;
+};
+
 // Google OAuth callback handler
 export const googleCallback = async (req, res) => {
+  const frontendUrl = getFrontendUrl();
   try {
     const user = req.user;
 
     if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+      return res.redirect(`${frontendUrl}/login?error=auth_failed`);
     }
 
     if (!user.is_active) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=account_suspended`);
+      return res.redirect(`${frontendUrl}/login?error=account_suspended`);
     }
 
     const token = generateToken(user.id, user.user_role);
     const refreshToken = generateRefreshToken(user.id);
 
-    // Use FRONTEND_URL env var, but fall back to the request's origin/referer
-    // so it works even if the env var is misconfigured (e.g. still set to localhost)
-    const frontendUrl = (() => {
-      const configured = process.env.FRONTEND_URL || '';
-      if (configured && !configured.includes('localhost')) return configured;
-      // Derive from the incoming request host as last resort
-      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-      const host = req.headers['x-forwarded-host'] || req.headers.host || '';
-      // Backend is on a different host than frontend — use known production URL
-      return 'https://www.zpinshop.com';
-    })();
-
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}`;
-    res.redirect(redirectUrl);
+    res.redirect(`${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}`);
   } catch (error) {
     console.error('Google callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL || 'https://www.zpinshop.com'}/login?error=server_error`);
+    res.redirect(`${frontendUrl}/login?error=server_error`);
   }
 };
 
