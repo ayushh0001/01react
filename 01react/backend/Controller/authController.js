@@ -170,28 +170,36 @@ export const login = async (req, res) => {
 // Google OAuth callback handler
 export const googleCallback = async (req, res) => {
   try {
-    // User is attached by passport
     const user = req.user;
 
     if (!user) {
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
     }
 
-    // Block suspended accounts
     if (!user.is_active) {
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=account_suspended`);
     }
 
-    // Generate tokens
     const token = generateToken(user.id, user.user_role);
     const refreshToken = generateRefreshToken(user.id);
 
-    // Redirect to frontend with tokens
-    const redirectUrl = `${process.env.FRONTEND_URL}/auth/callback?token=${token}&refreshToken=${refreshToken}`;
+    // Use FRONTEND_URL env var, but fall back to the request's origin/referer
+    // so it works even if the env var is misconfigured (e.g. still set to localhost)
+    const frontendUrl = (() => {
+      const configured = process.env.FRONTEND_URL || '';
+      if (configured && !configured.includes('localhost')) return configured;
+      // Derive from the incoming request host as last resort
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+      // Backend is on a different host than frontend — use known production URL
+      return 'https://www.zpinshop.com';
+    })();
+
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}`;
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Google callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+    res.redirect(`${process.env.FRONTEND_URL || 'https://www.zpinshop.com'}/login?error=server_error`);
   }
 };
 
