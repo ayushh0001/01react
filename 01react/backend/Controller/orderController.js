@@ -33,7 +33,7 @@ export const getSellerOrders = async (req, res) => {
         (o.estimated_delivery AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS estimated_delivery,
         o.created_at::timestamptz AS created_at,
         (o.updated_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS updated_at,
-        COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+        COALESCE(u.name, NULLIF(CASE WHEN o.shipping_address->>'name' LIKE 'enc:%' THEN '' ELSE o.shipping_address->>'name' END, ''), 'Customer') as customer_name,
         u.email as customer_email,
         u.mobile as customer_phone,
         COUNT(oi.id) as item_count
@@ -148,7 +148,7 @@ export const getOrderById = async (req, res) => {
     // Support lookup by UUID id, 7-char varchar id, or order_number
     const orderQuery = `
       SELECT o.*,
-        COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+        COALESCE(u.name, NULLIF(CASE WHEN o.shipping_address->>'name' LIKE 'enc:%' THEN '' ELSE o.shipping_address->>'name' END, ''), 'Customer') as customer_name,
         u.email as customer_email, u.mobile as customer_phone,
         s.name as seller_name, s.email as seller_email, s.mobile as seller_phone
       FROM orders o
@@ -238,7 +238,7 @@ export const getSellerDashboardStats = async (req, res) => {
         o.final_amount as total_amount,
         o.shipping_address,
         (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata') AS created_at,
-        COALESCE(NULLIF(o.shipping_address->>'name',''), u.name, 'Customer') as customer_name,
+        COALESCE(u.name, NULLIF(CASE WHEN o.shipping_address->>'name' LIKE 'enc:%' THEN '' ELSE o.shipping_address->>'name' END, ''), 'Customer') as customer_name,
         COUNT(oi.id) as item_count
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
