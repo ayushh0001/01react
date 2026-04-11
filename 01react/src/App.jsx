@@ -29,6 +29,8 @@ import Preview from './Dashboard/Preview';
 import Customer from './Dashboard/Customer';
 import Settings from './Dashboard/Settings';
 import Support from './Dashboard/Support';
+import Analytics from './Dashboard/Analytics';
+import Inventory from './Dashboard/Inventory';
 import DashboardLayout from './Dashboard/DashboardLayout';
 
 export default function App() {
@@ -59,6 +61,8 @@ export default function App() {
         <Route path="/dashboard/customers" element={<DashboardLayout><Customer /></DashboardLayout>} />
         <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
         <Route path="/dashboard/support" element={<DashboardLayout><Support /></DashboardLayout>} />
+        <Route path="/dashboard/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+        <Route path="/dashboard/inventory" element={<DashboardLayout><Inventory /></DashboardLayout>} />
         
         {/* Error page */}
         <Route path="/error" element={<ErrorPage />} />
