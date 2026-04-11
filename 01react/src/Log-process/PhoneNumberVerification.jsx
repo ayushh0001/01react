@@ -82,19 +82,32 @@ export default function PhoneNumberVerification() {
     return () => clearInterval(t);
   }, [resendCd]);
 
+  // Cleanup reCAPTCHA on unmount
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (_) {}
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, []);
+
   const showMsg = (text, type = 'info') => { setMessage(text); setMsgType(type); };
 
   // Setup invisible reCAPTCHA (required by Firebase Phone Auth)
   const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {},
-        'expired-callback': () => {
-          window.recaptchaVerifier = null;
-        },
-      });
+    // Always clear stale verifier first — the container may have been re-rendered
+    if (window.recaptchaVerifier) {
+      try { window.recaptchaVerifier.clear(); } catch (_) {}
+      window.recaptchaVerifier = null;
     }
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      size: 'invisible',
+      callback: () => {},
+      'expired-callback': () => {
+        window.recaptchaVerifier = null;
+      },
+    });
   };
 
   const handleSendOtp = async (e) => {

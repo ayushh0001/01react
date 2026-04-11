@@ -1,16 +1,9 @@
-import { randomBytes } from 'crypto';
-
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+import { randomUUID } from 'crypto';
 
 /**
- * Generates a random 7-character alphanumeric ID (e.g. "A3K9X2M").
- * Uses uppercase letters and digits only for readability.
+ * Generates a RFC 4122 UUID v4.
+ * Compatible with PostgreSQL UUID columns.
  */
 export function generateId() {
-  let id = '';
-  const bytes = randomBytes(7);
-  for (let i = 0; i < 7; i++) {
-    id += CHARS[bytes[i] % CHARS.length];
-  }
-  return id;
+  return randomUUID();
 }

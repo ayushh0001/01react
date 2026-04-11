@@ -17,15 +17,15 @@ export const saveBusinessDetails = async (req, res) => {
     } = req.body;
 
     // Validation
-    if (!businessName || !pincode) {
+    if (!businessName) {
       return res.status(400).json({
         success: false,
-        error: 'Business name and pincode are required'
+        error: 'Business name is required'
       });
     }
 
-    // Validate pincode format
-    if (!/^\d{6}$/.test(pincode)) {
+    // Validate pincode only if provided
+    if (pincode && !/^\d{6}$/.test(pincode)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid pincode format. Must be 6 digits.'
@@ -61,12 +61,12 @@ export const saveBusinessDetails = async (req, res) => {
         businessName,
         businessDescription || null,
         businessType || 'general',
-        gstNo || null,
+        gstNo || null,   // empty string → null to avoid unique constraint collision
         panNo || null,
-        address || '',
-        city || '',
-        state || '',
-        pincode,
+        address || null,
+        city || null,
+        state || null,
+        pincode || null,
         userId
       ]);
     } else {
@@ -85,12 +85,12 @@ export const saveBusinessDetails = async (req, res) => {
         businessName,
         businessDescription || null,
         businessType || 'general',
-        gstNo || null,
+        gstNo || null,   // empty string → null to avoid unique constraint collision
         panNo || null,
-        address || '',
-        city || '',
-        state || '',
-        pincode
+        address || null,
+        city || null,
+        state || null,
+        pincode || null
       ]);
     }
 

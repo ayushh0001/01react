@@ -9,33 +9,41 @@ import { generateToken, generateRefreshToken } from '../Middleware/auth.js';
 // Traditional signup (email/password)
 export const signup = async (req, res) => {
   try {
-    const { userName, name, mobile, email, password, userRole } = req.body;
+    let { userName, name, mobile, email, password, userRole } = req.body;
 
     // Validation
-    if (!userName || !name || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'All fields are required'
+        error: 'Name, email and password are required'
       });
     }
 
-    // Check if user already exists
+    // Check if email already exists
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        error: 'User with this email already exists'
+        error: 'An account with this email already exists'
       });
+    }
+
+    // Ensure userName is unique — auto-suffix if taken
+    if (!userName) userName = email.split('@')[0];
+    const { pool } = await import('../config/database.js');
+    const taken = await pool.query('SELECT id FROM users WHERE user_name = $1', [userName]);
+    if (taken.rows.length > 0) {
+      userName = userName + '_' + Date.now().toString().slice(-5);
     }
 
     // Create user
     const user = await createUser({
       userName,
       name,
-      mobile,
+      mobile: mobile || null,
       email,
       password,
-      userRole: userRole || 'customer',
+      userRole: userRole || 'seller',
       isVerified: false
     });
 
@@ -62,6 +70,15 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
+    // Handle PostgreSQL unique constraint violations
+    if (error.code === '23505') {
+      const detail = error.detail || '';
+      let message = 'An account with these details already exists.';
+      if (detail.includes('email')) message = 'An account with this email already exists.';
+      else if (detail.includes('user_name')) message = 'This username is already taken.';
+      else if (detail.includes('mobile')) message = 'This phone number is already registered.';
+      return res.status(400).json({ success: false, error: message });
+    }
     res.status(500).json({
       success: false,
       error: 'Failed to create user',
